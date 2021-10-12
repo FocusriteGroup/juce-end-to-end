@@ -1,28 +1,31 @@
 #pragma once
 
 #include "Command.h"
+#include "CommandHandler.h"
 #include "Connection.h"
 #include "Event.h"
 #include "Response.h"
+
+#include <memory>
+#include <optional>
 
 namespace ampify::e2e
 {
 class TestCentre
 {
 public:
-    explicit TestCentre (int port);
+    explicit TestCentre ();
     ~TestCentre ();
 
-    using CommandHandler = std::function<Response (Command command)>;
-
-    void addCommandHandler (CommandHandler handler);
+    void addCommandHandler (std::shared_ptr<CommandHandler> handler);
     void sendEvent (const Event & event);
 
 private:
     void send (const juce::String & data);
 
-    CommandHandler _commandHandler = nullptr;
-    std::vector<CommandHandler> _commandHandlers;
+    void onDataReceived (const juce::MemoryBlock & data);
+
+    std::vector<std::shared_ptr<CommandHandler>> _commandHandlers;
     std::shared_ptr<Connection> _connection;
 };
 

@@ -10,6 +10,7 @@ target_link_libraries(e2e-example-app PRIVATE ampify-e2e)
 
 target_compile_definitions(e2e-example-app
   PRIVATE
+  DONT_SET_USING_JUCE_NAMESPACE=1
   JUCE_WEB_BROWSER=0
   JUCE_USE_CURL=0
   JUCE_APPLICATION_NAME_STRING="$<TARGET_PROPERTY:e2e-example-app,JUCE_PRODUCT_NAME>"

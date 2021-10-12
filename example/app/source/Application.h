@@ -30,5 +30,5 @@ public:
 
 private:
     MainWindow _mainWindow;
-    ampify::e2e::TestCentre _testCentre {56789};
+    ampify::e2e::TestCentre _testCentre;
 };

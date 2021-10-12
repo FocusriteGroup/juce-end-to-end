@@ -1,15 +1,18 @@
 add_library (
   ampify-e2e
-  ./source/ampify/e2e/Connection.h
-  ./source/ampify/e2e/Response.h
-  ./source/ampify/e2e/Event.h
-  ./source/ampify/e2e/Command.cpp
-  ./source/ampify/e2e/TestCentre.h
-  ./source/ampify/e2e/Response.cpp
-  ./source/ampify/e2e/TestCentre.cpp
-  ./source/ampify/e2e/Command.h
-  ./source/ampify/e2e/Event.cpp
-  ./source/ampify/e2e/Connection.cpp)
+  source/ampify/e2e/Command.cpp
+  source/ampify/e2e/Command.h
+  source/ampify/e2e/Connection.cpp
+  source/ampify/e2e/Connection.h
+  source/ampify/e2e/DefaultCommandHandler.cpp
+  source/ampify/e2e/DefaultCommandHandler.h
+  source/ampify/e2e/Event.cpp
+  source/ampify/e2e/Event.h
+  source/ampify/e2e/Response.cpp
+  source/ampify/e2e/Response.h
+  source/ampify/e2e/TestCentre.cpp
+  source/ampify/e2e/TestCentre.h
+  source/ampify/e2e/CommandHandler.h source/ampify/e2e/ClickableComponent.h)
 
 target_link_libraries (ampify-e2e PUBLIC juce_core juce_events)
 

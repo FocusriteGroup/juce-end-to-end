@@ -4,7 +4,6 @@
 
 #if JUCE_MAC
     #include <sys/socket.h>
-    #include <sys/types.h>
 #endif
 
 namespace
