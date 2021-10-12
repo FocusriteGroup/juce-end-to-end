@@ -3,8 +3,10 @@
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Focusrite-Novation](https://circleci.com/gh/Focusrite-Novation/juce-end-to-end.svg?style=shield&circle-token=1583501cef3f7ee4bdb879a0552dc842ff5eac58)](https://app.circleci.com/pipelines/github/Focusrite-Novation/juce-end-to-end)
+[![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
 [![Language](https://img.shields.io/static/v1?label=Language&message=C%2B%2B&color=orange&style=flat)](./documentation/building.md)
 [![Language](https://img.shields.io/static/v1?label=Language&message=Typescript&color=orange&style=flat)](./documentation/building.md)
+[![Language](https://img.shields.io/static/v1?label=Language&message=Cmake&color=orange&style=flat)](https://www.cmake.org)
 
 
 
