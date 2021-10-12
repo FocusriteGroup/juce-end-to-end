@@ -1,6 +1,7 @@
 #include "DefaultCommandHandler.h"
 
 #include "ClickableComponent.h"
+#include "Command.h"
 
 #include <juce_gui_basics/juce_gui_basics.h>
 
@@ -264,47 +265,44 @@ Response handleClickComponent (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
     if (componentId == juce::String ())
-        return {command.getUuid (), juce::Result::fail ("Missing component-id")};
+        return Response::fail ("Missing component-id");
 
     auto skip = command.getArgument ("skip").getIntValue ();
 
     auto component = findClickableComponent (componentId, skip);
     if (component == nullptr)
-        return {command.getUuid (),
-                juce::Result::fail ("Component not found: " + juce::String (componentId))};
+        return Response::fail ("Component not found: " + juce::String (componentId));
 
     if (! component->isShowing ())
-        return {command.getUuid (),
-                juce::Result::fail ("Component " + componentId + " is not visible")};
+        return Response::fail ("Component " + componentId + " is not visible");
 
     if (auto * button = dynamic_cast<juce::Button *> (component))
     {
         handleButtonClick (*button);
-        return {command.getUuid (), juce::Result::ok ()};
+        return Response::ok ();
     }
 
     if (auto * textBox = dynamic_cast<juce::TextEditor *> (component))
     {
         textBox->grabKeyboardFocus ();
-        return {command.getUuid (), juce::Result::ok ()};
+        return Response::ok ();
     }
 
     if (auto * clickable = dynamic_cast<ClickableComponent *> (component))
     {
         handleClickableComponentClick (
             *clickable, juce::jlimit (1, 2, command.getArgument ("num-clicks").getIntValue ()));
-        return {command.getUuid (), juce::Result::ok ()};
+        return Response::ok ();
     }
 
-    return {command.getUuid (),
-            juce::Result::fail ("Component not clickable: " + juce::String (componentId))};
+    return Response::fail ("Component not clickable: " + juce::String (componentId));
 }
 
 Response handleKeyPress (const Command & command)
 {
     auto keyCode = command.getArgument ("key-code");
     if (keyCode.isEmpty ())
-        return {command.getUuid (), juce::Result::fail ("Missing key-code argument")};
+        return Response::fail ("Missing key-code argument");
 
     auto modifiers = command.getArgument ("modifiers");
 
@@ -317,58 +315,48 @@ Response handleKeyPress (const Command & command)
         if (auto * component = findComponentWithId (componentId))
             component->keyPressed (keyPress);
         else
-            return {command.getUuid (), juce::Result::fail ("Component not found: " + componentId)};
+            return Response::fail ("Component not found: " + componentId);
     }
     else if (auto mainWindow = getMainWindow ())
     {
         mainWindow->getPeer ()->handleKeyPress (keyPress);
     }
 
-    return {command.getUuid (), juce::Result::ok ()};
+    return Response::ok ();
 }
 
 Response handleGrabFocus (const Command & command)
 {
     if (command.getArgument ("require-null-focus") == "true" &&
         juce::Component::getCurrentlyFocusedComponent () != nullptr)
-        return {command.getUuid (), juce::Result::ok ()};
+        return Response::ok ();
 
     if (auto * mainWindow = getMainWindow ())
         mainWindow->grabKeyboardFocus ();
 
-    return {command.getUuid (), juce::Result::ok ()};
+    return Response::ok ();
 }
 
 Response handleGetScreenshot (const Command & command)
 {
-    Response response (command.getUuid (), juce::Result::ok ());
-
     const auto componentId = command.getArgument ("component-id");
 
     auto component = componentId.isEmpty () ? getMainWindow () : findComponentWithId (componentId);
+    if (component == nullptr)
+        return Response::fail ("Component not found: " + juce::String (componentId));
 
-    if (component != nullptr)
-    {
-        auto image = snapshotAndEncodeComponent (*component);
-        if (image.isNotEmpty ())
-            response.addParameter ("image", image);
-        else
-            return {command.getUuid (), juce::Result::fail ("Failed to snapshot component")};
-    }
-    else
-    {
-        return {command.getUuid (),
-                juce::Result::fail ("Component not found: " + juce::String (componentId))};
-    }
+    auto image = snapshotAndEncodeComponent (*component);
+    if (image.isEmpty ())
+        return Response::fail ("Failed to snapshot component");
 
-    return response;
+    return Response (Response::ok ()).withParameter ("image", image);
 }
 
 Response handleGetComponentVisibility (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
     if (componentId.isEmpty ())
-        return {command.getUuid (), juce::Result::fail ("Missing component-id")};
+        return Response::fail ("Missing component-id");
 
     bool exists = false;
     bool showing = false;
@@ -379,7 +367,7 @@ Response handleGetComponentVisibility (const Command & command)
         showing = component->isShowing ();
     }
 
-    return Response (command.getUuid (), juce::Result::ok ())
+    return Response (Response::ok ())
         .withParameter ("exists", exists ? "true" : "false")
         .withParameter ("showing", showing ? "true" : "false");
 }
@@ -388,7 +376,7 @@ Response handleGetComponentEnablement (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
     if (componentId.isEmpty ())
-        return {command.getUuid (), juce::Result::fail ("Missing component-id")};
+        return Response::fail ("Missing component-id");
 
     bool exists = false;
     bool enabled = false;
@@ -399,7 +387,7 @@ Response handleGetComponentEnablement (const Command & command)
         enabled = component->isEnabled ();
     }
 
-    return Response (command.getUuid (), juce::Result::ok ())
+    return Response::ok ()
         .withParameter ("exists", exists ? "true" : "false")
         .withParameter ("enabled", enabled ? "true" : "false");
 }
@@ -408,29 +396,29 @@ Response handleGetComponentText (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
     if (componentId.isEmpty ())
-        return {command.getUuid (), juce::Result::fail ("Missing component-id")};
+        return Response::fail ("Missing component-id");
 
-    if (auto * component = findComponentWithId (componentId))
-    {
-        if (auto * textBox = dynamic_cast<juce::TextEditor *> (component))
-            return Response (command.getUuid (), juce::Result::ok ())
-                .withParameter ("text", textBox->getText ());
+    auto * component = findComponentWithId (componentId);
+    if (! component)
+        return Response::fail ("No matching component");
 
-        return {command.getUuid (), juce::Result::fail ("Component is not a text editor")};
-    }
+    auto * textBox = dynamic_cast<juce::TextEditor *> (component);
+    if (! textBox)
+        return Response::fail ("Component is not a text editor");
 
-    return {command.getUuid (), juce::Result::fail ("No matching component")};
+    return Response::ok ().withParameter ("text", textBox->getText ());
 }
 
 Response handleGetFocusComponent (const Command & command)
 {
+    juce::ignoreUnused (command);
+
     juce::String testId;
 
     if (auto * focusComponent = juce::Component::getCurrentlyFocusedComponent ())
         testId = focusComponent->getProperties ().getWithDefault ("test-id", {}).toString ();
 
-    return Response (command.getUuid (), juce::Result::ok ())
-        .withParameter ("component-id", testId);
+    return Response::ok ().withParameter ("component-id", testId);
 }
 
 Response handleCountComponents (const Command & command)
@@ -438,7 +426,7 @@ Response handleCountComponents (const Command & command)
     const auto componentId = command.getArgument ("component-id");
 
     if (componentId.isEmpty ())
-        return {command.getUuid (), juce::Result::fail ("Missing component-id")};
+        return Response::fail ("Missing component-id");
 
     const auto rootId = command.getArgument ("root-id");
 
@@ -448,80 +436,76 @@ Response handleCountComponents (const Command & command)
     {
         rootComponent = findComponentWithId (rootId);
         if (rootComponent == nullptr)
-            return {command.getUuid (),
-                    juce::Result::fail ("Couldn't find specified root component")};
+            return Response::fail ("Couldn't find specified root component");
     }
 
     jassert (rootComponent != nullptr);
 
     const auto count = countChildComponents (*rootComponent, matchComponentWithId (componentId));
-
-    return Response (command.getUuid (), juce::Result::ok ())
-        .withParameter ("count", juce::String (count));
+    return Response::ok ().withParameter ("count", juce::String (count));
 }
 
 Response handleQuit (const Command & command)
 {
-    return {command.getUuid (), juce::Result::ok ()};
+    juce::ignoreUnused (command);
+    return Response::ok ();
 }
 
 Response handleInvokeMenu (const Command & command)
 {
-    if (auto * application = juce::JUCEApplication::getInstance ())
+    auto * application = juce::JUCEApplication::getInstance ();
+    if (! application)
+        return Response::fail ("Invalid application");
+
+    const auto menuTitle = command.getArgument ("title");
+    if (menuTitle.isEmpty ())
+        return Response::fail ("Missing menu title");
+
+    juce::Array<juce::CommandID> commands;
+    application->getAllCommands (commands);
+
+    for (auto commandID : commands)
     {
-        const auto menuTitle = command.getArgument ("title");
-        if (menuTitle.isEmpty ())
-            return {command.getUuid (), juce::Result::fail ("Missing menu title")};
+        juce::ApplicationCommandInfo info (commandID);
+        application->getCommandInfo (commandID, info);
 
-        juce::Array<juce::CommandID> commands;
-        application->getAllCommands (commands);
+        if (info.shortName != menuTitle)
+            continue;
 
-        for (auto commandID : commands)
-        {
-            juce::ApplicationCommandInfo info (commandID);
-            application->getCommandInfo (commandID, info);
-
-            if (info.shortName != menuTitle)
-                continue;
-
-            application->invoke (juce::ApplicationCommandTarget::InvocationInfo (commandID), false);
-            return {command.getUuid (), juce::Result::ok ()};
-        }
+        application->invoke (juce::ApplicationCommandTarget::InvocationInfo (commandID), false);
+        return Response::ok ();
     }
 
-    return {command.getUuid (), juce::Result::fail ("Not handled")};
+    return Response::fail ("Not handled");
 }
 
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
 {
-    switch (command.getType ())
-    {
-        case Command::Type::clickComponent:
-            return handleClickComponent (command);
-        case Command::Type::keyPress:
-            return handleKeyPress (command);
-        case Command::Type::getScreenshot:
-            return handleGetScreenshot (command);
-        case Command::Type::getComponentVisibility:
-            return handleGetComponentVisibility (command);
-        case Command::Type::getComponentEnablement:
-            return handleGetComponentEnablement (command);
-        case Command::Type::getComponentText:
-            return handleGetComponentText (command);
-        case Command::Type::getFocusComponent:
-            return handleGetFocusComponent (command);
-        case Command::Type::getComponentCount:
-            return handleCountComponents (command);
-        case Command::Type::grabFocus:
-            return handleGrabFocus (command);
-        case Command::Type::quit:
-            return handleQuit (command);
-        case Command::Type::invokeMenu:
-            return handleInvokeMenu (command);
-        default:
-            break;
-    }
+    static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
+        {
+            {"click-component", [&] (auto && command) { return handleClickComponent (command); }},
+            {"key-press", [&] (auto && command) { return handleKeyPress (command); }},
+            {"get-screenshot", [&] (auto && command) { return handleGetScreenshot (command); }},
+            {"get-component-visibility",
+             [&] (auto && command) { return handleGetComponentVisibility (command); }},
+            {"get-component-enablement",
+             [&] (auto && command) { return handleGetComponentEnablement (command); }},
+            {"get-component-text",
+             [&] (auto && command) { return handleGetComponentText (command); }},
+            {"get-focus-component",
+             [&] (auto && command) { return handleGetFocusComponent (command); }},
+            {"get-component-count",
+             [&] (auto && command) { return handleCountComponents (command); }},
+            {"grab-focus", [&] (auto && command) { return handleGrabFocus (command); }},
+            {"quit", [&] (auto && command) { return handleQuit (command); }},
+            {"invoke-menu", [&] (auto && command) { return handleInvokeMenu (command); }},
+        };
 
-    return std::nullopt;
+    auto it = commandHandlers.find (command.getType ());
+
+    if (it == commandHandlers.end ())
+        return std::nullopt;
+
+    return it->second (command);
 }
 }

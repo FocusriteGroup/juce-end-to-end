@@ -15,7 +15,7 @@ class TestCentre
 {
 public:
     explicit TestCentre ();
-    ~TestCentre ();
+    ~TestCentre () = default;
 
     void addCommandHandler (std::shared_ptr<CommandHandler> handler);
     void sendEvent (const Event & event);

@@ -2,9 +2,18 @@
 
 namespace ampify::e2e
 {
-Response::Response (const juce::Uuid & uuid, const juce::Result & result)
-    : _uuid (uuid)
-    , _result (result)
+Response Response::ok ()
+{
+    return Response (juce::Result::ok ());
+}
+
+Response Response::fail (const juce::String & message)
+{
+    return Response (juce::Result::fail (message));
+}
+
+Response::Response (juce::Result result)
+    : _result (std::move (result))
 {
 }
 
@@ -12,6 +21,13 @@ Response Response::withParameter (const juce::String & name, const juce::String 
 {
     Response other (*this);
     other.addParameter (name, value);
+    return other;
+}
+
+[[nodiscard]] Response Response::withUuid (const juce::Uuid & uuid) const
+{
+    Response other (*this);
+    other._uuid = uuid;
     return other;
 }
 

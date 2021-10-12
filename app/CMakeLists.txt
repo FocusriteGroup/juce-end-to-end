@@ -12,16 +12,18 @@ add_library (
   source/ampify/e2e/Response.h
   source/ampify/e2e/TestCentre.cpp
   source/ampify/e2e/TestCentre.h
-  source/ampify/e2e/CommandHandler.h source/ampify/e2e/ClickableComponent.h)
+  source/ampify/e2e/CommandHandler.h
+  source/ampify/e2e/ClickableComponent.h)
 
 target_link_libraries (ampify-e2e PUBLIC juce_core juce_events)
 
-target_include_directories(ampify-e2e PUBLIC source)
+target_include_directories (ampify-e2e PUBLIC source)
+target_include_directories (ampify-e2e PRIVATE source/private)
 
 set_target_properties (ampify-e2e PROPERTIES CXX_STANDARD 17)
 
 if (APPLE)
-  target_compile_options(ampify-e2e PRIVATE -Wall -Wextra -Werror)
-elseif(WIN32)
-  target_compile_options(ampify-e2e PRIVATE /W4 /WX)
-endif()
+  target_compile_options (ampify-e2e PRIVATE -Wall -Wextra -Werror)
+elseif (WIN32)
+  target_compile_options (ampify-e2e PRIVATE /W4 /WX)
+endif ()

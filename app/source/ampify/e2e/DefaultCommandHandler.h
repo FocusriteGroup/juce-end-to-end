@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Command.h"
 #include "CommandHandler.h"
 
 namespace ampify::e2e

@@ -9,13 +9,18 @@ namespace ampify::e2e
 {
 std::optional<int> getPort ()
 {
-    std::optional<int> port;
-
     for (const auto & param : juce::JUCEApplicationBase::getCommandLineParameterArray ())
-        if (param.contains ("--test-fixture-port="))
-            port = param.trimCharactersAtStart ("--test-fixture-port=").getIntValue ();
+    {
+        if (param.contains ("--e2e-test-port="))
+        {
+            int port = param.trimCharactersAtStart ("--e2e-test-port=").getIntValue ();
+            if (std::numeric_limits<uint16_t>::min () <= port &&
+                port <= std::numeric_limits<uint16_t>::max ())
+                return port;
+        }
+    }
 
-    return port;
+    return std::nullopt;
 }
 
 TestCentre::TestCentre ()
@@ -27,16 +32,8 @@ TestCentre::TestCentre ()
     addCommandHandler (std::make_shared<DefaultCommandHandler> ());
 
     _connection = std::make_shared<Connection> (*port);
-
     _connection->_onDataReceived = [this] (auto && block) { onDataReceived (block); };
-
     _connection->start ();
-}
-
-TestCentre::~TestCentre ()
-{
-    _connection->_onDataReceived = nullptr;
-    _connection.reset ();
 }
 
 void TestCentre::addCommandHandler (std::shared_ptr<CommandHandler> handler)
@@ -58,31 +55,28 @@ void TestCentre::send (const juce::String & data)
 void TestCentre::onDataReceived (const juce::MemoryBlock & data)
 {
     auto command = Command::fromString (data.toString ());
-    if (command.isValid ())
+    if (! command.isValid ())
+        return;
+
+    bool responded = false;
+
+    for (auto & commandHandler : _commandHandlers)
     {
-        bool responded = false;
+        auto response = commandHandler->process (command);
+        if (! response)
+            continue;
 
-        for (auto & commandHandler : _commandHandlers)
-        {
-            auto response = commandHandler->process (command);
-            if (! response)
-                continue;
+        send (response->withUuid (command.getUuid ()).toString ());
+        responded = true;
 
-            send (response->toString ());
-            responded = true;
+        if (command.getType () == "quit")
+            juce::JUCEApplicationBase::quit ();
 
-            if (command.getType () == Command::Type::quit)
-                juce::JUCEApplicationBase::quit ();
-
-            break;
-        }
-
-        if (! responded)
-        {
-            Response response (command.getUuid (), juce::Result::fail ("Unhandled message"));
-            send (response.toString ());
-        }
+        break;
     }
+
+    if (! responded)
+        send (Response::fail ("Unhandled message").withUuid (command.getUuid ()).toString ());
 }
 
 }
