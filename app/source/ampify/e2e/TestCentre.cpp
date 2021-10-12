@@ -1,16 +1,14 @@
 #include "TestCentre.h"
 
-namespace ampify
-{
-namespace testing
+#include <juce_events/juce_events.h>
+
+namespace ampify::e2e_testing
 {
 TestCentre::TestCentre (int port)
     : _connection (std::make_shared<Connection> (port))
 {
-    _connection->_onDataReceived = [this] (MemoryBlock block)
+    _connection->_onDataReceived = [this] (auto && block)
     {
-        ASSERT_IS_ON_JUCE_MESSAGE_THREAD;
-
         auto command = Command::fromString (block.toString ());
         if (command.isValid () && _commandHandler)
         {
@@ -18,7 +16,7 @@ TestCentre::TestCentre (int port)
             send (response.toString ());
 
             if (command.getType () == Command::Type::quit)
-                JUCEApplication::getInstance ()->quit ();
+                juce::JUCEApplicationBase::quit ();
         }
     };
 
@@ -31,21 +29,20 @@ TestCentre::~TestCentre ()
     _connection.reset ();
 }
 
-void TestCentre::setCommandHandler (CommandHandler handler)
+void TestCentre::addCommandHandler (CommandHandler handler)
 {
-    _commandHandler = handler;
+    _commandHandlers.push_back (std::move (handler));
 }
 
-void TestCentre::sendEvent (Event event)
+void TestCentre::sendEvent (const Event & event)
 {
     send (event.toString ());
 }
 
-void TestCentre::send (const String & data)
+void TestCentre::send (const juce::String & data)
 {
     if (_connection->isConnected ())
-        _connection->send (MemoryBlock (data.toRawUTF8 (), data.getNumBytesAsUTF8 ()));
+        _connection->send (juce::MemoryBlock (data.toRawUTF8 (), data.getNumBytesAsUTF8 ()));
 }
 
-}
 }

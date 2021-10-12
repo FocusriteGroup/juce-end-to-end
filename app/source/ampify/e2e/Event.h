@@ -1,29 +1,26 @@
 #pragma once
 
-#include <juce/JuceCore.h>
+#include <juce_core/juce_core.h>
 #include <map>
 
-namespace ampify
-{
-namespace testing
+namespace ampify::e2e_testing
 {
 class Event
 {
 public:
-    Event (String name);
+    explicit Event (juce::String name);
     Event (const Event & other) = default;
     ~Event () = default;
 
-    Event withParameter (const String & name, const String & value) const;
+    [[nodiscard]] Event withParameter (const juce::String & name, const juce::String & value) const;
 
-    String toString () const;
+    [[nodiscard]] juce::String toString () const;
 
-    void addParameter (const String & name, const var & value);
+    void addParameter (const juce::String & name, const juce::var & value);
 
 private:
-    String _name;
-    std::map<String, var> _parameters;
+    juce::String _name;
+    std::map<juce::String, juce::var> _parameters;
 };
 
-}
 }

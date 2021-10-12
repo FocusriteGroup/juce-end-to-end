@@ -1,48 +1,42 @@
 #include "Event.h"
 
-#include <ampify/utils/json/JsonDocument.h>
-#include <ampify/utils/json/JsonElement.h>
-
-namespace ampify
+namespace ampify::e2e_testing
 {
-namespace testing
-{
-Event::Event (String name)
-    : _name (name)
+Event::Event (juce::String name)
+    : _name (std::move (name))
 {
 }
 
-Event Event::withParameter (const String & name, const String & value) const
+Event Event::withParameter (const juce::String & name, const juce::String & value) const
 {
     Event other (*this);
     other.addParameter (name, value);
     return other;
 }
 
-String Event::toString () const
+juce::String Event::toString () const
 {
-    JsonElement rootElement;
+    auto root = std::make_unique<juce::DynamicObject> ();
 
-    rootElement.setStringAttribute ("type", "event");
-    rootElement.setStringAttribute ("name", _name);
+    root->setProperty ("type", "event");
+    root->setProperty ("name", _name);
 
     if (! _parameters.empty ())
     {
-        auto * dataElement = new DynamicObject;
+        auto data = std::make_unique<juce::DynamicObject> ();
 
-        for (auto & parameter : _parameters)
-            dataElement->setProperty (parameter.first, parameter.second);
+        for (auto & [name, value] : _parameters)
+            data->setProperty (name, value);
 
-        rootElement.setChildElement ("data", JsonElement (var (dataElement)));
+        root->setProperty ("data", data.release ());
     }
 
-    return JsonDocument (rootElement).toString ();
+    return juce::JSON::toString (root.release ());
 }
 
-void Event::addParameter (const String & name, const var & value)
+void Event::addParameter (const juce::String & name, const juce::var & value)
 {
     _parameters [name] = value;
 }
 
-}
 }

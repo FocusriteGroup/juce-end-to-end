@@ -1,10 +1,8 @@
 #pragma once
 
-#include <juce/JuceCore.h>
+#include <juce_core/juce_core.h>
 
-namespace ampify
-{
-namespace testing
+namespace ampify::e2e_testing
 {
 class Command
 {
@@ -50,20 +48,19 @@ public:
         registerForEvents,
     };
 
-    static Command fromString (const String & string);
+    static Command fromString (const juce::String & string);
 
     [[nodiscard]] bool isValid () const;
 
     [[nodiscard]] Type getType () const;
-    [[nodiscard]] Uuid getUuid () const;
-    [[nodiscard]] String getArgument (const String & argument) const;
-    [[nodiscard]] var getArgumentAsVar (const String & argument) const;
+    [[nodiscard]] juce::Uuid getUuid () const;
+    [[nodiscard]] juce::String getArgument (const juce::String & argument) const;
+    [[nodiscard]] juce::var getArgumentAsVar (const juce::String & argument) const;
 
 private:
     Type _type = Type::undefined;
-    Uuid _uuid = Uuid::null ();
-    var _args;
+    juce::Uuid _uuid = juce::Uuid::null ();
+    juce::var _args;
 };
 
-}
 }

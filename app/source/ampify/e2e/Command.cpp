@@ -1,15 +1,12 @@
 #include "Command.h"
 
-#include <ampify/utils/json/JsonDocument.h>
-#include <ampify/utils/json/JsonElement.h>
-
 namespace
 {
-ampify::testing::Command::Type typeFromString (const String & string)
+ampify::e2e_testing::Command::Type typeFromString (const juce::String & string)
 {
-    using Type = ampify::testing::Command::Type;
+    using Type = ampify::e2e_testing::Command::Type;
 
-    static const std::map<String, Type> table = {
+    static const std::map<juce::String, Type> table = {
         {"click-component", Type::clickComponent},
         {"key-press", Type::keyPress},
         {"open-project", Type::openProject},
@@ -42,53 +39,51 @@ ampify::testing::Command::Type typeFromString (const String & string)
 
 }
 
-namespace ampify::testing
+namespace ampify::e2e_testing
 {
 Command::Type Command::getType () const
 {
     return _type;
 }
 
-Uuid Command::getUuid () const
+juce::Uuid Command::getUuid () const
 {
     return _uuid;
 }
 
-Command Command::fromString (const String & string)
+Command Command::fromString (const juce::String & string)
 {
-    JsonDocument document (string);
+    juce::var root;
 
-    if (! document.parsedCorrectly ())
-        return Command ();
-
-    auto root = document.getDocumentElement ();
+    if (! juce::JSON::parse (string))
+        return {};
 
     Command command;
 
-    command._uuid = Uuid (root.getStringAttribute ("uuid"));
+    command._uuid = juce::Uuid (root.getProperty ("uuid", {}));
 
-    command._type = typeFromString (root.getStringAttribute ("type"));
+    command._type = typeFromString (root.getProperty ("type", {}));
     if (command._type == Type::undefined)
-        return Command ();
+        return {};
 
-    command._args = root.getElement ().getProperty ("args", var ());
+    command._args = root.getProperty ("args", {});
 
     return command;
 }
 
 bool Command::isValid () const
 {
-    return _type != Type::undefined && _uuid != Uuid::null ();
+    return _type != Type::undefined && ! _uuid.isNull ();
 }
 
-String Command::getArgument (const String & argument) const
+juce::String Command::getArgument (const juce::String & argument) const
 {
-    return _args.getProperty (argument, var ()).toString ();
+    return _args.getProperty (argument, {}).toString ();
 }
 
-var Command::getArgumentAsVar (const String & argument) const
+juce::var Command::getArgumentAsVar (const juce::String & argument) const
 {
-    return _args.getProperty (argument, var ());
+    return _args.getProperty (argument, {});
 }
 
 }

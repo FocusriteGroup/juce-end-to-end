@@ -1,5 +1,7 @@
 #include "Connection.h"
 
+#include <juce_events/juce_events.h>
+
 #if JUCE_MAC
     #include <sys/socket.h>
     #include <sys/types.h>
@@ -19,7 +21,7 @@ struct Header
 
 static_assert (sizeof (Header) == 2 * sizeof (uint32_t), "Expecting header to be 8 bytes");
 
-bool writeBytesToSocket (StreamingSocket & socket, const void * data, int numBytes)
+bool writeBytesToSocket (juce::StreamingSocket & socket, const void * data, int numBytes)
 {
     while (numBytes > 0)
     {
@@ -36,9 +38,7 @@ bool writeBytesToSocket (StreamingSocket & socket, const void * data, int numByt
 
 }
 
-namespace ampify
-{
-namespace testing
+namespace ampify::e2e_testing
 {
 Connection::Connection (int port)
     : Thread ("Test fixture connection")
@@ -74,7 +74,7 @@ void Connection::run ()
     if (! connected)
         return;
 
-    Logger::writeToLog ("Connected to test fixture");
+    juce::Logger::writeToLog ("Connected to test fixture");
 
     try
     {
@@ -90,17 +90,17 @@ void Connection::run ()
                 break;
             }
 
-            header.magic = ByteOrder::swapIfBigEndian (header.magic);
-            header.size = ByteOrder::swapIfBigEndian (header.size);
+            header.magic = juce::ByteOrder::swapIfBigEndian (header.magic);
+            header.size = juce::ByteOrder::swapIfBigEndian (header.size);
 
-            if (header.magic != header.magicNumber)
+            if (header.magic != Header::magicNumber)
             {
                 socketError ();
                 break;
             }
 
-            MemoryBlock block (header.size);
-            auto bytesRead = _socket.read (block.getData (), header.size, true);
+            juce::MemoryBlock block (header.size);
+            auto bytesRead = _socket.read (block.getData (), int (header.size), true);
             if (bytesRead != int (header.size))
             {
                 socketError ();
@@ -112,17 +112,17 @@ void Connection::run ()
     }
     catch (...)
     {
-        Logger::outputDebugString ("Connection threw exception...");
+        juce::Logger::outputDebugString ("Connection threw exception...");
     }
 }
 
-void Connection::send (MemoryBlock data)
+void Connection::send (const juce::MemoryBlock & data)
 {
     jassert (isConnected ());
 
     Header header;
-    header.magic = ByteOrder::swapIfBigEndian (header.magicNumber);
-    header.size = ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()));
+    header.magic = juce::ByteOrder::swapIfBigEndian (Header::magicNumber);
+    header.size = juce::ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()));
 
     if (! writeBytesToSocket (_socket, &header, sizeof (header)))
     {
@@ -145,19 +145,19 @@ void Connection::socketError ()
         _socket.close ();
 }
 
-void Connection::notifyData (MemoryBlock data)
+void Connection::notifyData (const juce::MemoryBlock & data)
 {
     std::weak_ptr<Connection> self = shared_from_this ();
-    MessageManager::callAsync (
-        [self, dataBlock = std::move (data)]
+    juce::MessageManager::callAsync (
+        [self, data]
         {
             if (auto connection = self.lock ())
             {
                 if (connection->_onDataReceived)
-                    connection->_onDataReceived (dataBlock);
+                    connection->_onDataReceived (data);
             }
         });
 }
 
 }
-}
+

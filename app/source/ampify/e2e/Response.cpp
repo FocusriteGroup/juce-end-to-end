@@ -1,55 +1,46 @@
 #include "Response.h"
 
-#include <ampify/utils/json/JsonDocument.h>
-#include <ampify/utils/json/JsonElement.h>
-
-namespace ampify
+namespace ampify::e2e_testing
 {
-namespace testing
-{
-Response::Response (Uuid uuid, Result result)
+Response::Response (const juce::Uuid & uuid, const juce::Result & result)
     : _uuid (uuid)
     , _result (result)
 {
 }
 
-Response Response::withParameter (String name, String value) const
+Response Response::withParameter (const juce::String & name, const juce::String & value) const
 {
     Response other (*this);
     other.addParameter (name, value);
     return other;
 }
 
-String Response::toString ()
+juce::String Response::toString ()
 {
-    JsonElement rootElement;
-
-    rootElement.setStringAttribute ("type", "response");
-    rootElement.setStringAttribute ("uuid", _uuid.toDashedString ());
-    rootElement.setBoolAttribute ("success", _result.wasOk ());
+    auto element = std::make_unique<juce::DynamicObject> ();
+    element->setProperty ("type", "response");
+    element->setProperty ("uuid", _uuid.toDashedString ());
+    element->setProperty ("success", _result.wasOk ());
 
     if (! _result)
-        rootElement.setStringAttribute ("error", _result.getErrorMessage ());
+        element->setProperty ("error", _result.getErrorMessage ());
 
-    auto keys = _parameters.getAllKeys ();
-
-    if (keys.size () > 0)
+    if (! _parameters.empty ())
     {
-        auto * dataElement = new DynamicObject;
+        auto data = std::make_unique<juce::DynamicObject> ();
 
-        for (auto & key : keys)
-            dataElement->setProperty (key, _parameters [key]);
+        for (auto & [key, value] : _parameters)
+            data->setProperty (key, value);
 
-        rootElement.setChildElement ("data", JsonElement (var (dataElement)));
+        element->setProperty ("data", data.release ());
     }
 
-    return JsonDocument (rootElement).toString ();
+    return juce::JSON::toString (element.release ());
 }
 
-void Response::addParameter (String name, String value)
+void Response::addParameter (const juce::String & name, const juce::String & value)
 {
-    _parameters.set (name, value);
+    _parameters [name] = value;
 }
 
-}
 }

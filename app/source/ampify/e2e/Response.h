@@ -1,28 +1,25 @@
 #pragma once
 
-#include <juce/JuceCore.h>
+#include <juce_core/juce_core.h>
 
-namespace ampify
-{
-namespace testing
+namespace ampify::e2e_testing
 {
 class Response
 {
 public:
-    Response (Uuid uuid, Result result);
+    Response (const juce::Uuid & uuid, const juce::Result & result);
     ~Response () = default;
 
-    Response withParameter (String name, String value) const;
+    [[nodiscard]] Response withParameter (const juce::String & name, const juce::String & value) const;
 
-    String toString ();
+    juce::String toString ();
 
-    void addParameter (String name, String value);
+    void addParameter (const juce::String & name, const juce::String & value);
 
 private:
-    Uuid _uuid;
-    Result _result;
-    StringPairArray _parameters;
+    juce::Uuid _uuid;
+    juce::Result _result;
+    std::map<juce::String, juce::String> _parameters;
 };
 
-}
 }

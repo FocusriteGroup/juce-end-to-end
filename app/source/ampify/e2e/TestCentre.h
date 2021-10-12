@@ -5,31 +5,25 @@
 #include "Event.h"
 #include "Response.h"
 
-namespace ampify
-{
-namespace testing
+namespace ampify::e2e_testing
 {
 class TestCentre
 {
 public:
-    TestCentre (int port);
+    explicit TestCentre (int port);
     ~TestCentre ();
 
     using CommandHandler = std::function<Response (Command command)>;
 
-    void setCommandHandler (CommandHandler handler);
-    void sendEvent (Event event);
+    void addCommandHandler (CommandHandler handler);
+    void sendEvent (const Event & event);
 
 private:
-    TestCentre (const TestCentre &) = delete;
-    TestCentre (TestCentre &&) = delete;
-    TestCentre & operator= (const TestCentre & other) = delete;
-
-    void send (const String & data);
+    void send (const juce::String & data);
 
     CommandHandler _commandHandler = nullptr;
+    std::vector<CommandHandler> _commandHandlers;
     std::shared_ptr<Connection> _connection;
 };
 
-}
 }
