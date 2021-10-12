@@ -224,3 +224,4 @@ cmake-build-release
 build/*/vendor
 dependencies.dot
 dependencies.png
+build
