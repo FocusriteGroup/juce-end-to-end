@@ -1,6 +1,6 @@
 #include "Event.h"
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 Event::Event (juce::String name)
     : _name (std::move (name))

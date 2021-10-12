@@ -5,7 +5,7 @@
 #include "Event.h"
 #include "Response.h"
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 class TestCentre
 {

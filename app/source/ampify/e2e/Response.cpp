@@ -1,6 +1,6 @@
 #include "Response.h"
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 Response::Response (const juce::Uuid & uuid, const juce::Result & result)
     : _uuid (uuid)

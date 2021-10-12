@@ -13,4 +13,12 @@ add_library (
 
 target_link_libraries (ampify-e2e PUBLIC juce_core juce_events)
 
+target_include_directories(ampify-e2e PUBLIC source)
+
 set_target_properties (ampify-e2e PROPERTIES CXX_STANDARD 17)
+
+if (APPLE)
+  target_compile_options(ampify-e2e PRIVATE -Wall -Wextra -Werror)
+elseif(WIN32)
+  target_compile_options(ampify-e2e PRIVATE /W4 /WX)
+endif()

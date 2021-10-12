@@ -38,7 +38,7 @@ bool writeBytesToSocket (juce::StreamingSocket & socket, const void * data, int 
 
 }
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 Connection::Connection (int port)
     : Thread ("Test fixture connection")
@@ -107,7 +107,7 @@ void Connection::run ()
                 break;
             }
 
-            notifyData (std::move (block));
+            notifyData (block);
         }
     }
     catch (...)
@@ -160,4 +160,3 @@ void Connection::notifyData (const juce::MemoryBlock & data)
 }
 
 }
-

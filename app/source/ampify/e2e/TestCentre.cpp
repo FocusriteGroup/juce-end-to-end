@@ -2,7 +2,7 @@
 
 #include <juce_events/juce_events.h>
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 TestCentre::TestCentre (int port)
     : _connection (std::make_shared<Connection> (port))

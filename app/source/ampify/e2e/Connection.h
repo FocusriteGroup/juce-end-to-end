@@ -4,7 +4,7 @@
 #include <juce_core/juce_core.h>
 #include <mutex>
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 
 class Connection

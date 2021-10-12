@@ -2,7 +2,7 @@
 
 #include <juce_core/juce_core.h>
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 class Response
 {

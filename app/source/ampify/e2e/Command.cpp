@@ -2,9 +2,9 @@
 
 namespace
 {
-ampify::e2e_testing::Command::Type typeFromString (const juce::String & string)
+ampify::e2e::Command::Type typeFromString (const juce::String & string)
 {
-    using Type = ampify::e2e_testing::Command::Type;
+    using Type = ampify::e2e::Command::Type;
 
     static const std::map<juce::String, Type> table = {
         {"click-component", Type::clickComponent},
@@ -39,7 +39,7 @@ ampify::e2e_testing::Command::Type typeFromString (const juce::String & string)
 
 }
 
-namespace ampify::e2e_testing
+namespace ampify::e2e
 {
 Command::Type Command::getType () const
 {
