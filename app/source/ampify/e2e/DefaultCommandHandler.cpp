@@ -215,11 +215,6 @@ juce::Component * findComponentWithId (const juce::String & componentId, int ski
     return findComponent (matchComponentWithId (componentId), skip);
 }
 
-juce::Component * findClickableComponent (const juce::String & componentId, int skip)
-{
-    return findComponent (matchComponentWithId (componentId), skip);
-}
-
 void handleButtonClick (juce::Button & button)
 {
     if (button.onClick != nullptr)
@@ -269,7 +264,7 @@ Response handleClickComponent (const Command & command)
 
     auto skip = command.getArgument ("skip").getIntValue ();
 
-    auto component = findClickableComponent (componentId, skip);
+    auto component = findComponentWithId (componentId, skip);
     if (component == nullptr)
         return Response::fail ("Component not found: " + juce::String (componentId));
 
