@@ -11,13 +11,11 @@ public:
 
         incrementButton.onClick = [this] { increment (); };
         decrementButton.onClick = [this] { decrement (); };
-        enableButton.onClick = [this] { enableControls (); };
-        disableButton.onClick = [this] { disableControls (); };
+        enableButton.onClick = [this] { toggleEnableButton (); };
 
         addAndMakeVisible (incrementButton);
         addAndMakeVisible (decrementButton);
         addAndMakeVisible (enableButton);
-        addAndMakeVisible (disableButton);
         addAndMakeVisible (valueLabel);
 
         valueLabel.setJustificationType (juce::Justification::centred);
@@ -37,8 +35,7 @@ public:
         flexBox.items = {
             juce::FlexItem (enableButton).withHeight (rowHeight),
             spacer,
-            juce::FlexItem (disableButton).withHeight (rowHeight),
-            spacer,
+
             juce::FlexItem (incrementButton).withHeight (rowHeight),
             spacer,
             juce::FlexItem (decrementButton).withHeight (rowHeight),
@@ -60,18 +57,6 @@ private:
         setValue (value - 1);
     }
 
-    void disableControls ()
-    {
-        incrementButton.setEnabled (false);
-        decrementButton.setEnabled (false);
-    }
-
-    void enableControls ()
-    {
-        incrementButton.setEnabled (true);
-        decrementButton.setEnabled (true);
-    }
-
     void setValue (int newValue)
     {
         if (newValue != value)
@@ -86,10 +71,17 @@ private:
         valueLabel.setText (juce::String (value), juce::dontSendNotification);
     }
 
+    void toggleEnableButton ()
+    {
+        bool willEnable = ! incrementButton.isEnabled ();
+        incrementButton.setEnabled (willEnable);
+        decrementButton.setEnabled (willEnable);
+        enableButton.setButtonText (incrementButton.isEnabled () ? "Disable" : "Enable");
+    }
+
     int value = 0;
     juce::TextButton incrementButton {"Increment"};
     juce::TextButton decrementButton {"Decrement"};
-    juce::TextButton disableButton {"Disable"};
-    juce::TextButton enableButton {"Enable"};
+    juce::TextButton enableButton {"Disable"};
     juce::Label valueLabel;
 };
