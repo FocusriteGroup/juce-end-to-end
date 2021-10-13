@@ -14,7 +14,7 @@ public:
 
     [[nodiscard]] Event withParameter (const juce::String & name, const juce::String & value) const;
 
-    [[nodiscard]] juce::String toString () const;
+    [[nodiscard]] juce::String toJson () const;
 
     void addParameter (const juce::String & name, const juce::var & value);
 

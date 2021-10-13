@@ -2,6 +2,7 @@
 
 #include "Command.h"
 #include "DefaultCommandHandler.h"
+#include "Event.h"
 
 #include <juce_events/juce_events.h>
 
@@ -31,7 +32,7 @@ TestCentre::TestCentre ()
 
     addCommandHandler (std::make_shared<DefaultCommandHandler> ());
 
-    _connection = std::make_shared<Connection> (*port);
+    _connection = Connection::create (*port);
     _connection->_onDataReceived = [this] (auto && block) { onDataReceived (block); };
     _connection->start ();
 }
@@ -43,7 +44,7 @@ void TestCentre::addCommandHandler (std::shared_ptr<CommandHandler> handler)
 
 void TestCentre::sendEvent (const Event & event)
 {
-    send (event.toString ());
+    send (event.toJson ());
 }
 
 void TestCentre::send (const juce::String & data)
@@ -54,7 +55,7 @@ void TestCentre::send (const juce::String & data)
 
 void TestCentre::onDataReceived (const juce::MemoryBlock & data)
 {
-    auto command = Command::fromString (data.toString ());
+    auto command = Command::fromJson (data.toString ());
     if (! command.isValid ())
         return;
 
@@ -66,7 +67,7 @@ void TestCentre::onDataReceived (const juce::MemoryBlock & data)
         if (! response)
             continue;
 
-        send (response->withUuid (command.getUuid ()).toString ());
+        send (response->withUuid (command.getUuid ()).toJson ());
         responded = true;
 
         if (command.getType () == "quit")
@@ -76,7 +77,7 @@ void TestCentre::onDataReceived (const juce::MemoryBlock & data)
     }
 
     if (! responded)
-        send (Response::fail ("Unhandled message").withUuid (command.getUuid ()).toString ());
+        send (Response::fail ("Unhandled message").withUuid (command.getUuid ()).toJson ());
 }
 
 }

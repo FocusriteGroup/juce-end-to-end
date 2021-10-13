@@ -7,7 +7,7 @@ namespace ampify::e2e
 class Command
 {
 public:
-    static Command fromString (const juce::String & string);
+    static Command fromJson (const juce::String & json);
 
     [[nodiscard]] bool isValid () const;
 

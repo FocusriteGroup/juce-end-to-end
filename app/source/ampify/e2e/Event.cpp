@@ -14,7 +14,7 @@ Event Event::withParameter (const juce::String & name, const juce::String & valu
     return other;
 }
 
-juce::String Event::toString () const
+juce::String Event::toJson () const
 {
     auto root = std::make_unique<juce::DynamicObject> ();
 

@@ -12,9 +12,9 @@ juce::Uuid Command::getUuid () const
     return _uuid;
 }
 
-Command Command::fromString (const juce::String & string)
+Command Command::fromJson (const juce::String & json)
 {
-    const auto root = juce::JSON::parse (string);
+    const auto root = juce::JSON::parse (json);
     return root == juce::var () ? Command ()
                                 : Command (root.getProperty ("type", {}),
                                            juce::Uuid (root.getProperty ("uuid", {})),

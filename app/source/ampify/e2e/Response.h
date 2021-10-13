@@ -16,7 +16,7 @@ public:
                                           const juce::String & value) const;
     [[nodiscard]] Response withUuid (const juce::Uuid & uuid) const;
 
-    juce::String toString ();
+    [[nodiscard]] juce::String toJson () const;
 
     void addParameter (const juce::String & name, const juce::String & value);
 

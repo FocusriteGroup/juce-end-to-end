@@ -1,20 +1,18 @@
 #pragma once
 
-#include "Command.h"
 #include "CommandHandler.h"
 #include "Connection.h"
-#include "Event.h"
-#include "Response.h"
 
 #include <memory>
 #include <optional>
 
 namespace ampify::e2e
 {
+class Event;
 class TestCentre
 {
 public:
-    explicit TestCentre ();
+    TestCentre ();
     ~TestCentre () = default;
 
     void addCommandHandler (std::shared_ptr<CommandHandler> handler);

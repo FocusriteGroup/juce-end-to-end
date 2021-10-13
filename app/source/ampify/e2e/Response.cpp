@@ -24,14 +24,14 @@ Response Response::withParameter (const juce::String & name, const juce::String 
     return other;
 }
 
-[[nodiscard]] Response Response::withUuid (const juce::Uuid & uuid) const
+Response Response::withUuid (const juce::Uuid & uuid) const
 {
     Response other (*this);
     other._uuid = uuid;
     return other;
 }
 
-juce::String Response::toString ()
+juce::String Response::toJson () const
 {
     auto element = std::make_unique<juce::DynamicObject> ();
     element->setProperty ("type", "response");

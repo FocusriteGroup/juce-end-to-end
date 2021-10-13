@@ -39,6 +39,11 @@ bool writeBytesToSocket (juce::StreamingSocket & socket, const void * data, int 
 
 namespace ampify::e2e
 {
+std::shared_ptr<Connection> Connection::create (int port)
+{
+    return std::shared_ptr<Connection> (new Connection (port));
+}
+
 Connection::Connection (int port)
     : Thread ("Test fixture connection")
     , _port (port)
@@ -47,8 +52,7 @@ Connection::Connection (int port)
 
 Connection::~Connection ()
 {
-    if (_socket.isConnected ())
-        _socket.close ();
+    closeSocket ();
 
     constexpr int timeoutMs = 1000;
     stopThread (timeoutMs);
@@ -61,19 +65,12 @@ void Connection::start ()
 
 void Connection::run ()
 {
-#if JUCE_MAC
-    // Stop socket errors from triggering a SIGPIPE signal
-    auto socketFd = _socket.getRawSocketHandle ();
-    const int set = 1;
-    setsockopt (socketFd, SOL_SOCKET, SO_NOSIGPIPE, (void *) &set, sizeof (int));
-#endif
+    preventSigPipeExceptions ();
 
-    bool connected = _socket.connect ("localhost", _port);
+    const auto connected = _socket.connect ("localhost", _port);
 
     if (! connected)
         return;
-
-    juce::Logger::writeToLog ("Connected to test fixture");
 
     try
     {
@@ -85,7 +82,7 @@ void Connection::run ()
 
             if (headerBytesRead != sizeof (header))
             {
-                socketError ();
+                closeSocket ();
                 break;
             }
 
@@ -94,7 +91,7 @@ void Connection::run ()
 
             if (header.magic != Header::magicNumber)
             {
-                socketError ();
+                closeSocket ();
                 break;
             }
 
@@ -102,7 +99,7 @@ void Connection::run ()
             auto bytesRead = _socket.read (block.getData (), int (header.size), true);
             if (bytesRead != int (header.size))
             {
-                socketError ();
+                closeSocket ();
                 break;
             }
 
@@ -111,7 +108,6 @@ void Connection::run ()
     }
     catch (...)
     {
-        juce::Logger::outputDebugString ("Connection threw exception...");
     }
 }
 
@@ -119,18 +115,17 @@ void Connection::send (const juce::MemoryBlock & data)
 {
     jassert (isConnected ());
 
-    Header header;
-    header.magic = juce::ByteOrder::swapIfBigEndian (Header::magicNumber);
-    header.size = juce::ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()));
+    Header header {juce::ByteOrder::swapIfBigEndian (Header::magicNumber),
+                   juce::ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()))};
 
     if (! writeBytesToSocket (_socket, &header, sizeof (header)))
     {
-        socketError ();
+        closeSocket ();
         return;
     }
 
     if (! writeBytesToSocket (_socket, data.getData (), int (data.getSize ())))
-        socketError ();
+        closeSocket ();
 }
 
 bool Connection::isConnected () const
@@ -138,7 +133,7 @@ bool Connection::isConnected () const
     return _socket.isConnected ();
 }
 
-void Connection::socketError ()
+void Connection::closeSocket ()
 {
     if (_socket.isConnected ())
         _socket.close ();
@@ -153,6 +148,16 @@ void Connection::notifyData (const juce::MemoryBlock & data)
                 if (connection->_onDataReceived)
                     connection->_onDataReceived (data);
         });
+}
+
+void Connection::preventSigPipeExceptions ()
+{
+#if JUCE_MAC
+    // Stop socket errors from triggering a SIGPIPE signal
+    auto socketFd = _socket.getRawSocketHandle ();
+    const int set = 1;
+    setsockopt (socketFd, SOL_SOCKET, SO_NOSIGPIPE, (void *) &set, sizeof (int));
+#endif
 }
 
 }

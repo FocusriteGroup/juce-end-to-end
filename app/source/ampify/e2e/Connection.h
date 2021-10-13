@@ -1,18 +1,16 @@
 #pragma once
 
-#include <array>
 #include <juce_core/juce_core.h>
-#include <mutex>
 
 namespace ampify::e2e
 {
-
 class Connection
     : private juce::Thread
     , public std::enable_shared_from_this<Connection>
 {
 public:
-    explicit Connection (int port);
+    static std::shared_ptr<Connection> create (int port);
+
     ~Connection () override;
 
     Connection (const Connection &) = delete;
@@ -23,17 +21,19 @@ public:
 
     void start ();
     void send (const juce::MemoryBlock & data);
-    bool isConnected () const;
+    [[nodiscard]] bool isConnected () const;
 
 private:
-    int _port = 0;
-    juce::StreamingSocket _socket;
+    explicit Connection (int port);
 
     void run () override;
 
-    void socketError ();
+    void closeSocket ();
+    void preventSigPipeExceptions ();
     void notifyData (const juce::MemoryBlock & data);
+
+    int _port = 0;
+    juce::StreamingSocket _socket;
 };
 
 }
-
