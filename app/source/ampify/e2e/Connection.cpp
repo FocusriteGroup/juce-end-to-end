@@ -146,15 +146,12 @@ void Connection::socketError ()
 
 void Connection::notifyData (const juce::MemoryBlock & data)
 {
-    std::weak_ptr<Connection> self = shared_from_this ();
     juce::MessageManager::callAsync (
-        [self, data]
+        [weakSelf = weak_from_this (), data]
         {
-            if (auto connection = self.lock ())
-            {
+            if (auto connection = weakSelf.lock ())
                 if (connection->_onDataReceived)
                     connection->_onDataReceived (data);
-            }
         });
 }
 
