@@ -41,8 +41,10 @@ target_compile_definitions (ampify-e2e
 
 if (APPLE)
   target_compile_options (ampify-e2e PRIVATE -Wall -Wextra -Werror)
-
   set_target_properties (ampify-e2e PROPERTIES OSX_ARCHITECTURES "arm64;x86_64")
-elseif (WIN32)
+endif()
+
+if (WIN32)
   target_compile_options (ampify-e2e PRIVATE /W4 /WX)
+  target_compile_options (ampify-e2e PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
 endif ()
