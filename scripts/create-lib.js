@@ -87,7 +87,7 @@ const copyCmakeConfig = (sourceDir, cmakeDir) => {
 const createArchive = (installDir) => {
   const outputName = `ampify-e2e-${currentPlatform()}.tar.gz`;
   const outputPath = path.join(installDir, outputName);
-  execSync(`tar -czvf "${outputPath}" *`, {cwd: installDir});
+  execSync(`tar -czvf ${outputName} include/ lib/`, {cwd: installDir});
 };
 
 const createInstallation = (sourceDir, buildDir) => {
