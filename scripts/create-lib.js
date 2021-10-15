@@ -3,8 +3,15 @@ const fs = require('fs');
 const {execSync} = require('child_process');
 const glob = require('glob');
 
-const skipClean = process.env.SKIP_CLEAN || false;
-const generator = process.env.GENERATOR || 'Ninja Multi-Config';
+const currentPlatform = () =>
+  process.platform === 'darwin' ? 'macos' : 'windows';
+
+const isMac = () => currentPlatform() === 'macos';
+
+const skipClean = process.env.SKIP_CLEAN || true;
+const generator =
+  process.env.GENERATOR ||
+  (isMac() ? 'Ninja Multi-Config' : 'Visual Studio 16 2019');
 
 const removeDirectory = (path) => {
   if (fs.existsSync(path)) {
@@ -40,19 +47,14 @@ const build = (buildDir, configuration) => {
 };
 
 const libraryFilename = (configuration) => {
-  const extension = process.platform === 'darwin' ? 'a' : '.lib';
+  const extension = isMac() ? 'a' : 'lib';
   const postFix = configuration === 'Debug' ? 'd' : '';
-  return `libampify-e2e${postFix}.${extension}`;
+  const prefix = isMac() ? 'lib' : '';
+  return `${prefix}ampify-e2e${postFix}.${extension}`;
 };
 
-const libraryPath = (buildDir, configuration) => {
-  return path.join(
-    buildDir,
-    'app',
-    configuration,
-    libraryFilename(configuration)
-  );
-};
+const libraryPath = (buildDir, configuration) =>
+  path.join(buildDir, 'app', configuration, libraryFilename(configuration));
 
 const copyLibrary = (configuration, buildDir, libDir) => {
   fs.copyFileSync(
@@ -83,10 +85,9 @@ const copyCmakeConfig = (sourceDir, cmakeDir) => {
 };
 
 const createArchive = (installDir) => {
-  const platform = process.platform === 'darwin' ? 'macos' : 'windows';
-  const outputName = `ampify-e2e-${platform}.zip`;
+  const outputName = `ampify-e2e-${currentPlatform()}.tar.gz`;
   const outputPath = path.join(installDir, outputName);
-  execSync(`zip -r ${outputPath} *`, {cwd: installDir});
+  execSync(`tar -czvf "${outputPath}" "${installDir}"`);
 };
 
 const createInstallation = (sourceDir, buildDir) => {
