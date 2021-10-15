@@ -1,4 +1,4 @@
-#include "Command.h"
+#include <ampify/e2e/Command.h>
 
 namespace ampify::e2e
 {

@@ -1,10 +1,10 @@
 #include "DefaultCommandHandler.h"
 
-#include "ClickableComponent.h"
-#include "Command.h"
-#include "ComponentSearch.h"
 #include "KeyPress.h"
 
+#include <ampify/e2e/ClickableComponent.h>
+#include <ampify/e2e/Command.h>
+#include <ampify/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace ampify::e2e

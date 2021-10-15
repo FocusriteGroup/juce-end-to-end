@@ -1,4 +1,4 @@
-#include "ComponentSearch.h"
+#include <ampify/e2e/ComponentSearch.h>
 
 namespace ampify::e2e
 {
