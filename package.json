@@ -21,10 +21,9 @@
     "url": "https://github.com/Focusrite-Novation/juce-end-to-end/issues"
   },
   "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
-  "dependencies": {
-    "@focusrite-novation/ampify-prettier-config": "^1.1.14"
-  },
+  "dependencies": {},
   "devDependencies": {
+    "@focusrite-novation/ampify-prettier-config": "^1.1.14",
     "glob": "^7.2.0"
   }
 }
