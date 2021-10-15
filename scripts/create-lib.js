@@ -82,6 +82,13 @@ const copyCmakeConfig = (sourceDir, cmakeDir) => {
   fs.copyFileSync(sourceFile, destFile);
 };
 
+const createArchive = (installDir) => {
+  const platform = process.platform === 'darwin' ? 'macos' : 'windows';
+  const outputName = `ampify-e2e-${platform}.zip`;
+  const outputPath = path.join(installDir, outputName);
+  execSync(`zip -r ${outputPath} *`, {cwd: installDir});
+};
+
 const createInstallation = (sourceDir, buildDir) => {
   const installDir = path.join(buildDir, 'installation');
   const includeDir = path.join(installDir, 'include');
@@ -98,6 +105,7 @@ const createInstallation = (sourceDir, buildDir) => {
   copyLibrary('Release', buildDir, libDir);
   copyHeaders(sourceDir, includeDir);
   copyCmakeConfig(sourceDir, cmakeDir);
+  createArchive(installDir);
 };
 
 const main = () => {
