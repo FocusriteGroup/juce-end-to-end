@@ -10,7 +10,14 @@ class Event;
 class TestCentre
 {
 public:
-    static std::unique_ptr<TestCentre> create ();
+    enum class LogLevel
+    {
+        silent,
+        verbose,
+    };
+
+    static std::unique_ptr<TestCentre> create (LogLevel logLevel = LogLevel::silent);
+
 
     virtual ~TestCentre () = default;
 

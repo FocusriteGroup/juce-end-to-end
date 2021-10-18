@@ -35,9 +35,12 @@ const createBuildFolder = (buildDir) => {
 };
 
 const generateBuildSystem = (sourceDir, buildDir) => {
-  execSync(`cmake -G "${generator}" -S "${sourceDir}" -B "${buildDir}"`, {
-    stdio: 'inherit',
-  });
+  execSync(
+    `cmake -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${sourceDir}" -B "${buildDir}"`,
+    {
+      stdio: 'inherit',
+    }
+  );
 };
 
 const build = (buildDir, configuration) => {
@@ -86,7 +89,6 @@ const copyCmakeConfig = (sourceDir, cmakeDir) => {
 
 const createArchive = (installDir) => {
   const outputName = `ampify-e2e-${currentPlatform()}.tar.gz`;
-  const outputPath = path.join(installDir, outputName);
   execSync(`tar -czvf ${outputName} include/ lib/`, {cwd: installDir});
 };
 

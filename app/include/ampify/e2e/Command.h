@@ -15,6 +15,9 @@ public:
     [[nodiscard]] juce::Uuid getUuid () const;
     [[nodiscard]] juce::String getArgument (const juce::String & argument) const;
     [[nodiscard]] juce::var getArgumentAsVar (const juce::String & argument) const;
+    [[nodiscard]] juce::var getArgs () const;
+
+    [[nodiscard]] juce::String describe () const;
 
 private:
     Command () = default;

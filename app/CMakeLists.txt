@@ -20,6 +20,8 @@ add_library (
   source/TestCentre.cpp
 )
 
+add_library(ampify-e2e::ampify-e2e ALIAS ampify-e2e)
+
 target_include_directories (ampify-e2e PUBLIC include)
 
 set (JUCE_MODULES juce_core juce_events)
@@ -28,7 +30,6 @@ foreach (JUCE_MODULE ${JUCE_MODULES})
   get_target_property (MODULE_INCLUDES ${JUCE_MODULE}
                        INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories (ampify-e2e PUBLIC ${MODULE_INCLUDES})
-  message ("Adding include directories: ${MODULE_INCLUDES}")
 endforeach ()
 
 target_include_directories (ampify-e2e PRIVATE ${juce_SOURCE_DIR}/modules)
@@ -44,7 +45,10 @@ if (APPLE)
   set_target_properties (ampify-e2e PROPERTIES OSX_ARCHITECTURES "arm64;x86_64")
 endif()
 
-if (WIN32)
+if (MSVC)
   target_compile_options (ampify-e2e PRIVATE /W4 /WX)
   target_compile_options (ampify-e2e PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
 endif ()
+
+get_target_property(AMPIFY_E2E_SOURCES ampify-e2e SOURCES)
+source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${AMPIFY_E2E_SOURCES})

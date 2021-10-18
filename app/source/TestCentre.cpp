@@ -27,7 +27,8 @@ std::optional<int> getPort ()
 class E2ETestCentre final : public TestCentre
 {
 public:
-    E2ETestCentre ()
+    E2ETestCentre (LogLevel logLevel)
+        : _logLevel (logLevel)
     {
         auto port = getPort ();
         if (! port)
@@ -74,6 +75,8 @@ private:
         if (! command.isValid ())
             return;
 
+        logCommand (command);
+
         bool responded = false;
 
         for (auto & commandHandler : _commandHandlers)
@@ -82,27 +85,46 @@ private:
             if (! response)
                 continue;
 
+            logResponse (*response);
             send (response->withUuid (command.getUuid ()).toJson ());
             responded = true;
 
             if (command.getType () == "quit")
                 juce::JUCEApplicationBase::quit ();
-
-            break;
         }
 
         if (! responded)
             send (Response::fail ("Unhandled message").withUuid (command.getUuid ()).toJson ());
     }
 
+    void logCommand (const Command & command)
+    {
+        if (_logLevel == LogLevel::silent)
+            return;
+
+        juce::Logger::writeToLog ("Received command: ");
+        juce::Logger::writeToLog (command.describe ());
+    }
+
+    void logResponse (const Response & response)
+    {
+        if (_logLevel == LogLevel::silent)
+            return;
+
+        juce::Logger::writeToLog ("Sending response: ");
+        juce::Logger::writeToLog (response.describe ());
+    }
+
+    const LogLevel _logLevel;
+
     DefaultCommandHandler _defaultCommandHandler;
     std::vector<std::reference_wrapper<CommandHandler>> _commandHandlers;
     std::shared_ptr<Connection> _connection;
 };
 
-std::unique_ptr<TestCentre> TestCentre::create ()
+std::unique_ptr<TestCentre> TestCentre::create (LogLevel logLevel)
 {
-    return std::make_unique<E2ETestCentre> ();
+    return std::make_unique<E2ETestCentre> (logLevel);
 }
 
 }

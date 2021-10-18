@@ -54,6 +54,21 @@ juce::String Response::toJson () const
     return juce::JSON::toString (element.release ());
 }
 
+juce::String Response::describe () const
+{
+    juce::String description;
+
+    description << "Success: " << juce::String (_result.wasOk () ? "true" : "false") << juce::newLine;
+    
+    if (! _result)
+        description << "Error: " << _result.getErrorMessage ();
+
+    for (auto && [key, value] : _parameters)
+        description << key << ": " << value << juce::newLine;
+
+    return description;
+}
+
 void Response::addParameter (const juce::String & name, const juce::String & value)
 {
     _parameters [name] = value;

@@ -77,9 +77,24 @@ std::function<bool (juce::Component &)> createComponentMatcher (const juce::Stri
     };
 }
 
-juce::TopLevelWindow * ComponentSearch::getMainWindow ()
+juce::TopLevelWindow * ComponentSearch::findWindowWithId (const juce::String & id)
 {
-    return juce::TopLevelWindow::getActiveTopLevelWindow ();
+    auto topWindows = getTopLevelWindows ();
+    if (topWindows.empty ())
+        return nullptr;
+
+    if (id.isEmpty ())
+        return topWindows.front ();
+
+    auto it = std::find_if (
+        topWindows.begin (),
+        topWindows.end (),
+        [&] (auto && window) {
+            return window->getProperties ().getWithDefault (windowId, {}).toString () ==
+                   id;
+        });
+
+    return it == topWindows.end () ? nullptr : *it;
 }
 
 int ComponentSearch::countChildComponents (const juce::Component & root,
