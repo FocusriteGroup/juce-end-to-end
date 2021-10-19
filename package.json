@@ -24,6 +24,7 @@
   "dependencies": {},
   "devDependencies": {
     "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
-    "glob": "^7.2.0"
+    "glob": "^7.2.0",
+    "tar": "^6.1.11"
   }
 }

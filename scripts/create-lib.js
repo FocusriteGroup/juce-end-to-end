@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const {execSync} = require('child_process');
 const glob = require('glob');
+const tar = require('tar');
 
 const currentPlatform = () =>
   process.platform === 'darwin' ? 'macos' : 'windows';
@@ -88,8 +89,19 @@ const copyCmakeConfig = (sourceDir, cmakeDir) => {
 
 const createArchive = (installDir) => {
   const outputName = `ampify-e2e-${currentPlatform()}.tar.gz`;
-  execSync(`tar --version`);
-  execSync(`tar -czvf ${outputName} include/ lib/`, {cwd: installDir});
+  const outputPath = path.join(installDir, outputName);
+
+  tar.create(
+    {
+      gzip: true,
+      file: outputPath,
+      sync: true,
+      cwd: installDir,
+    },
+    ['include/', 'lib/']
+  );
+
+  console.log(`Wrote output file to ${outputPath}`);
 };
 
 const createInstallation = (sourceDir, buildDir) => {
