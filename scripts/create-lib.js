@@ -10,8 +10,7 @@ const isMac = () => currentPlatform() === 'macos';
 
 const skipClean = process.env.SKIP_CLEAN || false;
 const generator =
-  process.env.GENERATOR ||
-  (isMac() ? 'Ninja Multi-Config' : 'Visual Studio 16 2019');
+  process.env.GENERATOR || (isMac() ? 'Xcode' : 'Visual Studio 16 2019');
 
 const removeDirectory = (path) => {
   if (fs.existsSync(path)) {
