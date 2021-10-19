@@ -26,6 +26,10 @@ commands:
     description: Install CMake
     steps:
       - run: brew install cmake
+  build_library:
+    description: Build end-to-end testing library
+    steps:
+      - run: npm run create-lib
 
 jobs:
   macos_build:
@@ -35,7 +39,7 @@ jobs:
       - checkout
       - npm_install
       - install_cmake_macos
-      - run: echo Building...
+      - build_library
 
 workflows:
   build_and_test:
