@@ -79,7 +79,7 @@ commands:
           name: Create end-to-end testing library
           command: npm run create-lib
 
-  persist_archive:
+  persist:
     steps:
       - persist_to_workspace:
           root: .
@@ -95,7 +95,7 @@ jobs:
       - npm_install
       - install_cmake_macos
       - build_library
-      - persist_archive
+      - persist
 
   windows_build:
     <<: *windows-env
@@ -104,11 +104,12 @@ jobs:
       - npm_install
       - install_cmake_windows
       - build_library
-      - persist_archive
+      - persist
 
   macos_release:
     <<: *macos-env
     steps:
+      - checkout
       - npm_install
       - attach_workspace:
           at: .
@@ -117,6 +118,7 @@ jobs:
   windows_release:
     <<: *windows-env
     steps:
+      - checkout
       - npm_install
       - attach_workspace:
           at: .
