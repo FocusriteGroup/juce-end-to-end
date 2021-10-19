@@ -33,7 +33,13 @@ commands:
     steps:
       - run: 
           name: Install CMake
-          command: brew install cmake
+          command: |
+            curl -OsL https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-macos10.10-universal.tar.gz
+            tar xf cmake-3.21.3-macos10.10-universal.tar.gz --strip-components=1
+            rm cmake-3.21.3-macos10.10-universal.tar.gz
+            chmod -R a+rwx "$PWD/CMake.app"
+            export PATH="$PATH:$PWD/CMake.app/Contents/bin"
+            sudo "$PWD/CMake.app/Contents/bin/cmake-gui" --install
 
   install_cmake_windows:
     steps:
