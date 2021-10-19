@@ -112,7 +112,7 @@ jobs:
       - npm_install
       - attach_workspace:
           at: .
-      - run: echo Releasing...
+      - run: npm run release
 
   windows_release:
     <<: *windows-env

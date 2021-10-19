@@ -102,8 +102,8 @@ const createInstallation = () => {
 const main = () => {
   createBuildFolder();
   generateBuildSystem();
-  build(paths.build, 'Debug');
-  build(paths.build, 'Release');
+  build('Debug');
+  build('Release');
   createInstallation();
 };
 
