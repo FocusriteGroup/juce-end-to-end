@@ -153,7 +153,6 @@ void Connection::notifyData (const juce::MemoryBlock & data)
 void Connection::preventSigPipeExceptions ()
 {
 #if JUCE_MAC
-    // Stop socket errors from triggering a SIGPIPE signal
     auto socketFd = _socket.getRawSocketHandle ();
     const int set = 1;
     setsockopt (socketFd, SOL_SOCKET, SO_NOSIGPIPE, (void *) &set, sizeof (int));

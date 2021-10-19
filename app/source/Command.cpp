@@ -1,4 +1,4 @@
-#include "Command.h"
+#include <ampify/e2e/Command.h>
 
 namespace ampify::e2e
 {
@@ -34,6 +34,19 @@ juce::String Command::getArgument (const juce::String & argument) const
 juce::var Command::getArgumentAsVar (const juce::String & argument) const
 {
     return _args.getProperty (argument, {});
+}
+   
+juce::var Command::getArgs () const
+{
+    return _args;
+}
+
+juce::String Command::describe () const
+{
+    juce::String response;
+    response << "Type: " << getType () << juce::newLine;
+    response << "Args: " << juce::JSON::toString (_args) << juce::newLine;
+    return response;
 }
 
 Command::Command (juce::String type, const juce::Uuid & uuid, juce::var args)

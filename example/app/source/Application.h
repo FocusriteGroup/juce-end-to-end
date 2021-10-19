@@ -30,5 +30,5 @@ public:
 
 private:
     MainWindow _mainWindow;
-    ampify::e2e::TestCentre _testCentre;
+    std::unique_ptr<ampify::e2e::TestCentre> _testCentre = ampify::e2e::TestCentre::create ();
 };

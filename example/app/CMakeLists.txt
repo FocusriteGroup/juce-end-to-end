@@ -25,3 +25,7 @@ target_link_libraries (
          juce::juce_recommended_warning_flags)
 
 set_target_properties (e2e-example-app PROPERTIES CXX_STANDARD 17)
+
+if (WIN32)
+  target_compile_options (e2e-example-app PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
+endif ()

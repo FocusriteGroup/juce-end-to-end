@@ -1,6 +1,5 @@
 #pragma once
-#include "Response.h"
-
+#include <ampify/e2e/Response.h>
 #include <optional>
 
 namespace ampify::e2e

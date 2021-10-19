@@ -1,10 +1,10 @@
 #include "DefaultCommandHandler.h"
 
-#include "ClickableComponent.h"
-#include "Command.h"
-#include "ComponentSearch.h"
 #include "KeyPress.h"
 
+#include <ampify/e2e/ClickableComponent.h>
+#include <ampify/e2e/Command.h>
+#include <ampify/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 namespace ampify::e2e
@@ -104,6 +104,30 @@ Response clickComponent (const Command & command)
                    : Response::fail ("Component not clickable: " + juce::String (componentId));
 }
 
+Response keyPressOnComponent (const juce::String & componentId, const juce::KeyPress & keyPress)
+{
+    auto * component = ComponentSearch::findWithId (componentId);
+    if (component == nullptr)
+        return Response::fail ("Component not found for key press: " + componentId);
+
+    component->keyPressed (keyPress);
+    return Response::ok ();
+}
+
+Response keyPressOnWindow (const juce::String & windowId, const juce::KeyPress & keyPress)
+{
+    auto window = ComponentSearch::findWindowWithId (windowId);
+    if (! window)
+        return Response::fail ("Couldn't find window");
+
+    auto peer = window->getPeer ();
+    if (! peer)
+        return Response::fail ("Window doesn't have peer");
+
+    peer->handleKeyPress (keyPress);
+    return Response::ok ();
+}
+
 Response keyPress (const Command & command)
 {
     auto keyCode = command.getArgument ("key-code");
@@ -111,24 +135,15 @@ Response keyPress (const Command & command)
         return Response::fail ("Missing key-code argument");
 
     auto modifiers = command.getArgument ("modifiers");
-
     auto componentId = command.getArgument ("focus-component");
+    auto windowId = command.getArgument (ComponentSearch::windowId);
 
     const auto keyPress = constructKeyPress (keyCode, modifiers);
 
     if (componentId.isNotEmpty ())
-    {
-        if (auto * component = ComponentSearch::findWithId (componentId))
-            component->keyPressed (keyPress);
-        else
-            return Response::fail ("Component not found: " + componentId);
-    }
-    else if (auto mainWindow = ComponentSearch::getMainWindow ())
-    {
-        mainWindow->getPeer ()->handleKeyPress (keyPress);
-    }
+        return keyPressOnComponent (componentId, keyPress);
 
-    return Response::ok ();
+    return keyPressOnWindow (windowId, keyPress);
 }
 
 Response grabFocus (const Command & command)
@@ -137,8 +152,9 @@ Response grabFocus (const Command & command)
         juce::Component::getCurrentlyFocusedComponent () != nullptr)
         return Response::ok ();
 
-    if (auto * mainWindow = ComponentSearch::getMainWindow ())
-        mainWindow->grabKeyboardFocus ();
+    if (auto * window =
+            ComponentSearch::findWindowWithId (command.getArgument (ComponentSearch::windowId)))
+        window->grabKeyboardFocus ();
 
     return Response::ok ();
 }
@@ -146,9 +162,11 @@ Response grabFocus (const Command & command)
 Response getScreenshot (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
+    const auto windowId = command.getArgument (ComponentSearch::windowId);
 
-    auto component = componentId.isEmpty () ? ComponentSearch::getMainWindow ()
+    auto component = componentId.isEmpty () ? ComponentSearch::findWindowWithId (windowId)
                                             : ComponentSearch::findWithId (componentId);
+
     if (component == nullptr)
         return Response::fail ("Component not found: " + juce::String (componentId));
 
@@ -236,8 +254,9 @@ Response countComponents (const Command & command)
         return Response::fail ("Missing component-id");
 
     const auto rootId = command.getArgument ("root-id");
+    const auto windowId = command.getArgument (ComponentSearch::windowId);
 
-    juce::Component * rootComponent = ComponentSearch::getMainWindow ();
+    juce::Component * rootComponent = ComponentSearch::findWindowWithId (windowId);
 
     if (rootId.isNotEmpty ())
     {
