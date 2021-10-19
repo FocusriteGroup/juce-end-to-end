@@ -49,6 +49,7 @@ commands:
             choco install cmake --version=3.21.3 --installargs '"ADD_CMAKE_TO_PATH=User"'
             PATH_TO_CMAKE='/c/Program Files/CMake/bin'
             echo "export PATH='$PATH_TO_CMAKE:$PATH'" >> $BASH_ENV
+
   build_library:
     description: Build end-to-end testing library
     steps:
@@ -57,6 +58,7 @@ commands:
           command: npm run create-lib
 
 jobs:
+
   macos_build:
     macos:
       xcode: 12.5.0
@@ -65,6 +67,7 @@ jobs:
       - npm_install
       - install_cmake_macos
       - build_library
+
   windows_build:
     executor: 
       name: win/default
@@ -76,6 +79,7 @@ jobs:
       - build_library
 
 workflows:
+  
   build_and_test:
     jobs:
       - macos_build
