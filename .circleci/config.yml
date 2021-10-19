@@ -22,6 +22,10 @@ commands:
       - restore_npm_cache
       - run: npm install
       - save_npm_cache
+  install_cmake_macos:
+    description: Install CMake
+    steps:
+      - run: brew install cmake
 
 jobs:
   macos_build:
@@ -30,6 +34,7 @@ jobs:
     steps:
       - checkout
       - npm_install
+      - install_cmake_macos
       - run: echo Building...
 
 workflows:
