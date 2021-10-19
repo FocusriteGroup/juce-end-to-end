@@ -1,0 +1,38 @@
+version: 2.1
+
+commands:
+  restore_npm_cache:
+    description: Restore NPM cache
+    steps:
+      - restore_cache:
+          keys:
+          - npm-cache-v4-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          - npm-cache-v4-{{ arch }}-{{ .Branch }}
+          - npm-cache-v4-{{ arch }}
+  save_npm_cache:
+    description: Save NPM cache
+    steps:
+      - save_cache:
+          key: npm-cache-v4-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+  npm_install:
+    description: Install NPM dependencies
+    steps:
+      - restore_npm_cache
+      - run: npm install
+      - save_npm_cache
+
+jobs:
+  macos_build:
+    macos:
+      xcode: 12.5.0
+    steps:
+      - checkout
+      - npm_install
+      - run: echo Building...
+
+workflows:
+  build_and_test:
+    jobs:
+      - macos_build
