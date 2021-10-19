@@ -3,15 +3,13 @@ const fs = require('fs');
 const {execSync} = require('child_process');
 const glob = require('glob');
 const tar = require('tar');
-
-const currentPlatform = () =>
-  process.platform === 'darwin' ? 'macos' : 'windows';
-
-const isMac = () => currentPlatform() === 'macos';
+const paths = require('./lib/paths');
+const platform = require('./lib/platform');
 
 const skipClean = process.env.SKIP_CLEAN || false;
 const generator =
-  process.env.GENERATOR || (isMac() ? 'Xcode' : 'Visual Studio 16 2019');
+  process.env.GENERATOR ||
+  (platform.isMac() ? 'Xcode' : 'Visual Studio 16 2019');
 
 const removeDirectory = (path) => {
   if (fs.existsSync(path)) {
@@ -25,113 +23,88 @@ const createDirectory = (path) => {
   }
 };
 
-const createBuildFolder = (buildDir) => {
+const createBuildFolder = () => {
   if (skipClean) {
     return;
   }
 
-  removeDirectory(buildDir);
-  createDirectory(buildDir);
+  removeDirectory(paths.build);
+  createDirectory(paths.build);
 };
 
-const generateBuildSystem = (sourceDir, buildDir) => {
+const generateBuildSystem = () => {
   execSync(
-    `cmake -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${sourceDir}" -B "${buildDir}"`,
+    `cmake -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${paths.source}" -B "${paths.build}"`,
     {
       stdio: 'inherit',
     }
   );
 };
 
-const build = (buildDir, configuration) => {
-  execSync(`cmake --build "${buildDir}" --config "${configuration}"`, {
+const build = (configuration) => {
+  execSync(`cmake --build "${paths.build}" --config "${configuration}"`, {
     stdio: 'inherit',
   });
 };
 
-const libraryFilename = (configuration) => {
-  const extension = isMac() ? 'a' : 'lib';
-  const postFix = configuration === 'Debug' ? 'd' : '';
-  const prefix = isMac() ? 'lib' : '';
-  return `${prefix}ampify-e2e${postFix}.${extension}`;
-};
-
-const libraryPath = (buildDir, configuration) =>
-  path.join(buildDir, 'app', configuration, libraryFilename(configuration));
-
-const copyLibrary = (configuration, buildDir, libDir) => {
+const copyLibrary = (configuration) => {
   fs.copyFileSync(
-    libraryPath(buildDir, configuration),
-    path.join(libDir, libraryFilename(configuration))
+    paths.libraryBuild(configuration),
+    paths.libraryInstall(configuration)
   );
 };
 
-const copyHeaders = (rootDir, includeDir) => {
-  const sourceDir = path.join(rootDir, 'app', 'include');
+const copyHeaders = () => {
   const headers = glob.sync('**/*.h', {
-    cwd: sourceDir,
+    cwd: paths.includeSource,
   });
 
   headers.forEach((header) => {
-    const sourceFile = path.join(sourceDir, header);
-    const destFile = path.join(includeDir, header);
+    const sourceFile = path.join(paths.includeSource, header);
+    const destFile = path.join(paths.include, header);
     createDirectory(path.dirname(destFile));
     fs.copyFileSync(sourceFile, destFile);
   });
 };
 
-const copyCmakeConfig = (sourceDir, cmakeDir) => {
-  const filename = 'AmpifyE2EConfig.cmake';
-  const sourceFile = path.join(sourceDir, 'cmake', filename);
-  const destFile = path.join(cmakeDir, filename);
-  fs.copyFileSync(sourceFile, destFile);
+const copyCmakeConfig = () => {
+  fs.copyFileSync(paths.cmakeConfigSource, paths.cmakeConfigDestination);
 };
 
-const createArchive = (installDir) => {
-  const outputName = `ampify-e2e-${currentPlatform()}.tar.gz`;
-  const outputPath = path.join(installDir, outputName);
-
+const createArchive = () => {
   tar.create(
     {
       gzip: true,
-      file: outputPath,
+      file: paths.archive,
       sync: true,
-      cwd: installDir,
+      cwd: paths.install,
     },
     ['include/', 'lib/']
   );
 
-  console.log(`Wrote output file to ${outputPath}`);
+  console.log(`Wrote output file to ${paths.archive}`);
 };
 
-const createInstallation = (sourceDir, buildDir) => {
-  const installDir = path.join(buildDir, 'installation');
-  const includeDir = path.join(installDir, 'include');
-  const libDir = path.join(installDir, 'lib');
-  const cmakeDir = path.join(libDir, 'cmake');
+const createInstallation = () => {
+  removeDirectory(paths.install);
+  createDirectory(paths.install);
+  createDirectory(paths.include);
+  createDirectory(paths.lib);
+  createDirectory(paths.cmake);
 
-  removeDirectory(installDir);
-  createDirectory(installDir);
-  createDirectory(includeDir);
-  createDirectory(libDir);
-  createDirectory(cmakeDir);
-
-  copyLibrary('Debug', buildDir, libDir);
-  copyLibrary('Release', buildDir, libDir);
-  copyHeaders(sourceDir, includeDir);
-  copyCmakeConfig(sourceDir, cmakeDir);
-  createArchive(installDir);
+  copyLibrary('Debug');
+  copyLibrary('Release');
+  copyHeaders();
+  copyCmakeConfig();
+  createArchive();
 };
 
 const main = () => {
-  const sourceDir = process.cwd();
-  const buildDir = path.join(process.cwd(), 'cmake-build');
-
-  createBuildFolder(buildDir);
-  generateBuildSystem(sourceDir, buildDir);
-  build(buildDir, 'Debug');
-  build(buildDir, 'Release');
-  createInstallation(sourceDir, buildDir);
+  createBuildFolder();
+  generateBuildSystem();
+  build(paths.build, 'Debug');
+  build(paths.build, 'Release');
+  createInstallation();
 };
 
 main();
