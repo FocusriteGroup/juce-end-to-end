@@ -7,11 +7,13 @@ export interface ScreenshotResponse extends Response {
 }
 
 export interface ComponentVisibilityResponse extends Response {
-  showing: string;
+  showing: boolean;
+  exists: boolean;
 }
 
 export interface ComponentEnablementResponse extends Response {
-  enabled: string;
+  enabled: boolean;
+  exists: boolean;
 }
 
 export interface ComponentTextResponse extends Response {

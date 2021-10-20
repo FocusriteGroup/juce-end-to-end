@@ -315,7 +315,7 @@ export class AppConnection extends EventEmitter {
       },
     })) as ComponentVisibilityResponse;
 
-    return response.showing && response.showing === 'true';
+    return response.showing;
   }
 
   async getComponentEnablement(componentId: string): Promise<boolean> {
@@ -326,7 +326,7 @@ export class AppConnection extends EventEmitter {
       },
     })) as ComponentEnablementResponse;
 
-    return response.enabled && response.enabled === 'true';
+    return response.enabled;
   }
 
   async getComponentText(componentId: string): Promise<string> {

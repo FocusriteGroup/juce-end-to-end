@@ -192,9 +192,7 @@ Response getComponentVisibility (const Command & command)
         showing = component->isShowing ();
     }
 
-    return Response::ok ()
-        .withParameter ("exists", exists ? "true" : "false")
-        .withParameter ("showing", showing ? "true" : "false");
+    return Response::ok ().withParameter ("exists", exists).withParameter ("showing", showing);
 }
 
 Response getComponentEnablement (const Command & command)
@@ -212,9 +210,7 @@ Response getComponentEnablement (const Command & command)
         enabled = component->isEnabled ();
     }
 
-    return Response::ok ()
-        .withParameter ("exists", exists ? "true" : "false")
-        .withParameter ("enabled", enabled ? "true" : "false");
+    return Response::ok ().withParameter ("exists", exists).withParameter ("enabled", enabled);
 }
 
 Response getComponentText (const Command & command)
