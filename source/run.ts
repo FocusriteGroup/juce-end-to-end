@@ -1,4 +1,4 @@
-import {E2EController} from './e2e-controller';
+import {E2EController} from './index';
 
 const appPath =
   '/Users/joenoel/dev/juce-end-to-end/cmake-build-debug/example/app/e2e-example-app_artefacts/Debug/e2e-example-app.app/Contents/MacOS/e2e-example-app';

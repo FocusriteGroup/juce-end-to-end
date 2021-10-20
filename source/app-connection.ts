@@ -10,10 +10,7 @@ import {
   ComponentVisibilityResponse,
   ComponentEnablementResponse,
   ComponentTextResponse,
-  LoginStateResponse,
-  ModelResponse,
   ScreenshotResponse,
-  StateResponse,
   ComponentCountResponse,
 } from './responses';
 import {Command} from './commands';
@@ -21,8 +18,6 @@ import minimatch from 'minimatch';
 import {assert} from './assert';
 
 const writeFile = util.promisify(fs.writeFile);
-
-const VERBOSE = process.env['VERBOSE'] || false;
 
 let screenshotIndex = 0;
 
@@ -77,26 +72,6 @@ export class AppConnection extends EventEmitter {
     this.process.on('exit', (code, signal) => {
       this.emit('exit', {code, signal});
     });
-
-    if (VERBOSE) {
-      this.process.stdout.on('data', (data) => {
-        data
-          .toString()
-          .split('\n')
-          .forEach((line: string) => {
-            console.log(`>> ${line}`);
-          });
-      });
-
-      this.process.stderr.on('data', (data) => {
-        data
-          .toString()
-          .split('\n')
-          .forEach((line: string) => {
-            console.log(`>> ${line}`);
-          });
-      });
-    }
   }
 
   async launch(extraArgs: string[] = []) {

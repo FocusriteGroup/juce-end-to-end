@@ -1,17 +1,19 @@
 import {EventEmitter} from 'events';
-import {
-  ResponseStream,
-  Response,
-  CommandResponse,
-  EventResponse,
-  Event,
-  ResponseType,
-} from './response-stream';
-import Constants from './constants';
+import {ResponseStream} from './response-stream';
+
 import {v4 as uuidv4} from 'uuid';
 import {assert} from './assert';
 import {Socket} from 'net';
-import {Command} from './commands';
+import {Command} from '.';
+import {SentCommand} from './commands';
+import {commandToBuffer} from './binary-protocol';
+import {
+  CommandResponse,
+  Event,
+  EventResponse,
+  Response,
+  ResponseType,
+} from './responses';
 
 export type EventMatchingFunction = (event: Event) => boolean;
 
@@ -20,24 +22,6 @@ interface WaitingEvent {
   matchingFunction?: EventMatchingFunction;
   onReceived(event: object): void;
   onError(): void;
-}
-
-interface SentCommand extends Command {
-  uuid: string;
-  onReceived(response: Buffer): void;
-  onError(error: Error): void;
-}
-
-function commandToBuffer(command: SentCommand) {
-  const commandJson = JSON.stringify(command);
-  const commandBuffer = Buffer.from(commandJson, 'utf-8');
-
-  const buffer = Buffer.alloc(Constants.HEADER_SIZE + commandBuffer.length, 0);
-  buffer.writeUInt32LE(Constants.MAGIC, Constants.MAGIC_OFFSET);
-  buffer.writeUInt32LE(commandBuffer.length, Constants.SIZE_OFFSET);
-  commandBuffer.copy(buffer, Constants.DATA_OFFSET);
-
-  return buffer;
 }
 
 export class Connection extends EventEmitter {

@@ -1,27 +1,5 @@
 import {EventEmitter} from 'events';
-import Constants from './constants';
-
-export enum ResponseType {
-  response = 'response',
-  event = 'event',
-}
-
-export interface Response {
-  uuid: string;
-  type: ResponseType;
-  success?: string;
-  error?: string;
-  data?: any;
-}
-
-export interface CommandResponse extends Response {}
-
-export type Event = any;
-
-export interface EventResponse extends Response {
-  name: string;
-  data: any;
-}
+import {getNextResponse, isValid} from './binary-protocol';
 
 export class ResponseStream extends EventEmitter {
   data: Buffer;
@@ -32,35 +10,28 @@ export class ResponseStream extends EventEmitter {
   }
 
   checkForData() {
-    if (this.data.length < Constants.HEADER_SIZE) {
+    if (!isValid(this.data)) {
+      this.emit('error', new Error('Incorrect response'));
       return;
     }
-
-    const magic = this.data.readUInt32LE(Constants.MAGIC_OFFSET);
-
-    if (magic != Constants.MAGIC) {
-      this.emit('error', new Error('Incorrect magic number'));
-      return;
-    }
-
-    const dataSize = this.data.readUInt32LE(Constants.SIZE_OFFSET);
-
-    if (this.data.length < Constants.HEADER_SIZE + dataSize) {
-      return;
-    }
-
-    const responseText = this.data
-      .slice(Constants.DATA_OFFSET, Constants.DATA_OFFSET + dataSize)
-      .toString();
 
     try {
-      const response = JSON.parse(responseText) as Response;
-      this.emit('response', response);
-    } catch (error) {
-      this.emit('error', new Error('Error parsing JSON response'));
-    }
+      const nextResponse = getNextResponse(this.data);
 
-    this.data = this.data.slice(Constants.HEADER_SIZE + dataSize);
+      if (nextResponse.bytesConsumed == 0) {
+        return;
+      }
+
+      this.data = this.data.slice(nextResponse.bytesConsumed);
+
+      if (!nextResponse.response) {
+        return;
+      }
+
+      this.emit('response', nextResponse.response);
+    } catch (error) {
+      this.emit('error', new Error('Error parsing response'));
+    }
 
     if (this.data.length) {
       this.checkForData();
