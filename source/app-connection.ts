@@ -17,6 +17,7 @@ import {Command} from './commands';
 import minimatch from 'minimatch';
 import {assert} from './assert';
 import {Response} from '.';
+import {pollUntil} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -359,34 +360,4 @@ export class AppConnection extends EventEmitter {
 
     return false;
   }
-}
-
-async function pollUntil<T>(
-  matchingFunction: (data: T) => boolean,
-  queryFunction: () => Promise<T>,
-  timeout?: number
-) {
-  if (!timeout) {
-    timeout = 10000;
-  }
-
-  return new Promise((resolve) => {
-    const timeoutTimer = setTimeout(() => {
-      resolve(false);
-    }, timeout);
-
-    const query = () => {
-      queryFunction().then((data) => {
-        if (matchingFunction(data)) {
-          clearTimeout(timeoutTimer);
-          resolve(true);
-          return;
-        }
-
-        query();
-      });
-    };
-
-    query();
-  });
 }
