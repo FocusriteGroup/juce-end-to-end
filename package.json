@@ -13,6 +13,7 @@
     "example": "example"
   },
   "scripts": {
+    "build": "tsc",
     "create-lib": "node scripts/create-lib.js",
     "release": "node scripts/release.js"
   },
