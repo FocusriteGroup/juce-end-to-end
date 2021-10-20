@@ -22,6 +22,11 @@ public:
         _valueLabel.setColour (juce::Label::textColourId, juce::Colours::black);
 
         updateLabel ();
+
+        _incrementButton.getProperties ().set ("test-id", "increment-button");
+        _decrementButton.getProperties ().set ("test-id", "decrement-button");
+        _enableButton.getProperties ().set ("test-id", "enable-button");
+        _valueLabel.getProperties ().set ("test-id", "value-label");
     }
 
     void resized () override
