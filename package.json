@@ -1,5 +1,5 @@
 {
-  "name": "juce-end-to-end",
+  "name": "@focusrite-novation/juce-end-to-end",
   "version": "0.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -17,10 +17,7 @@
     "create-lib": "node scripts/create-lib.js",
     "release": "node scripts/release.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Focusrite-Novation/juce-end-to-end.git"
-  },
+  "repository": "git://github.com/Focusrite-Novation/juce-end-to-end.git",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
