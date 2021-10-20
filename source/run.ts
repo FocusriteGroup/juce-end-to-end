@@ -1,7 +1,7 @@
 import {AppConnection} from './index';
 
 const appPath =
-  '/Users/joenoel/dev/juce-end-to-end/cmake-build-debug/example/app/e2e-example-app_artefacts/Debug/e2e-example-app.app';
+  '/Users/joenoel/dev/juce-end-to-end/cmake-build-debug/example/app/e2e-example-app_artefacts/Debug/e2e-example-app.app/Contents/MacOS/e2e-example-app';
 
 async function run() {
   const connection = new AppConnection({

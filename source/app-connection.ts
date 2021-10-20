@@ -64,16 +64,7 @@ export class AppConnection extends EventEmitter {
 
   launchProcess(extraArgs: string[]) {
     try {
-      let command = this.appPath;
-      if (command.endsWith('.app')) {
-        command = 'open';
-        extraArgs = ['-a', this.appPath, '--'].concat(extraArgs);
-      }
-      console.log('command');
-      console.log(command);
-      console.log('extra args');
-      console.log(extraArgs);
-      this.process = spawn(command, extraArgs, {});
+      this.process = spawn(this.appPath, extraArgs, {});
     } catch (error) {
       console.error(`Unable to launch: ${error.message}`);
       return;
