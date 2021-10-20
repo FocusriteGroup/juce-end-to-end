@@ -2,7 +2,6 @@ import {EventEmitter} from 'events';
 import path from 'path';
 import {spawn, execSync, ChildProcess} from 'child_process';
 import process from 'process';
-import assert from 'assert';
 import util from 'util';
 import fs from 'fs';
 import {Connection, EventMatchingFunction} from './connection';
@@ -19,64 +18,30 @@ import {
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
+import {assert} from './assert';
 
 const writeFile = util.promisify(fs.writeFile);
 
 const VERBOSE = process.env['VERBOSE'] || false;
 
-function getBuildType() {
-  return process.argv.includes('--debug') ? 'Debug' : 'Release';
-}
-
-function getBuiltProductPath() {
-  return path.join(__dirname, '..', '..', '..', 'cmake-build', getBuildType());
-}
-
-function getDarwinExecutablePath() {
-  return path.join(
-    getBuiltProductPath(),
-    'Ampify Studio.app',
-    'Contents',
-    'MacOS',
-    'Ampify Studio'
-  );
-}
-
-function getWindowsExecutablePath() {
-  return path.join(getBuiltProductPath(), 'Ampify Studio.exe');
-}
-
-function getDefaultPath() {
-  if (process.platform === 'darwin') {
-    return getDarwinExecutablePath();
-  }
-  return getWindowsExecutablePath();
-}
-
-const logsDir = path.join(__dirname, '..', '..', '..', 'logs');
-
 let screenshotIndex = 0;
 
-export enum ExportType {
-  project = 'project',
-  section = 'section',
+interface AppConnectionOptions {
+  appPath: string;
+  logsDir?: string;
 }
 
-export enum ExportFormat {
-  wav = 'wav',
-  mp3 = 'mp3',
-}
-
-export class StudioConnection extends EventEmitter {
+export class AppConnection extends EventEmitter {
   appPath: string;
   process?: ChildProcess;
   server: Server;
   connection?: Connection;
+  logsDir?: string;
 
-  constructor(appPath?: string) {
+  constructor(options: AppConnectionOptions) {
     super();
-    this.appPath = appPath || process.env['AMPIFY_STUDIO'] || getDefaultPath();
-    this.process = null;
+    this.appPath = options.appPath;
+    this.logsDir = options.logsDir;
     this.server = new Server();
 
     this.server.on('error', () => {
@@ -87,8 +52,8 @@ export class StudioConnection extends EventEmitter {
       this.server = null;
     });
 
-    if (!fs.existsSync(logsDir)) {
-      fs.mkdirSync(logsDir);
+    if (this.logsDir && !fs.existsSync(this.logsDir)) {
+      fs.mkdirSync(this.logsDir);
     }
   }
 
@@ -98,45 +63,18 @@ export class StudioConnection extends EventEmitter {
   }
 
   connect() {
-    assert(this.process);
+    assert(!!this.process);
   }
 
   launchProcess(extraArgs: string[]) {
-    let args = [
-      '--bypass-updater',
-      '--bring-to-front',
-      '--verbose-logging',
-      '--disable-analytics',
-      `--log-dir=${logsDir}`,
-      '--no-startup-project',
-      '--no-user-reload',
-      '--no-quick-start',
-    ];
-
-    if (typeof extraArgs === 'object') {
-      args = args.concat(extraArgs);
-    } else if (typeof extraArgs === 'string') {
-      args.push(extraArgs);
-    }
-
-    const studioEnv = process.env.FORCE_ENABLE_AUDIO
-      ? {
-          env: {REPORT_AUDIO_AS_ENABLED: 'true'},
-        }
-      : {};
-
     try {
-      this.process = spawn(this.appPath, args, studioEnv);
+      this.process = spawn(this.appPath, extraArgs, {});
     } catch (error) {
       console.error(`Unable to launch: ${error.message}`);
       return;
     }
 
     this.process.on('exit', (code, signal) => {
-      if (signal) {
-        console.log(`Studio exited with signal ${signal}`);
-      }
-
       this.emit('exit', {code, signal});
     });
 
@@ -182,7 +120,7 @@ export class StudioConnection extends EventEmitter {
   }
 
   async sendCommand(command: Command): Promise<any> {
-    assert(this.connection);
+    assert(!!this.connection);
     return await this.connection.send(command);
   }
 
@@ -197,15 +135,6 @@ export class StudioConnection extends EventEmitter {
   async quit() {
     await this.sendCommand({
       type: 'quit',
-    });
-  }
-
-  async importFile(filePath: string) {
-    await this.sendCommand({
-      type: 'import-file',
-      args: {
-        path: filePath,
-      },
     });
   }
 
@@ -266,100 +195,12 @@ export class StudioConnection extends EventEmitter {
     });
   }
 
-  async openProject(projectPath: string) {
-    await this.sendCommand({
-      type: 'open-project',
-      args: {
-        path: projectPath,
-      },
-    });
-
-    await this.waitForEvent('project-loaded', (event) => {
-      return event.path === projectPath;
-    });
-  }
-
-  async closeProject() {
-    await this.sendCommand({
-      type: 'close-project',
-      args: {},
-    });
-  }
-
-  async getModel() {
-    const response = (await this.sendCommand({
-      type: 'get-model',
-      args: {},
-    })) as ModelResponse;
-
-    try {
-      return JSON.parse(response.model);
-    } catch (error) {
-      console.log(`Error parsing model: ${error.message}`);
-    }
-    return {};
-  }
-
-  async specQuery<T>(
-    matchingFunction: (data: T) => boolean,
-    queryFunction: () => Promise<T>,
-    timeout?: number
-  ) {
-    if (!timeout) timeout = 10000;
-
-    return new Promise((resolve) => {
-      const timeoutTimer = setTimeout(() => {
-        resolve(false);
-      }, timeout);
-
-      const query = () => {
-        queryFunction().then((data) => {
-          if (matchingFunction(data)) {
-            clearTimeout(timeoutTimer);
-            resolve(true);
-            return;
-          }
-
-          query();
-        });
-      };
-
-      query();
-    });
-  }
-
-  async modelMeetsSpec(
-    matchingFunction: (model: any) => boolean,
-    timeout?: number
-  ) {
-    return this.specQuery(
-      matchingFunction,
-      () => {
-        return this.getModel();
-      },
-      timeout
-    );
-  }
-
-  async stateMeetsSpec(
-    matchingFunction: (state: any) => boolean,
-    timeout?: number
-  ) {
-    return this.specQuery(
-      matchingFunction,
-      () => {
-        return this.getState();
-      },
-      timeout
-    );
-  }
-
   async waitForComponentVisibilityToBe(
     componentName: string,
     visibility: boolean,
     timeoutTime = 5000
   ) {
-    const result = await this.specQuery(
+    const result = await pollUntil(
       (visible: any) => visible == visibility,
       async () => await this.getComponentVisibility(componentName),
       timeoutTime
@@ -393,7 +234,7 @@ export class StudioConnection extends EventEmitter {
     enablement: boolean,
     timeoutTime = 5000
   ) {
-    const result = await this.specQuery(
+    const result = await pollUntil(
       (enabled: boolean) => enabled === enablement,
       async () => await this.getComponentEnablement(componentName),
       timeoutTime
@@ -446,14 +287,11 @@ export class StudioConnection extends EventEmitter {
     return result;
   }
 
-  async newProject() {
-    await this.sendCommand({
-      type: 'new-project',
-      args: {},
-    });
-  }
-
   async getScreenshot(componentId: string, outFileName: string) {
+    if (!this.logsDir) {
+      return;
+    }
+
     const response = (await this.sendCommand({
       type: 'get-screenshot',
       args: {
@@ -463,7 +301,7 @@ export class StudioConnection extends EventEmitter {
 
     try {
       await writeFile(
-        path.join(logsDir, outFileName),
+        path.join(this.logsDir, outFileName),
         response.image,
         'base64'
       );
@@ -473,21 +311,6 @@ export class StudioConnection extends EventEmitter {
         `Error writing screenshot of ${componentId} to ${outFileName}`
       );
     }
-  }
-
-  async getState() {
-    const response = (await this.sendCommand({
-      type: 'get-state',
-      args: {},
-    })) as StateResponse;
-
-    try {
-      return JSON.parse(response.state);
-    } catch (error) {
-      console.error(`Error parsing state: ${error.message}`);
-    }
-
-    return {};
   }
 
   async getComponentVisibility(componentId: string) {
@@ -523,91 +346,6 @@ export class StudioConnection extends EventEmitter {
     return response.text;
   }
 
-  async getUserLoginState() {
-    const response = (await this.sendCommand({
-      type: 'get-user-login-state',
-      args: {},
-    })) as LoginStateResponse;
-    return response.loginState && response.loginState === 'true';
-  }
-
-  async getPreviewState() {
-    const response = await this.getState();
-    return (
-      response.previewingPack &&
-      response.previewingPack !== '00000000-0000-0000-0000-000000000000'
-    );
-  }
-
-  async waitForUserLoginStateToBe(state: boolean, timeoutTime = 5000) {
-    const result = await this.specQuery(
-      (isLoggedIn: boolean) => isLoggedIn === state,
-      () => this.getUserLoginState(),
-      timeoutTime
-    );
-
-    if (!result) {
-      console.error(`Login state didn't go to '${state}' in time`);
-    }
-
-    return result;
-  }
-
-  async login(username: string, password: string) {
-    await this.sendCommand({
-      type: 'login',
-      args: {
-        username: username,
-        password: password,
-      },
-    });
-  }
-
-  async logout() {
-    await this.sendCommand({
-      type: 'logout',
-      args: {},
-    });
-  }
-
-  async waitForPreviewStateToBe(previewState: boolean, timeoutTime = 500000) {
-    const result = await this.specQuery(
-      (isPreviewing: boolean) => isPreviewing === previewState,
-      () => this.getPreviewState(),
-      timeoutTime
-    );
-
-    if (!result) {
-      console.error(`Preview state didn't go to '${previewState}' in time`);
-    }
-
-    return result;
-  }
-
-  async liveExport(projectDirectory: string) {
-    await this.sendCommand({
-      type: 'live-export',
-      args: {path: projectDirectory},
-    });
-  }
-
-  async audioExport(
-    outputPath: string,
-    type: ExportType,
-    format: ExportFormat,
-    sectionIndex?: number
-  ) {
-    await this.sendCommand({
-      type: 'audio-export',
-      args: {
-        path: outputPath,
-        type,
-        format,
-        sectionIndex,
-      },
-    });
-  }
-
   async getFocusedComponent() {
     const response = await this.sendCommand({
       type: 'get-focus-component',
@@ -630,20 +368,34 @@ export class StudioConnection extends EventEmitter {
 
     return false;
   }
+}
 
-  async enableExperimentalFeatures() {
-    await this.sendCommand({
-      type: 'enable-experimental-features',
-      args: {},
-    });
+async function pollUntil<T>(
+  matchingFunction: (data: T) => boolean,
+  queryFunction: () => Promise<T>,
+  timeout?: number
+) {
+  if (!timeout) {
+    timeout = 10000;
   }
 
-  async useRemoteConfig(config: object) {
-    await this.sendCommand({
-      type: 'remote-config',
-      args: {
-        config,
-      },
-    });
-  }
+  return new Promise((resolve) => {
+    const timeoutTimer = setTimeout(() => {
+      resolve(false);
+    }, timeout);
+
+    const query = () => {
+      queryFunction().then((data) => {
+        if (matchingFunction(data)) {
+          clearTimeout(timeoutTimer);
+          resolve(true);
+          return;
+        }
+
+        query();
+      });
+    };
+
+    query();
+  });
 }

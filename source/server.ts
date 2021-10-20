@@ -1,5 +1,5 @@
 import net, {Socket} from 'net';
-import assert from 'assert';
+import {assert} from './assert';
 import {EventEmitter} from 'events';
 
 export class Server extends EventEmitter {
@@ -57,7 +57,7 @@ export class Server extends EventEmitter {
         resolve(this.lastConnection);
         this.lastConnection = null;
       } else {
-        assert(this.server);
+        assert(!!this.server);
         this.server.on('connection', (socket) => {
           resolve(socket);
         });

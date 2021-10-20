@@ -9,7 +9,7 @@ import {
 } from './response-stream';
 import Constants from './constants';
 import {v4 as uuidv4} from 'uuid';
-import assert from 'assert';
+import {assert} from './assert';
 import {Socket} from 'net';
 import {Command} from './commands';
 
@@ -99,7 +99,7 @@ export class Connection extends EventEmitter {
 
   async send(command: Command): Promise<object> {
     return new Promise((resolve, reject) => {
-      assert(this.socket, 'Not connected');
+      assert(!!this.socket, 'Not connected');
       const sentCommand = {
         uuid: uuidv4(),
         ...command,
