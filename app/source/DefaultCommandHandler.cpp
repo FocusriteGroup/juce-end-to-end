@@ -227,11 +227,13 @@ Response getComponentText (const Command & command)
     if (! component)
         return Response::fail ("No matching component");
 
-    auto * textBox = dynamic_cast<juce::TextEditor *> (component);
-    if (! textBox)
-        return Response::fail ("Component is not a text editor");
+    if (auto * textBox = dynamic_cast<const juce::TextEditor *> (component))
+        return Response::ok ().withParameter ("text", textBox->getText ());
 
-    return Response::ok ().withParameter ("text", textBox->getText ());
+    if (auto * label = dynamic_cast<const juce::Label *> (component))
+        return Response::ok ().withParameter ("text", label->getText ());
+
+    return Response::fail ("Component doesn't have text");
 }
 
 Response getFocusComponent (const Command & command)
