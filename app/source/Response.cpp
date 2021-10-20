@@ -17,7 +17,7 @@ Response::Response (juce::Result result)
 {
 }
 
-Response Response::withParameter (const juce::String & name, const juce::String & value) const
+Response Response::withParameter (const juce::String & name, const juce::var & value) const
 {
     Response other (*this);
     other.addParameter (name, value);
@@ -58,18 +58,19 @@ juce::String Response::describe () const
 {
     juce::String description;
 
-    description << "Success: " << juce::String (_result.wasOk () ? "true" : "false") << juce::newLine;
-    
+    description << "Success: " << juce::String (_result.wasOk () ? "true" : "false")
+                << juce::newLine;
+
     if (! _result)
         description << "Error: " << _result.getErrorMessage ();
 
     for (auto && [key, value] : _parameters)
-        description << key << ": " << value << juce::newLine;
+        description << key << ": " << value.toString () << juce::newLine;
 
     return description;
 }
 
-void Response::addParameter (const juce::String & name, const juce::String & value)
+void Response::addParameter (const juce::String & name, const juce::var & value)
 {
     _parameters [name] = value;
 }

@@ -269,8 +269,8 @@ Response countComponents (const Command & command)
 
     jassert (rootComponent != nullptr);
 
-    const auto count = ComponentSearch::countChildComponents (*rootComponent, componentId);
-    return Response::ok ().withParameter ("count", juce::String (count));
+    return Response::ok ().withParameter (
+        "count", ComponentSearch::countChildComponents (*rootComponent, componentId));
 }
 
 Response quit (const Command & command)

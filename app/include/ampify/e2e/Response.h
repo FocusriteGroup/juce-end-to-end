@@ -12,21 +12,21 @@ public:
 
     ~Response () = default;
 
-    [[nodiscard]] Response withParameter (const juce::String & name,
-                                          const juce::String & value) const;
+    [[nodiscard]] Response withParameter (const juce::String & name, const juce::var & value) const;
+
     [[nodiscard]] Response withUuid (const juce::Uuid & uuid) const;
 
     [[nodiscard]] juce::String toJson () const;
     [[nodiscard]] juce::String describe () const;
 
-    void addParameter (const juce::String & name, const juce::String & value);
+    void addParameter (const juce::String & name, const juce::var & value);
 
 private:
     explicit Response (juce::Result result);
 
     juce::Uuid _uuid = juce::Uuid::null ();
     juce::Result _result;
-    std::map<juce::String, juce::String> _parameters;
+    std::map<juce::String, juce::var> _parameters;
 };
 
 }
