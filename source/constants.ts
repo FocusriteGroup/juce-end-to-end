@@ -4,5 +4,4 @@ export default {
   MAGIC_OFFSET: 0,
   SIZE_OFFSET: 4,
   MAGIC: 0x30061990,
-  APP_NAME: 'Ampify Studio',
 };

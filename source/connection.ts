@@ -76,17 +76,13 @@ export class Connection extends EventEmitter {
     });
 
     this.responseStream.on('error', (error) => {
-      console.error(
-        `Response error from ${Constants.APP_NAME}: ${error.message}`
-      );
+      console.error(`Error response from app: ${error.message}`);
       this.socket.destroy();
     });
 
     this.socket.on('error', (error) => {
       if (error.message !== 'read ECONNRESET') {
-        console.log(
-          `SOCKET ERROR: Response error from ${Constants.APP_NAME}: ${error.message}`
-        );
+        console.log(`Socket error from app: ${error.message}`);
       }
 
       this.socket.destroy();
