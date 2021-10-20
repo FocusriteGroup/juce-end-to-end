@@ -77,7 +77,7 @@ export class Connection extends EventEmitter {
     if (this.socket) this.socket.destroy();
   }
 
-  async send(command: Command): Promise<object> {
+  async send(command: Command): Promise<Response> {
     return new Promise((resolve, reject) => {
       assert(!!this.socket, 'Not connected');
       const sentCommand = {

@@ -1,20 +1,20 @@
-export interface ComponentCountResponse {
+export interface ComponentCountResponse extends Response {
   count: number;
 }
 
-export interface ScreenshotResponse {
+export interface ScreenshotResponse extends Response {
   image: string;
 }
 
-export interface ComponentVisibilityResponse {
+export interface ComponentVisibilityResponse extends Response {
   showing: string;
 }
 
-export interface ComponentEnablementResponse {
+export interface ComponentEnablementResponse extends Response {
   enabled: string;
 }
 
-export interface ComponentTextResponse {
+export interface ComponentTextResponse extends Response {
   text: string;
 }
 

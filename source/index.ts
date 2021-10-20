@@ -1,2 +1,3 @@
-export {E2EController} from './e2e-controller';
+export {AppConnection} from './app-connection';
 export {Command} from './commands';
+export {Response, Event} from './responses';

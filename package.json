@@ -24,10 +24,12 @@
   },
   "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
   "dependencies": {
+    "minimatch": "^3.0.4",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
+    "@types/minimatch": "^3.0.5",
     "@types/node": "^14.17.27",
     "@types/uuid": "^8.3.1",
     "git-rev-sync": "^3.0.1",

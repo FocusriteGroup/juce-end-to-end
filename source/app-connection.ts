@@ -16,6 +16,7 @@ import {
 import {Command} from './commands';
 import minimatch from 'minimatch';
 import {assert} from './assert';
+import {Response} from '.';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -23,7 +24,7 @@ let screenshotIndex = 0;
 
 interface AppConnectionOptions {
   appPath: string;
-  logsDir?: string;
+  logDirectory?: string;
 }
 
 export class AppConnection extends EventEmitter {
@@ -31,12 +32,12 @@ export class AppConnection extends EventEmitter {
   process?: ChildProcess;
   server: Server;
   connection?: Connection;
-  logsDir?: string;
+  logDirectory?: string;
 
   constructor(options: AppConnectionOptions) {
     super();
     this.appPath = options.appPath;
-    this.logsDir = options.logsDir;
+    this.logDirectory = options.logDirectory;
     this.server = new Server();
 
     this.server.on('error', () => {
@@ -47,8 +48,8 @@ export class AppConnection extends EventEmitter {
       this.server = null;
     });
 
-    if (this.logsDir && !fs.existsSync(this.logsDir)) {
-      fs.mkdirSync(this.logsDir);
+    if (this.logDirectory && !fs.existsSync(this.logDirectory)) {
+      fs.mkdirSync(this.logDirectory);
     }
   }
 
@@ -63,7 +64,16 @@ export class AppConnection extends EventEmitter {
 
   launchProcess(extraArgs: string[]) {
     try {
-      this.process = spawn(this.appPath, extraArgs, {});
+      let command = this.appPath;
+      if (command.endsWith('.app')) {
+        command = 'open';
+        extraArgs = ['-a', this.appPath, '--'].concat(extraArgs);
+      }
+      console.log('command');
+      console.log(command);
+      console.log('extra args');
+      console.log(extraArgs);
+      this.process = spawn(command, extraArgs, {});
     } catch (error) {
       console.error(`Unable to launch: ${error.message}`);
       return;
@@ -94,7 +104,7 @@ export class AppConnection extends EventEmitter {
     if (this.process) this.process.kill();
   }
 
-  async sendCommand(command: Command): Promise<any> {
+  async sendCommand(command: Command): Promise<Response> {
     assert(!!this.connection);
     return await this.connection.send(command);
   }
@@ -107,10 +117,30 @@ export class AppConnection extends EventEmitter {
     await this.connection.waitForEvent(name, matchingFunction, timeout);
   }
 
-  async quit() {
-    await this.sendCommand({
+  async waitForExit(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.on('exit', (info) => {
+        if (info.code !== 0) {
+          reject(`App exited with code ${info.code}`);
+          return;
+        }
+
+        if (info.signal) {
+          reject(`App exited with signal ${info.signal}`);
+          return;
+        }
+
+        resolve();
+      });
+    });
+  }
+
+  async quit(): Promise<void> {
+    const promise = this.waitForExit();
+    this.sendCommand({
       type: 'quit',
     });
+    return promise;
   }
 
   async clickComponent(componentId: string, skip?: number) {
@@ -187,7 +217,7 @@ export class AppConnection extends EventEmitter {
       console.error(
         `Component '${componentName}' didn't become ${errorDescription}, writing screenshot to ${filename}`
       );
-      await this.getScreenshot('', filename);
+      await this.saveScreenshot('', filename);
       throw new Error(
         `Component '${componentName}' didn't become ${errorDescription}`
       );
@@ -221,7 +251,7 @@ export class AppConnection extends EventEmitter {
     if (!result) {
       const filename = `${++screenshotIndex}.png`;
       console.error(`${failString}, writing screenshot to ${filename}`);
-      await this.getScreenshot('', filename);
+      await this.saveScreenshot('', filename);
       throw new Error(failString);
     }
 
@@ -247,23 +277,20 @@ export class AppConnection extends EventEmitter {
     );
   }
 
-  async countComponents(
-    componentId: string,
-    rootId: string
-  ): Promise<ComponentCountResponse> {
-    const result = await this.sendCommand({
+  async countComponents(componentId: string, rootId: string): Promise<number> {
+    const result = (await this.sendCommand({
       type: 'get-component-count',
       args: {
         'component-id': componentId,
         'root-id': rootId,
       },
-    });
-    result.count = Number(result.count);
-    return result;
+    })) as ComponentCountResponse;
+
+    return result.count;
   }
 
-  async getScreenshot(componentId: string, outFileName: string) {
-    if (!this.logsDir) {
+  async saveScreenshot(componentId: string, outFileName: string) {
+    if (!this.logDirectory) {
       return;
     }
 
@@ -276,7 +303,7 @@ export class AppConnection extends EventEmitter {
 
     try {
       await writeFile(
-        path.join(this.logsDir, outFileName),
+        path.join(this.logDirectory, outFileName),
         response.image,
         'base64'
       );
@@ -288,7 +315,7 @@ export class AppConnection extends EventEmitter {
     }
   }
 
-  async getComponentVisibility(componentId: string) {
+  async getComponentVisibility(componentId: string): Promise<boolean> {
     const response = (await this.sendCommand({
       type: 'get-component-visibility',
       args: {
@@ -299,7 +326,7 @@ export class AppConnection extends EventEmitter {
     return response.showing && response.showing === 'true';
   }
 
-  async getComponentEnablement(componentId: string) {
+  async getComponentEnablement(componentId: string): Promise<boolean> {
     const response = (await this.sendCommand({
       type: 'get-component-enablement',
       args: {
@@ -310,7 +337,7 @@ export class AppConnection extends EventEmitter {
     return response.enabled && response.enabled === 'true';
   }
 
-  async getComponentText(componentId: string) {
+  async getComponentText(componentId: string): Promise<string> {
     const response = (await this.sendCommand({
       type: 'get-component-text',
       args: {
@@ -321,15 +348,13 @@ export class AppConnection extends EventEmitter {
     return response.text;
   }
 
-  async getFocusedComponent() {
+  async getFocusedComponent(): Promise<string | undefined> {
     const response = await this.sendCommand({
       type: 'get-focus-component',
       args: {},
     });
-    if (response && response['component-id']) {
-      return response['component-id'];
-    }
-    return null;
+
+    return response && response['component-id'];
   }
 
   async tabToComponent(componentId: string) {
