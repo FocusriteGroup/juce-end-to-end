@@ -1,0 +1,86 @@
+version: 2.1
+
+orbs:
+  win: circleci/windows@2.4.0
+
+commands:
+
+  restore_npm_cache:
+    description: Restore NPM cache
+    steps:
+      - restore_cache:
+          keys:
+          - npm-cache-v4-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          - npm-cache-v4-{{ arch }}-{{ .Branch }}
+          - npm-cache-v4-{{ arch }}
+
+  save_npm_cache:
+    description: Save NPM cache
+    steps:
+      - save_cache:
+          key: npm-cache-v4-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+
+  npm_install:
+    description: Install NPM dependencies
+    steps:
+      - restore_npm_cache
+      - run: npm install
+      - save_npm_cache
+
+  install_cmake_macos:
+    steps:
+      - run: 
+          name: Install CMake
+          command: |
+            curl -OsL https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-macos10.10-universal.tar.gz
+            tar xf cmake-3.21.3-macos10.10-universal.tar.gz --strip-components=1
+            rm cmake-3.21.3-macos10.10-universal.tar.gz
+            chmod -R a+rwx "$PWD/CMake.app"
+            export PATH="$PATH:$PWD/CMake.app/Contents/bin"
+            sudo "$PWD/CMake.app/Contents/bin/cmake-gui" --install
+
+  install_cmake_windows:
+    steps:
+      - run: 
+          name: Install CMake
+          command: |
+            choco install cmake --version=3.21.3 --installargs '"ADD_CMAKE_TO_PATH=User"'
+            PATH_TO_CMAKE='/c/Program Files/CMake/bin'
+            echo "export PATH='$PATH_TO_CMAKE:$PATH'" >> $BASH_ENV
+
+  build_library:
+    description: Build end-to-end testing library
+    steps:
+      - run: 
+          name: Create end-to-end testing library
+          command: npm run create-lib
+
+jobs:
+
+  macos_build:
+    macos:
+      xcode: 12.5.0
+    steps:
+      - checkout
+      - npm_install
+      - install_cmake_macos
+      - build_library
+
+  windows_build:
+    executor: 
+      name: win/default
+      shell: bash.exe
+    steps:
+      - checkout
+      - npm_install
+      - install_cmake_windows
+      - build_library
+
+workflows:
+  
+  build_and_test:
+    jobs:
+      - macos_build
+      - windows_build
