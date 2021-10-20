@@ -3,6 +3,28 @@ version: 2.1
 orbs:
   win: circleci/windows@2.4.0
 
+aliases:
+  - &macos-env
+    macos:
+      xcode: 12.5.0
+      
+  - &windows-env
+    executor:
+      name: win/default
+      shell: bash.exe
+
+  - &only_on_tag
+    filters:
+      branches:
+        ignore: /.*/
+      tags:
+        only: /^v[0-9]+(\.[0-9]+)*$/
+
+  - &not_on_tag
+    filters:
+      tags:
+        ignore: /^v.*/
+
 commands:
 
   restore_npm_cache:
@@ -57,30 +79,71 @@ commands:
           name: Create end-to-end testing library
           command: npm run create-lib
 
+  persist:
+    steps:
+      - persist_to_workspace:
+          root: .
+          paths:
+            - cmake-build/installation/*.tar.gz
+
 jobs:
 
   macos_build:
-    macos:
-      xcode: 12.5.0
+    <<: *macos-env
     steps:
       - checkout
       - npm_install
       - install_cmake_macos
       - build_library
+      - persist
 
   windows_build:
-    executor: 
-      name: win/default
-      shell: bash.exe
+    <<: *windows-env
     steps:
       - checkout
       - npm_install
       - install_cmake_windows
       - build_library
+      - persist
+
+  macos_release:
+    <<: *macos-env
+    steps:
+      - checkout
+      - npm_install
+      - attach_workspace:
+          at: .
+      - run: npm run release
+
+  windows_release:
+    <<: *windows-env
+    steps:
+      - checkout
+      - npm_install
+      - attach_workspace:
+          at: .
+      - run: npm run release
 
 workflows:
-  
+
   build_and_test:
     jobs:
-      - macos_build
-      - windows_build
+      - macos_build:
+          <<: *not_on_tag
+      - windows_build:
+          <<: *not_on_tag
+
+  build_test_and_release:
+    jobs:
+      - macos_build:
+          <<: *only_on_tag
+      - macos_release:
+          <<: *only_on_tag
+          requires:
+            - macos_build
+      - windows_build:
+          <<: *only_on_tag
+      - windows_release:
+          <<: *only_on_tag
+          requires:
+            - windows_build

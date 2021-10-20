@@ -8,7 +8,8 @@
     "example": "example"
   },
   "scripts": {
-    "create-lib": "node scripts/create-lib.js"
+    "create-lib": "node scripts/create-lib.js",
+    "release": "node scripts/release.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +25,9 @@
   "dependencies": {},
   "devDependencies": {
     "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
+    "git-rev-sync": "^3.0.1",
     "glob": "^7.2.0",
+    "octokit": "^1.7.0",
     "tar": "^6.1.11"
   }
 }
