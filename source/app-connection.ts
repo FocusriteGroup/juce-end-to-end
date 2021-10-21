@@ -12,11 +12,11 @@ import {
   ComponentTextResponse,
   ScreenshotResponse,
   ComponentCountResponse,
+  ResponseData,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
 import {assert} from './assert';
-import {Response} from '.';
 import {pollUntil} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
@@ -100,7 +100,7 @@ export class AppConnection extends EventEmitter {
     if (this.process) this.process.kill();
   }
 
-  async sendCommand(command: Command): Promise<Response> {
+  async sendCommand(command: Command): Promise<ResponseData> {
     assert(!!this.connection);
     return await this.connection.send(command);
   }
@@ -202,7 +202,7 @@ export class AppConnection extends EventEmitter {
     timeoutTime = 5000
   ) {
     const result = await pollUntil(
-      (visible: any) => visible == visibility,
+      (visible: boolean) => visible === visibility,
       async () => await this.getComponentVisibility(componentName),
       timeoutTime
     );

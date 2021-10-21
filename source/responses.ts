@@ -1,22 +1,22 @@
-export interface ComponentCountResponse extends Response {
+export interface ComponentCountResponse {
   count: number;
 }
 
-export interface ScreenshotResponse extends Response {
+export interface ScreenshotResponse {
   image: string;
 }
 
-export interface ComponentVisibilityResponse extends Response {
+export interface ComponentVisibilityResponse {
   showing: boolean;
   exists: boolean;
 }
 
-export interface ComponentEnablementResponse extends Response {
+export interface ComponentEnablementResponse {
   enabled: boolean;
   exists: boolean;
 }
 
-export interface ComponentTextResponse extends Response {
+export interface ComponentTextResponse {
   text: string;
 }
 
@@ -25,19 +25,19 @@ export enum ResponseType {
   event = 'event',
 }
 
+export type ResponseData = object;
+
 export interface Response {
   uuid: string;
   type: ResponseType;
   success?: string;
   error?: string;
-  data?: any;
+  data?: ResponseData;
 }
 
-export interface CommandResponse extends Response {}
-
-export type Event = any;
+export type Event = object;
 
 export interface EventResponse extends Response {
   name: string;
-  data: any;
+  data: ResponseData;
 }

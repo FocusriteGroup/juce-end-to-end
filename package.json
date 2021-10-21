@@ -15,7 +15,8 @@
   "scripts": {
     "build": "tsc",
     "create-lib": "node scripts/create-lib.js",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "lint": "eslint . --ext .ts"
   },
   "repository": "git://github.com/Focusrite-Novation/juce-end-to-end.git",
   "keywords": [],
@@ -37,6 +38,9 @@
     "@types/minimatch": "^3.0.5",
     "@types/node": "^14.17.27",
     "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "eslint": "^8.0.1",
     "git-rev-sync": "^3.0.1",
     "glob": "^7.2.0",
     "octokit": "^1.7.0",

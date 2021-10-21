@@ -7,13 +7,7 @@ import {Socket} from 'net';
 import {Command} from '.';
 import {SentCommand} from './commands';
 import {commandToBuffer} from './binary-protocol';
-import {
-  CommandResponse,
-  Event,
-  EventResponse,
-  Response,
-  ResponseType,
-} from './responses';
+import {Event, EventResponse, Response, ResponseType} from './responses';
 
 export type EventMatchingFunction = (event: Event) => boolean;
 
@@ -53,7 +47,7 @@ export class Connection extends EventEmitter {
 
     this.responseStream.on('response', (response: Response) => {
       if (response.type === ResponseType.response) {
-        this.responseReceived(response as CommandResponse);
+        this.responseReceived(response);
       } else if (response.type === ResponseType.event) {
         this.eventReceived(response as EventResponse);
       }
@@ -77,13 +71,13 @@ export class Connection extends EventEmitter {
     if (this.socket) this.socket.destroy();
   }
 
-  async send(command: Command): Promise<Response> {
+  async send(command: Command): Promise<object> {
     return new Promise((resolve, reject) => {
       assert(!!this.socket, 'Not connected');
       const sentCommand = {
         uuid: uuidv4(),
         ...command,
-        onReceived: (data: any) => resolve(data),
+        onReceived: (data: Buffer) => resolve(data),
         onError: (error: Error) => reject(error),
       };
       const buffer = commandToBuffer(sentCommand);
@@ -111,7 +105,7 @@ export class Connection extends EventEmitter {
     });
   }
 
-  responseReceived(response: CommandResponse) {
+  responseReceived(response: Response) {
     const command = this.sentCommands.find((element) => {
       return element.uuid === response.uuid;
     });
