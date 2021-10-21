@@ -9,9 +9,8 @@ const constants = {
   MAGIC: 0x30061990,
 };
 
-export function commandToBuffer(command: SentCommand) {
-  const commandJson = JSON.stringify(command);
-  const commandBuffer = Buffer.from(commandJson, 'utf-8');
+function makeMessage(message: string): Buffer {
+  const commandBuffer = Buffer.from(message, 'utf-8');
 
   const buffer = Buffer.alloc(constants.HEADER_SIZE + commandBuffer.length, 0);
   buffer.writeUInt32LE(constants.MAGIC, constants.MAGIC_OFFSET);
@@ -19,6 +18,14 @@ export function commandToBuffer(command: SentCommand) {
   commandBuffer.copy(buffer, constants.DATA_OFFSET);
 
   return buffer;
+}
+
+export function commandToBuffer(command: SentCommand) {
+  return makeMessage(JSON.stringify(command));
+}
+
+export function responseToBuffer(response: Response) {
+  return makeMessage(JSON.stringify(response));
 }
 
 export function isValid(buffer: Buffer): boolean {
@@ -35,6 +42,10 @@ interface NextResponse {
 }
 
 export function getNextResponse(buffer: Buffer): NextResponse {
+  if (buffer.length < constants.HEADER_SIZE) {
+    return {bytesConsumed: 0};
+  }
+
   const dataSize = buffer.readUInt32LE(constants.SIZE_OFFSET);
 
   if (buffer.length < constants.HEADER_SIZE + dataSize) {

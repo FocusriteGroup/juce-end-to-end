@@ -9,7 +9,7 @@ export class ResponseStream extends EventEmitter {
     this.data = Buffer.alloc(0);
   }
 
-  checkForData() {
+  #checkForData() {
     if (!isValid(this.data)) {
       this.emit('error', new Error('Incorrect response'));
       return;
@@ -34,12 +34,12 @@ export class ResponseStream extends EventEmitter {
     }
 
     if (this.data.length) {
-      this.checkForData();
+      this.#checkForData();
     }
   }
 
   push(data: Uint8Array) {
     this.data = Buffer.concat([this.data, data]);
-    this.checkForData();
+    this.#checkForData();
   }
 }

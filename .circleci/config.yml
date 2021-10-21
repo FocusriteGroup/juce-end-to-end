@@ -133,6 +133,9 @@ jobs:
       - run:
           name: Compile TypeScript
           command: npx tsc
+      - run:
+          name: Run tests
+          command: npm test
       - persist
 
   macos_release:
