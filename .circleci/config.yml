@@ -13,6 +13,10 @@ aliases:
       name: win/default
       shell: bash.exe
 
+  - &node-env
+    docker:
+      - image: cimg/node:lts
+
   - &only_on_tag
     filters:
       branches:
@@ -51,6 +55,12 @@ commands:
       - run: npm install
       - save_npm_cache
 
+  install_npm_token:
+    steps: 
+      - run:
+          name: Write NPM Token to ~/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$GIT_ACCESS_TOKEN" >> ~/.npmrc
+
   install_cmake_macos:
     steps:
       - run: 
@@ -85,6 +95,12 @@ commands:
           root: .
           paths:
             - cmake-build/installation/*.tar.gz
+            - source/*
+            - dist/*
+            - package.json
+            - package-lock.json
+            - LICENSE
+            - README.md
 
 jobs:
 
@@ -106,6 +122,22 @@ jobs:
       - build_library
       - persist
 
+  typescript_build:
+    <<: *node-env
+    steps:
+      - checkout
+      - npm_install
+      - run:
+          name: Install TypeScript
+          command: npm install -g typescript
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Compile TypeScript
+          command: tsc
+      - persist
+
   macos_release:
     <<: *macos-env
     steps:
@@ -124,6 +156,18 @@ jobs:
           at: .
       - run: npm run release
 
+  typescript_release:
+    <<: *node-env
+    steps:
+      - checkout
+      - install_npm_token
+      - npm_install
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish NPM package
+          command: npm publish
+
 workflows:
 
   build_and_test:
@@ -131,6 +175,8 @@ workflows:
       - macos_build:
           <<: *not_on_tag
       - windows_build:
+          <<: *not_on_tag
+      - typescript_build:
           <<: *not_on_tag
 
   build_test_and_release:
@@ -147,3 +193,9 @@ workflows:
           <<: *only_on_tag
           requires:
             - windows_build
+      - typescript_build:
+          <<: *only_on_tag
+      - typescript_release:
+          <<: *only_on_tag
+          requires:
+            - typescript_build
