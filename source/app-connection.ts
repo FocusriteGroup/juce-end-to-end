@@ -28,6 +28,10 @@ interface AppConnectionOptions {
   logDirectory?: string;
 }
 
+export interface EnvironmentVariables {
+  [key: string]: string;
+}
+
 export class AppConnection extends EventEmitter {
   appPath: string;
   process?: ChildProcess;
@@ -63,9 +67,9 @@ export class AppConnection extends EventEmitter {
     assert(!!this.process);
   }
 
-  launchProcess(extraArgs: string[]) {
+  launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {
     try {
-      this.process = spawn(this.appPath, extraArgs, {});
+      this.process = spawn(this.appPath, extraArgs, {env});
     } catch (error) {
       console.error(`Unable to launch: ${error.message}`);
       return;
@@ -76,9 +80,9 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async launch(extraArgs: string[] = []) {
+  async launch(extraArgs: string[] = [], env: EnvironmentVariables = {}) {
     const port = await this.server.listen();
-    this.launchProcess(extraArgs.concat([`--e2e-test-port=${port}`]));
+    this.launchProcess(extraArgs.concat([`--e2e-test-port=${port}`]), env);
     const socket = await this.server.waitForConnection();
 
     this.connection = new Connection(socket);
