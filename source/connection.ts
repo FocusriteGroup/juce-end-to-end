@@ -6,7 +6,7 @@ import {assert} from './assert';
 import {Socket} from 'net';
 import {Command} from '.';
 import {SentCommand} from './commands';
-import {commandToBuffer} from './binary-protocol';
+import {toBuffer} from './binary-protocol';
 import {Event, EventResponse, Response, ResponseType} from './responses';
 
 export type EventMatchingFunction = (event: Event) => boolean;
@@ -80,7 +80,7 @@ export class Connection extends EventEmitter {
         onReceived: (data: Buffer) => resolve(data),
         onError: (error: Error) => reject(error),
       };
-      const buffer = commandToBuffer(sentCommand);
+      const buffer = toBuffer(sentCommand);
       this.socket.write(buffer);
       this.sentCommands.push(sentCommand);
     });

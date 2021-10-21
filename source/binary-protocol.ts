@@ -1,4 +1,3 @@
-import {SentCommand} from './commands';
 import {Response} from './responses';
 
 const constants = {
@@ -9,23 +8,15 @@ const constants = {
   MAGIC: 0x30061990,
 };
 
-function makeMessage(message: string): Buffer {
-  const commandBuffer = Buffer.from(message, 'utf-8');
+export function toBuffer(data: object) {
+  const dataBuffer = Buffer.from(JSON.stringify(data), 'utf-8');
 
-  const buffer = Buffer.alloc(constants.HEADER_SIZE + commandBuffer.length, 0);
+  const buffer = Buffer.alloc(constants.HEADER_SIZE + dataBuffer.length, 0);
   buffer.writeUInt32LE(constants.MAGIC, constants.MAGIC_OFFSET);
-  buffer.writeUInt32LE(commandBuffer.length, constants.SIZE_OFFSET);
-  commandBuffer.copy(buffer, constants.DATA_OFFSET);
+  buffer.writeUInt32LE(dataBuffer.length, constants.SIZE_OFFSET);
+  dataBuffer.copy(buffer, constants.DATA_OFFSET);
 
   return buffer;
-}
-
-export function commandToBuffer(command: SentCommand) {
-  return makeMessage(JSON.stringify(command));
-}
-
-export function responseToBuffer(response: Response) {
-  return makeMessage(JSON.stringify(response));
 }
 
 export function isValid(buffer: Buffer): boolean {

@@ -1,4 +1,4 @@
-import {responseToBuffer} from '../source/binary-protocol';
+import {toBuffer} from '../source/binary-protocol';
 import {v4 as uuidv4} from 'uuid';
 import {ResponseType} from '../source/responses';
 import {ResponseStream} from '../source/response-stream';
@@ -21,12 +21,12 @@ describe('Response Stream', () => {
   });
 
   it('parses valid response', () => {
-    responseStream.push(responseToBuffer(exampleResponse));
+    responseStream.push(toBuffer(exampleResponse));
     expect(onResponse).toHaveBeenCalledWith(exampleResponse);
   });
 
   it('parses valid response arriving byte by byte', () => {
-    responseToBuffer(exampleResponse).forEach((byte) =>
+    toBuffer(exampleResponse).forEach((byte) =>
       responseStream.push(Buffer.from([byte]))
     );
     expect(onResponse).toHaveBeenCalledWith(exampleResponse);
