@@ -128,14 +128,11 @@ jobs:
       - checkout
       - npm_install
       - run:
-          name: Install TypeScript
-          command: npm install -g typescript
-      - run:
           name: Lint
           command: npm run lint
       - run:
           name: Compile TypeScript
-          command: tsc
+          command: npx tsc
       - persist
 
   macos_release:
