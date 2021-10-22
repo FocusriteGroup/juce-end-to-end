@@ -94,13 +94,25 @@ commands:
       - persist_to_workspace:
           root: .
           paths:
-            - cmake-build/installation/*.tar.gz
+            - cmake-build/*
             - source/*
             - dist/*
             - package.json
             - package-lock.json
             - LICENSE
             - README.md
+
+  test_example_app:
+    steps:
+      - run:
+          name: Test Example Application
+          command: npm run test-example
+
+  test_typescript_library:
+    steps:
+      - run:
+          name: Test TypeScript library
+          command: npm test
 
 jobs:
 
@@ -122,6 +134,22 @@ jobs:
       - build_library
       - persist
 
+  macos_test:
+    <<: *macos-env
+    steps:
+      - attach_workspace:
+          at: .
+      - npm_install
+      - test_example_app
+
+  windows_test:
+    <<: *windows-env
+    steps:
+      - attach_workspace:
+          at: .
+      - npm_install
+      - test_example_app
+
   typescript_build:
     <<: *node-env
     steps:
@@ -133,9 +161,7 @@ jobs:
       - run:
           name: Compile TypeScript
           command: npx tsc
-      - run:
-          name: Run tests
-          command: npm test
+      - test_typescript_library
       - persist
 
   macos_release:
@@ -176,6 +202,14 @@ workflows:
           <<: *not_on_tag
       - windows_build:
           <<: *not_on_tag
+      - macos_test:
+          <<: *not_on_tag
+          requires:
+            - macos_build
+      - windows_test:
+          <<: *not_on_tag
+          requires:
+            - windows_build
       - typescript_build:
           <<: *not_on_tag
 
@@ -183,16 +217,24 @@ workflows:
     jobs:
       - macos_build:
           <<: *only_on_tag
-      - macos_release:
+      - macos_test:
           <<: *only_on_tag
           requires:
             - macos_build
+      - macos_release:
+          <<: *only_on_tag
+          requires:
+            - macos_test
       - windows_build:
           <<: *only_on_tag
-      - windows_release:
+      - windows_test:
           <<: *only_on_tag
           requires:
             - windows_build
+      - windows_release:
+          <<: *only_on_tag
+          requires:
+            - windows_test
       - typescript_build:
           <<: *only_on_tag
       - typescript_release:

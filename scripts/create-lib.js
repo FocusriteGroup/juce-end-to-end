@@ -34,7 +34,7 @@ const createBuildFolder = () => {
 
 const generateBuildSystem = () => {
   execSync(
-    `cmake -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${paths.source}" -B "${paths.build}"`,
+    `cmake -DAMPIFY_E2E_MAKE_TESTS=ON -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${paths.source}" -B "${paths.build}"`,
     {
       stdio: 'inherit',
     }
