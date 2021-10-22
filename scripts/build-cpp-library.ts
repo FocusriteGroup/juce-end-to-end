@@ -1,53 +1,20 @@
-const path = require('path');
-const fs = require('fs');
-const {execSync} = require('child_process');
-const glob = require('glob');
-const tar = require('tar');
-const paths = require('./lib/paths');
-const platform = require('./lib/platform');
+import path from 'path';
+import fs from 'fs';
+import {execSync} from 'child_process';
+import glob from 'glob';
+import tar from 'tar';
+import paths from './lib/paths';
+import {removeDirectory, createDirectory} from './lib/directory';
 
-const skipClean = process.env.SKIP_CLEAN || false;
-const generator =
-  process.env.GENERATOR ||
-  (platform.isMac() ? 'Xcode' : 'Visual Studio 16 2019');
+type Configuration = 'Debug' | 'Release';
 
-const removeDirectory = (path) => {
-  if (fs.existsSync(path)) {
-    fs.rmdirSync(path, {recursive: true});
-  }
-};
-
-const createDirectory = (path) => {
-  if (!fs.existsSync(path)) {
-    fs.mkdirSync(path, {recursive: true});
-  }
-};
-
-const createBuildFolder = () => {
-  if (skipClean) {
-    return;
-  }
-
-  removeDirectory(paths.build);
-  createDirectory(paths.build);
-};
-
-const generateBuildSystem = () => {
-  execSync(
-    `cmake -DAMPIFY_E2E_MAKE_TESTS=ON -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${paths.source}" -B "${paths.build}"`,
-    {
-      stdio: 'inherit',
-    }
-  );
-};
-
-const build = (configuration) => {
+const build = (configuration: Configuration) => {
   execSync(`cmake --build "${paths.build}" --config "${configuration}"`, {
     stdio: 'inherit',
   });
 };
 
-const copyLibrary = (configuration) => {
+const copyLibrary = (configuration: Configuration) => {
   fs.copyFileSync(
     paths.libraryBuild(configuration),
     paths.libraryInstall(configuration)
@@ -59,7 +26,7 @@ const copyHeaders = () => {
     cwd: paths.includeSource,
   });
 
-  headers.forEach((header) => {
+  headers.forEach((header: string) => {
     const sourceFile = path.join(paths.includeSource, header);
     const destFile = path.join(paths.include, header);
     createDirectory(path.dirname(destFile));
@@ -100,8 +67,6 @@ const createInstallation = () => {
 };
 
 const main = () => {
-  createBuildFolder();
-  generateBuildSystem();
   build('Debug');
   build('Release');
   createInstallation();

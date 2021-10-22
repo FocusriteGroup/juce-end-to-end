@@ -17,10 +17,9 @@ add_library (
   source/KeyPress.cpp
   source/KeyPress.h
   source/Response.cpp
-  source/TestCentre.cpp
-)
+  source/TestCentre.cpp)
 
-add_library(ampify-e2e::ampify-e2e ALIAS ampify-e2e)
+add_library (ampify-e2e::ampify-e2e ALIAS ampify-e2e)
 
 target_include_directories (ampify-e2e PUBLIC include)
 
@@ -34,21 +33,32 @@ endforeach ()
 
 target_include_directories (ampify-e2e PRIVATE ${juce_SOURCE_DIR}/modules)
 
-set_target_properties (ampify-e2e PROPERTIES CXX_STANDARD 17)
-
-target_compile_definitions (ampify-e2e PRIVATE $<$<CONFIG:Debug>:DEBUG>)
 target_compile_definitions (ampify-e2e
                             PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
 
-if (APPLE)
-  target_compile_options (ampify-e2e PRIVATE -Wall -Wextra -Werror)
-  set_target_properties (ampify-e2e PROPERTIES OSX_ARCHITECTURES "arm64;x86_64")
-endif()
+set_common_target_properties (ampify-e2e)
 
-if (MSVC)
-  target_compile_options (ampify-e2e PRIVATE /W4 /WX)
-  target_compile_options (ampify-e2e PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
-endif ()
-
-get_target_property(AMPIFY_E2E_SOURCES ampify-e2e SOURCES)
+get_target_property (AMPIFY_E2E_SOURCES ampify-e2e SOURCES)
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${AMPIFY_E2E_SOURCES})
+
+if (AMPIFY_E2E_MAKE_TESTS)
+
+  add_executable (ampify-e2e-tests ./tests/TestCommand.cpp
+                                   ./tests/TestResponse.cpp)
+
+  target_link_libraries (ampify-e2e-tests PRIVATE Catch2::Catch2WithMain
+                                                  ampify-e2e)
+
+  add_test (NAME ampify-e2e-tests COMMAND ampify-e2e-tests)
+
+  set_common_target_properties (ampify-e2e-tests)
+
+  target_compile_definitions (
+    ampify-e2e-tests PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
+                             JUCE_STANDALONE_APPLICATION=1)
+
+  target_link_libraries (
+    ampify-e2e-tests PRIVATE juce::juce_core juce::juce_events juce::juce_gui_basics
+    PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags
+           juce::juce_recommended_warning_flags)
+endif ()

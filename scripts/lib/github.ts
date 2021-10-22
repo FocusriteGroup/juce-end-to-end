@@ -1,7 +1,7 @@
-const path = require('path');
-const fs = require('fs');
-const process = require('process');
-const {Octokit} = require('octokit');
+import path from 'path';
+import fs from 'fs';
+import process from 'process';
+import {Octokit} from 'octokit';
 
 const validateTag = (tagName) => {
   if (!/^v\d*\.\d*\.\d*$/i.test(tagName)) {
@@ -9,8 +9,19 @@ const validateTag = (tagName) => {
   }
 };
 
-class GithubReleaser {
-  constructor(releaseInfo) {
+interface ReleaseInfo {
+  tag: string;
+  owner: string;
+  repo: string;
+}
+
+export class GithubReleaser {
+  tag: string;
+  owner: string;
+  repo: string;
+  api: any; //eslint-disable-line
+
+  constructor(releaseInfo: ReleaseInfo) {
     validateTag(releaseInfo.tag);
     this.tag = releaseInfo.tag;
     this.owner = releaseInfo.owner;
@@ -115,5 +126,3 @@ class GithubReleaser {
     }
   };
 }
-
-module.exports = {GithubReleaser};

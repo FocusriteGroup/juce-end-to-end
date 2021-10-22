@@ -1,6 +1,6 @@
-const git = require('./lib/git');
-const paths = require('./lib/paths');
-const {GithubReleaser} = require('./lib/github');
+import git from './lib/git';
+import paths from './lib/paths';
+import {GithubReleaser} from './lib/github';
 
 const release = async () => {
   if (!git.isOnTag) {

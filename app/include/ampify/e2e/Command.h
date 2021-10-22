@@ -17,6 +17,9 @@ public:
     [[nodiscard]] juce::var getArgumentAsVar (const juce::String & argument) const;
     [[nodiscard]] juce::var getArgs () const;
 
+    template <typename T>
+    [[nodiscard]] T getArgumentAs (const juce::String & argument);
+
     [[nodiscard]] juce::String describe () const;
 
 private:
@@ -27,5 +30,11 @@ private:
     juce::Uuid _uuid = juce::Uuid::null ();
     juce::var _args;
 };
+
+template <typename T>
+[[nodiscard]] T Command::getArgumentAs (const juce::String & argument)
+{
+    return T (getArgumentAsVar (argument));
+}
 
 }

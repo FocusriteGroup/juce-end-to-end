@@ -1,6 +1,6 @@
-const git = require('git-rev-sync');
+import git from 'git-rev-sync';
 
-module.exports = {
+export default {
   hash: {
     short: git.short(),
     long: git.long(),

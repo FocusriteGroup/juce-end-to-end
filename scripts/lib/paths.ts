@@ -1,5 +1,5 @@
-const path = require('path');
-const platform = require('./platform');
+import path from 'path';
+import * as platform from './platform';
 
 const source = process.env.E2E_SOURCE || process.cwd();
 const build = path.join(source, 'cmake-build');
@@ -33,7 +33,7 @@ const archive = path.join(
   `ampify-e2e-${platform.currentPlatform()}.tar.gz`
 );
 
-module.exports = {
+export default {
   source,
   build,
   install,
