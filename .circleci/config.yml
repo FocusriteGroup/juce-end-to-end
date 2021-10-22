@@ -95,12 +95,7 @@ commands:
           root: .
           paths:
             - cmake-build/*
-            - source/*
             - dist/*
-            - package.json
-            - package-lock.json
-            - LICENSE
-            - README.md
 
   test_example_app:
     steps:
@@ -137,6 +132,7 @@ jobs:
   macos_test:
     <<: *macos-env
     steps:
+      - checkout
       - attach_workspace:
           at: .
       - npm_install
@@ -145,6 +141,7 @@ jobs:
   windows_test:
     <<: *windows-env
     steps:
+      - checkout
       - attach_workspace:
           at: .
       - npm_install
