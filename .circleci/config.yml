@@ -144,6 +144,7 @@ jobs:
       - attach_workspace:
           at: .
       - npm_install
+      - install_cmake_macos
       - test_example_app
       - test_cpp_library
 
@@ -154,6 +155,7 @@ jobs:
       - attach_workspace:
           at: .
       - npm_install
+      - install_cmake_windows
       - test_example_app
       - test_cpp_library
 
