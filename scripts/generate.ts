@@ -15,7 +15,7 @@ const generateBuildSystem = () => {
     '-DAMPIFY_E2E_MAKE_TESTS=ON',
     '-DAMPIFY_E2E_FETCH_JUCE=ON',
     '-G',
-    generator,
+    `"${generator}"`,
     '-S',
     `"${paths.source}"`,
     '-B',
