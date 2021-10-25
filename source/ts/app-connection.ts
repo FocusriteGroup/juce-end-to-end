@@ -16,7 +16,7 @@ import {
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
-import {assert} from './assert';
+import {strict as assert} from 'assert';
 import {pollUntil} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
@@ -61,10 +61,6 @@ export class AppConnection extends EventEmitter {
   stopServer() {
     this.server.close();
     this.connection.kill();
-  }
-
-  connect() {
-    assert(!!this.process);
   }
 
   launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {

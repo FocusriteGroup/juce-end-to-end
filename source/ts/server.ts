@@ -1,5 +1,5 @@
 import net, {Socket} from 'net';
-import {assert} from './assert';
+import {strict as assert} from 'assert';
 import {EventEmitter} from 'events';
 
 export class Server extends EventEmitter {
@@ -20,6 +20,7 @@ export class Server extends EventEmitter {
   async listen(): Promise<number> {
     return new Promise((resolve) => {
       assert(!this.server);
+
       this.server = new net.Server();
 
       this.server.on('close', () => {
