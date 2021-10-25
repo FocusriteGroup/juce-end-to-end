@@ -1,5 +1,5 @@
 #include <ampify/e2e/Command.h>
-#include <catch2/catch_test_macros.hpp>
+#include <juce_core/juce_core.h>
 
 const auto exampleJson = R"identifier(
 {
@@ -18,40 +18,75 @@ const auto exampleJson = R"identifier(
 
 namespace ampify::e2e
 {
-TEST_CASE ("Converts from JSON", "[command]")
+class CommandTests final : public juce::UnitTest
 {
-    auto command = Command::fromJson (exampleJson);
-    REQUIRE (command.isValid ());
-
-    SECTION ("Type argument")
+public:
+    CommandTests () noexcept
+        : juce::UnitTest ("Command")
     {
-        REQUIRE (command.getType () == "command-type");
     }
 
-    SECTION ("UUID")
+    void runTest () override
     {
-        REQUIRE (command.getUuid () == juce::Uuid ("beb16073-dbcd-49aa-b7d1-9466582a1e0e"));
+        struct Test
+        {
+            juce::String name;
+            std::function<void ()> entry;
+        };
+
+        auto tests = {
+            Test {"Converts type from JSON", [this] { convertsTypeFromJson (); }},
+            Test {"Converts UUID from JSON", [this] { convertsUuidFromJson (); }},
+            Test {"Converts String argument from JSON",
+                  [this] { convertsStringArgumentFromJson (); }},
+            Test {"Converts int argument from JSON", [this] { convertsIntArgumentFromJson (); }},
+            Test {"Converts bool argument from JSON", [this] { convertsBoolArgumentFromJson (); }},
+            Test {"Converts object argument from JSON",
+                  [this] { convertsObjectArgumentFromJson (); }},
+        };
+
+        for (auto && test : tests)
+        {
+            beginTest (test.name);
+            test.entry ();
+        }
     }
 
-    SECTION ("String argument")
+    void convertsTypeFromJson ()
     {
-        REQUIRE (command.getArgument ("string-type") == "string argument");
+        expectEquals (command.getType (), juce::String ("command-type"));
     }
 
-    SECTION ("Int argument")
+    void convertsUuidFromJson ()
     {
-        REQUIRE (command.getArgumentAs<int> ("int-type") == 45675);
+        expect (command.getUuid () == juce::Uuid ("beb16073-dbcd-49aa-b7d1-9466582a1e0e"));
     }
 
-    SECTION ("Bool argument")
+    void convertsStringArgumentFromJson ()
     {
-        REQUIRE (command.getArgumentAs<bool> ("bool-type"));
+        expectEquals (command.getArgument ("string-type"), juce::String ("string argument"));
     }
 
-    SECTION ("Object argument")
+    void convertsIntArgumentFromJson ()
+    {
+        expectEquals (command.getArgumentAs<int> ("int-type"), 45675);
+    }
+
+    void convertsBoolArgumentFromJson ()
+    {
+        expect (command.getArgumentAs<bool> ("bool-type"));
+    }
+
+    void convertsObjectArgumentFromJson ()
     {
         const auto var = command.getArgumentAsVar ("object-type");
-        REQUIRE (var.getProperty ("value", {}).toString () == "object");
+        expectEquals (var.getProperty ("value", {}).toString (), juce::String ("object"));
     }
-}
+
+private:
+    const Command command = Command::fromJson (exampleJson);
+};
+
+[[maybe_unused]] static CommandTests commandTests;
+
 }

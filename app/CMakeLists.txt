@@ -43,11 +43,10 @@ source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${AMPIFY_E2E_SOURCES})
 
 if (AMPIFY_E2E_MAKE_TESTS)
 
-  add_executable (ampify-e2e-tests ./tests/TestCommand.cpp
+  add_executable (ampify-e2e-tests ./tests/main.cpp ./tests/TestCommand.cpp
                                    ./tests/TestResponse.cpp)
 
-  target_link_libraries (ampify-e2e-tests PRIVATE Catch2::Catch2WithMain
-                                                  ampify-e2e)
+  target_link_libraries (ampify-e2e-tests PRIVATE ampify-e2e)
 
   add_test (NAME ampify-e2e-tests COMMAND ampify-e2e-tests)
 
@@ -58,7 +57,8 @@ if (AMPIFY_E2E_MAKE_TESTS)
                              JUCE_STANDALONE_APPLICATION=1)
 
   target_link_libraries (
-    ampify-e2e-tests PRIVATE juce::juce_core juce::juce_events juce::juce_gui_basics
+    ampify-e2e-tests PRIVATE juce::juce_core juce::juce_events
+                             juce::juce_gui_basics
     PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags
            juce::juce_recommended_warning_flags)
 endif ()

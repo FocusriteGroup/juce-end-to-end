@@ -18,7 +18,7 @@ public:
     [[nodiscard]] juce::var getArgs () const;
 
     template <typename T>
-    [[nodiscard]] T getArgumentAs (const juce::String & argument);
+    [[nodiscard]] T getArgumentAs (const juce::String & argument) const;
 
     [[nodiscard]] juce::String describe () const;
 
@@ -32,7 +32,7 @@ private:
 };
 
 template <typename T>
-[[nodiscard]] T Command::getArgumentAs (const juce::String & argument)
+[[nodiscard]] T Command::getArgumentAs (const juce::String & argument) const
 {
     return T (getArgumentAsVar (argument));
 }

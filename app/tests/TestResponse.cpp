@@ -1,54 +1,104 @@
 #include <ampify/e2e/Response.h>
-#include <catch2/catch_test_macros.hpp>
 
 namespace ampify::e2e
 {
-TEST_CASE ("Converts to JSON", "[response]")
+struct Fixture
 {
-    const juce::Uuid uuid;
-    const auto okResponse = Response::ok ()
-                                .withUuid (uuid)
-                                .withParameter ("string", "message")
-                                .withParameter ("number", 12345);
-    const auto failResponse =
+public:
+    juce::Uuid uuid;
+    const Response okResponse = Response::ok ()
+                                    .withUuid (uuid)
+                                    .withParameter ("string", "message")
+                                    .withParameter ("number", 12345);
+    const Response failResponse =
         Response::fail ("Error message").withUuid (uuid).withParameter ("double", 0.123456789);
 
-    const auto parsedOk = juce::JSON::parse (okResponse.toJson ());
-    const auto parsedFail = juce::JSON::parse (failResponse.toJson ());
+    const juce::var parsedOk = juce::JSON::parse (okResponse.toJson ());
+    const juce::var parsedFail = juce::JSON::parse (failResponse.toJson ());
+};
 
-    SECTION ("Contains UUID")
+class ResponseTests final : public juce::UnitTest
+{
+public:
+    ResponseTests () noexcept
+        : juce::UnitTest ("Response")
     {
-        REQUIRE (juce::Uuid (parsedOk.getProperty ("uuid", {})) == uuid);
     }
 
-    SECTION ("Success")
+    void initialise () override
     {
-        REQUIRE (bool (parsedOk.getProperty ("success", {})));
-        REQUIRE (! bool (parsedFail.getProperty ("success", {})));
+        _fixture = std::make_unique<Fixture> ();
     }
 
-    SECTION ("Error message")
+    void shutdown () override
     {
-        REQUIRE (parsedFail.getProperty ("error", {}) == "Error message");
+        _fixture.reset ();
     }
 
-    SECTION ("String parameter")
+    void runTest () override
     {
-        const auto data = parsedOk.getProperty ("data", {});
-        REQUIRE (data.getProperty ("string", {}) == "message");
+        struct Test
+        {
+            juce::String name;
+            std::function<void ()> entry;
+        };
+
+        auto tests = {
+            Test {"UUID", [this] { containsUuid (); }},
+            Test {"Success", [this] { containsSuccess (); }},
+            Test {"Error message", [this] { containsErrorMessage (); }},
+            Test {"String parameter", [this] { stringParameter (); }},
+            Test {"Number parameter", [this] { numberParameter (); }},
+            Test {"Double parameter", [this] { doubleParameter (); }},
+        };
+
+        for (auto && test : tests)
+        {
+            beginTest (test.name);
+
+            test.entry ();
+        }
     }
 
-    SECTION ("Number parameter")
+    void containsUuid ()
     {
-        const auto data = parsedOk.getProperty ("data", {});
-        REQUIRE (int (data.getProperty ("number", {})) == 12345);
+        expect (juce::Uuid (_fixture->parsedOk.getProperty ("uuid", {})) == _fixture->uuid);
     }
 
-    SECTION ("Double parameter")
+    void containsSuccess ()
     {
-        const auto data = parsedFail.getProperty ("data", {});
-        REQUIRE (double (data.getProperty ("double", {})) == 0.123456789);
+        expect (bool (_fixture->parsedOk.getProperty ("success", {})));
+        expect (! bool (_fixture->parsedFail.getProperty ("success", {})));
     }
-}
+
+    void containsErrorMessage ()
+    {
+        expectEquals (_fixture->parsedFail.getProperty ("error", {}).toString (),
+                      juce::String ("Error message"));
+    }
+
+    void stringParameter ()
+    {
+        const auto data = _fixture->parsedOk.getProperty ("data", {});
+        expectEquals (data.getProperty ("string", {}).toString (), juce::String ("message"));
+    }
+
+    void numberParameter ()
+    {
+        const auto data = _fixture->parsedOk.getProperty ("data", {});
+        expectEquals (int (data.getProperty ("number", {})), 12345);
+    }
+
+    void doubleParameter ()
+    {
+        const auto data = _fixture->parsedFail.getProperty ("data", {});
+        expectWithinAbsoluteError (double (data.getProperty ("double", {})), 0.123456789, 1e-9);
+    }
+
+private:
+    std::unique_ptr<Fixture> _fixture;
+};
+
+[[maybe_unused]] static ResponseTests responseTests;
 
 }
