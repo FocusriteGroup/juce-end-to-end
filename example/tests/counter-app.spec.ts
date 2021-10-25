@@ -1,4 +1,4 @@
-import {AppConnection} from '../../source';
+import {AppConnection} from '../../source/ts';
 import {appPath} from './app-path';
 
 describe('Count App tests', () => {

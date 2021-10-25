@@ -1,7 +1,7 @@
-import {toBuffer} from '../source/binary-protocol';
+import {toBuffer} from '../source/ts/binary-protocol';
 import {v4 as uuidv4} from 'uuid';
-import {ResponseType} from '../source/responses';
-import {ResponseStream} from '../source/response-stream';
+import {ResponseType} from '../source/ts/responses';
+import {ResponseStream} from '../source/ts/response-stream';
 
 describe('Response Stream', () => {
   let responseStream: ResponseStream;
