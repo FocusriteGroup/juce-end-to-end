@@ -165,13 +165,16 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async keyPress(key: string, modifiers?: string, focusComponent?: string) {
-    // First, make sure that the app is focused
+  bringAppToFront() {
     if (process.platform === 'darwin') {
       let appPath = this.appPath.substring(0, this.appPath.indexOf('.app'));
       appPath += '.app';
       execSync(`open '${appPath}'`);
     }
+  }
+
+  async keyPress(key: string, modifiers?: string, focusComponent?: string) {
+    this.bringAppToFront();
 
     await this.sendCommand({
       type: 'key-press',
