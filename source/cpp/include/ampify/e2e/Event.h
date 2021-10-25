@@ -12,7 +12,7 @@ public:
     Event (const Event & other) = default;
     ~Event () = default;
 
-    [[nodiscard]] Event withParameter (const juce::String & name, const juce::String & value) const;
+    [[nodiscard]] Event withParameter (const juce::String & name, const juce::var & value) const;
 
     [[nodiscard]] juce::String toJson () const;
 

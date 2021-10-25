@@ -7,7 +7,7 @@ Event::Event (juce::String name)
 {
 }
 
-Event Event::withParameter (const juce::String & name, const juce::String & value) const
+Event Event::withParameter (const juce::String & name, const juce::var & value) const
 {
     Event other (*this);
     other.addParameter (name, value);
