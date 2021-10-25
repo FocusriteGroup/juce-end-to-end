@@ -137,6 +137,19 @@ jobs:
       - build_library
       - persist
 
+  typescript_build:
+    <<: *node-env
+    steps:
+      - checkout
+      - npm_install
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Compile TypeScript
+          command: npx tsc
+      - persist
+
   macos_test:
     <<: *macos-env
     steps:
@@ -159,19 +172,12 @@ jobs:
       - test_example_app
       - test_cpp_library
 
-  typescript_build:
+  typescript_test:
     <<: *node-env
     steps:
       - checkout
       - npm_install
-      - run:
-          name: Lint
-          command: npm run lint
-      - run:
-          name: Compile TypeScript
-          command: npx tsc
       - test_typescript_library
-      - persist
 
   macos_release:
     <<: *macos-env
@@ -221,6 +227,10 @@ workflows:
             - windows_build
       - typescript_build:
           <<: *not_on_tag
+      - typescript_test:
+          <<: *not_on_tag
+          requires:
+            - typescript_build
 
   build_test_and_release:
     jobs:
@@ -246,7 +256,11 @@ workflows:
             - windows_test
       - typescript_build:
           <<: *only_on_tag
-      - typescript_release:
+      - typescript_test:
           <<: *only_on_tag
           requires:
             - typescript_build
+      - typescript_release:
+          <<: *only_on_tag
+          requires:
+            - typescript_test
