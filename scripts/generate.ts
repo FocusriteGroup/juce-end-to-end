@@ -10,12 +10,21 @@ const generator =
   (platform.isMac() ? 'Xcode' : 'Visual Studio 16 2019');
 
 const generateBuildSystem = () => {
-  execSync(
-    `cmake -DAMPIFY_E2E_MAKE_TESTS=ON -DAMPIFY_E2E_FETCH_JUCE=ON -G "${generator}" -S "${paths.source}" -B "${paths.build}"`,
-    {
-      stdio: 'inherit',
-    }
-  );
+  const args = [
+    'cmake',
+    '-DAMPIFY_E2E_MAKE_TESTS=ON',
+    '-DAMPIFY_E2E_FETCH_JUCE=ON',
+    '-G',
+    generator,
+    '-S',
+    `"${paths.source}"`,
+    '-B',
+    `"${paths.build}"`,
+  ];
+
+  execSync(args.join(' '), {
+    stdio: 'inherit',
+  });
 };
 
 const createBuildFolder = () => {

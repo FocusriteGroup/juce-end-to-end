@@ -5,8 +5,7 @@ import glob from 'glob';
 import tar from 'tar';
 import paths from './lib/paths';
 import {removeDirectory, createDirectory} from './lib/directory';
-
-type Configuration = 'Debug' | 'Release';
+import {Configuration} from './lib/configuration';
 
 const build = (configuration: Configuration) => {
   execSync(`cmake --build "${paths.build}" --config "${configuration}"`, {
@@ -26,7 +25,7 @@ const copyHeaders = () => {
     cwd: paths.includeSource,
   });
 
-  headers.forEach((header: string) => {
+  headers.forEach((header) => {
     const sourceFile = path.join(paths.includeSource, header);
     const destFile = path.join(paths.include, header);
     createDirectory(path.dirname(destFile));

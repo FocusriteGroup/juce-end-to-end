@@ -17,7 +17,7 @@ include (cmake/set_common_target_properties.cmake)
 
 project (ampify-e2e-testing)
 
-add_subdirectory (app)
+add_subdirectory (source/cpp)
 
 if (AMPIFY_E2E_MAKE_TESTS)
   add_subdirectory (example/app)

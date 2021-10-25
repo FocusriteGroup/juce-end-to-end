@@ -186,7 +186,7 @@ jobs:
       - npm_install
       - attach_workspace:
           at: .
-      - run: npm run release
+      - run: npm run release-cpp
 
   windows_release:
     <<: *windows-env
@@ -195,7 +195,7 @@ jobs:
       - npm_install
       - attach_workspace:
           at: .
-      - run: npm run release
+      - run: npm run release-cpp
 
   typescript_release:
     <<: *node-env
