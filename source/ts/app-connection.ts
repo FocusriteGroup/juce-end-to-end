@@ -32,6 +32,8 @@ export interface EnvironmentVariables {
   [key: string]: string;
 }
 
+const DEFAULT_TIMEOUT = 5000;
+
 export class AppConnection extends EventEmitter {
   appPath: string;
   process?: ChildProcess;
@@ -97,7 +99,7 @@ export class AppConnection extends EventEmitter {
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
-    assert(!!this.connection);
+    assert(this.connection);
     return await this.connection.send(command);
   }
 
@@ -146,12 +148,13 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async doubleClickComponent(componentId: string) {
+  async doubleClickComponent(componentId: string, skip?: number) {
     await this.sendCommand({
       type: 'click-component',
       args: {
         'component-id': componentId,
         'num-clicks': 2,
+        'skip': skip || 0,
       },
     });
   }
@@ -198,12 +201,12 @@ export class AppConnection extends EventEmitter {
   async waitForComponentVisibilityToBe(
     componentName: string,
     visibility: boolean,
-    timeoutTime = 5000
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
   ) {
     const result = await pollUntil(
       (visible: boolean) => visible === visibility,
       async () => await this.getComponentVisibility(componentName),
-      timeoutTime
+      timeoutInMilliseconds
     );
 
     if (!result) {
@@ -221,23 +224,26 @@ export class AppConnection extends EventEmitter {
     return result;
   }
 
-  async waitForComponentToBeVisible(componentName: string, timeoutTime = 5000) {
+  async waitForComponentToBeVisible(
+    componentName: string,
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
+  ) {
     return await this.waitForComponentVisibilityToBe(
       componentName,
       true,
-      timeoutTime
+      timeoutInMilliseconds
     );
   }
 
   async waitForComponentEnablementToBe(
     componentName: string,
     enablement: boolean,
-    timeoutTime = 5000
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
   ) {
     const result = await pollUntil(
       (enabled: boolean) => enabled === enablement,
       async () => await this.getComponentEnablement(componentName),
-      timeoutTime
+      timeoutInMilliseconds
     );
 
     const stateString = enablement ? 'enabled' : 'disabled';
@@ -253,22 +259,25 @@ export class AppConnection extends EventEmitter {
     return result;
   }
 
-  async waitForComponentToBeEnabled(componentName: string, timeoutTime = 5000) {
+  async waitForComponentToBeEnabled(
+    componentName: string,
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
+  ) {
     return await this.waitForComponentEnablementToBe(
       componentName,
       true,
-      timeoutTime
+      timeoutInMilliseconds
     );
   }
 
   async waitForComponentToBeDisabled(
     componentName: string,
-    timeoutTime = 5000
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
   ) {
     return await this.waitForComponentEnablementToBe(
       componentName,
       false,
-      timeoutTime
+      timeoutInMilliseconds
     );
   }
 
@@ -286,6 +295,9 @@ export class AppConnection extends EventEmitter {
 
   async saveScreenshot(componentId: string, outFileName: string) {
     if (!this.logDirectory) {
+      console.error(
+        'Unable to save a screenshot of the app as a log directory has not been set'
+      );
       return;
     }
 
@@ -352,11 +364,11 @@ export class AppConnection extends EventEmitter {
     return response && response['component-id'];
   }
 
-  async tabToComponent(componentId: string) {
-    for (let count = 0; count < 1024; count++) {
+  async tabToComponent(componentPattern: string, maxNumComponents = 1024) {
+    for (let count = 0; count < maxNumComponents; count++) {
       await this.keyPress('tab');
       const focusedId = await this.getFocusedComponent();
-      if (focusedId && minimatch(focusedId, componentId)) {
+      if (focusedId && minimatch(focusedId, componentPattern)) {
         return true;
       }
     }

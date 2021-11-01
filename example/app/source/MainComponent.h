@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ampify/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class MainComponent final : public juce::Component
@@ -23,10 +24,12 @@ public:
 
         updateLabel ();
 
-        _incrementButton.getProperties ().set ("test-id", "increment-button");
-        _decrementButton.getProperties ().set ("test-id", "decrement-button");
-        _enableButton.getProperties ().set ("test-id", "enable-button");
-        _valueLabel.getProperties ().set ("test-id", "value-label");
+        _incrementButton.getProperties ().set (ampify::e2e::ComponentSearch::testId,
+                                               "increment-button");
+        _decrementButton.getProperties ().set (ampify::e2e::ComponentSearch::testId,
+                                               "decrement-button");
+        _enableButton.getProperties ().set (ampify::e2e::ComponentSearch::testId, "enable-button");
+        _valueLabel.getProperties ().set (ampify::e2e::ComponentSearch::testId, "value-label");
     }
 
     void resized () override

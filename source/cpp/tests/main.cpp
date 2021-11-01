@@ -6,7 +6,7 @@ int main ()
     runner.runAllTests ();
 
     for (int resultIndex = 0; resultIndex < runner.getNumResults (); ++resultIndex)
-        if (auto result = runner.getResult (0))
+        if (auto result = runner.getResult (resultIndex))
             if (result->failures > 0)
                 return 1;
 

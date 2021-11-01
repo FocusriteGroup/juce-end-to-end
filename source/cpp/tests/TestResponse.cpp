@@ -4,7 +4,6 @@ namespace ampify::e2e
 {
 struct Fixture
 {
-public:
     juce::Uuid uuid;
     const Response okResponse = Response::ok ()
                                     .withUuid (uuid)
