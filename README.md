@@ -25,7 +25,7 @@ This package provides a simple way to inject commands in to your Juce based app 
 
 ## Building
 
-You can build on the command line, or using an IDE (We support _XCode_, _CLion_ and _VS2019_ currently). See [here](./documentation/building.md) for how to build Ampify Studio
+You can build on the command line, or using an IDE (We support _XCode_, _CLion_ and _VS2019_ currently). See [here](./documentation/building.md) for how to build this library.
 
 ## CI
 

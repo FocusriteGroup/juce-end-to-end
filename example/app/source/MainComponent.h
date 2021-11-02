@@ -1,5 +1,6 @@
 #pragma once
 
+#include <focusrite/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class MainComponent final : public juce::Component
@@ -22,6 +23,14 @@ public:
         _valueLabel.setColour (juce::Label::textColourId, juce::Colours::black);
 
         updateLabel ();
+
+        _incrementButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
+                                               "increment-button");
+        _decrementButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
+                                               "decrement-button");
+        _enableButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
+                                            "enable-button");
+        _valueLabel.getProperties ().set (focusrite::e2e::ComponentSearch::testId, "value-label");
     }
 
     void resized () override

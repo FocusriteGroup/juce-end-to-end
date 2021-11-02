@@ -5,3 +5,4 @@ cmake-build-release
 .idea
 .vscode
 node_modules
+dist

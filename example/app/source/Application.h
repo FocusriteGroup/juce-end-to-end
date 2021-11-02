@@ -2,7 +2,7 @@
 
 #include "MainWindow.h"
 
-#include <ampify/e2e/TestCentre.h>
+#include <focusrite/e2e/TestCentre.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class Application final : public juce::JUCEApplication
@@ -30,5 +30,5 @@ public:
 
 private:
     MainWindow _mainWindow;
-    std::unique_ptr<ampify::e2e::TestCentre> _testCentre = ampify::e2e::TestCentre::create ();
+    std::unique_ptr<focusrite::e2e::TestCentre> _testCentre = focusrite::e2e::TestCentre::create ();
 };

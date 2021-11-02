@@ -13,6 +13,10 @@ aliases:
       name: win/default
       shell: bash.exe
 
+  - &node-env
+    docker:
+      - image: cimg/node:lts
+
   - &only_on_tag
     filters:
       branches:
@@ -51,6 +55,12 @@ commands:
       - run: npm install
       - save_npm_cache
 
+  install_npm_token:
+    steps: 
+      - run:
+          name: Write NPM Token to ~/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$GIT_ACCESS_TOKEN" >> ~/.npmrc
+
   install_cmake_macos:
     steps:
       - run: 
@@ -77,14 +87,35 @@ commands:
     steps:
       - run: 
           name: Create end-to-end testing library
-          command: npm run create-lib
+          command: |
+            npm run generate
+            npm run build-cpp
 
   persist:
     steps:
       - persist_to_workspace:
           root: .
           paths:
-            - cmake-build/installation/*.tar.gz
+            - cmake-build/*
+            - dist/*
+
+  test_example_app:
+    steps:
+      - run:
+          name: Test Example Application
+          command: npm run test-example
+
+  test_typescript_library:
+    steps:
+      - run:
+          name: Test TypeScript library
+          command: npm test
+
+  test_cpp_library:
+    steps:
+      - run:
+          name: Test C++ library
+          command: npm run test-cpp
 
 jobs:
 
@@ -106,6 +137,48 @@ jobs:
       - build_library
       - persist
 
+  typescript_build:
+    <<: *node-env
+    steps:
+      - checkout
+      - npm_install
+      - run:
+          name: Lint
+          command: npm run lint
+      - run:
+          name: Compile TypeScript
+          command: npx tsc
+      - persist
+
+  macos_test:
+    <<: *macos-env
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - npm_install
+      - install_cmake_macos
+      - test_example_app
+      - test_cpp_library
+
+  windows_test:
+    <<: *windows-env
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - npm_install
+      - install_cmake_windows
+      - test_example_app
+      - test_cpp_library
+
+  typescript_test:
+    <<: *node-env
+    steps:
+      - checkout
+      - npm_install
+      - test_typescript_library
+
   macos_release:
     <<: *macos-env
     steps:
@@ -113,7 +186,7 @@ jobs:
       - npm_install
       - attach_workspace:
           at: .
-      - run: npm run release
+      - run: npm run release-cpp
 
   windows_release:
     <<: *windows-env
@@ -122,7 +195,19 @@ jobs:
       - npm_install
       - attach_workspace:
           at: .
-      - run: npm run release
+      - run: npm run release-cpp
+
+  typescript_release:
+    <<: *node-env
+    steps:
+      - checkout
+      - install_npm_token
+      - npm_install
+      - attach_workspace:
+          at: .
+      - run:
+          name: Publish NPM package
+          command: npm publish
 
 workflows:
 
@@ -132,18 +217,50 @@ workflows:
           <<: *not_on_tag
       - windows_build:
           <<: *not_on_tag
+      - macos_test:
+          <<: *not_on_tag
+          requires:
+            - macos_build
+      - windows_test:
+          <<: *not_on_tag
+          requires:
+            - windows_build
+      - typescript_build:
+          <<: *not_on_tag
+      - typescript_test:
+          <<: *not_on_tag
+          requires:
+            - typescript_build
 
   build_test_and_release:
     jobs:
       - macos_build:
           <<: *only_on_tag
-      - macos_release:
+      - macos_test:
           <<: *only_on_tag
           requires:
             - macos_build
+      - macos_release:
+          <<: *only_on_tag
+          requires:
+            - macos_test
       - windows_build:
           <<: *only_on_tag
-      - windows_release:
+      - windows_test:
           <<: *only_on_tag
           requires:
             - windows_build
+      - windows_release:
+          <<: *only_on_tag
+          requires:
+            - windows_test
+      - typescript_build:
+          <<: *only_on_tag
+      - typescript_test:
+          <<: *only_on_tag
+          requires:
+            - typescript_build
+      - typescript_release:
+          <<: *only_on_tag
+          requires:
+            - typescript_test

@@ -1,4 +1,3 @@
-
 juce_add_gui_app (e2e-example-app VERSION 0.0.0)
 
 target_sources (
@@ -7,7 +6,7 @@ target_sources (
 
 target_include_directories (e2e-example-app PRIVATE source)
 
-target_link_libraries (e2e-example-app PRIVATE ampify-e2e)
+target_link_libraries (e2e-example-app PRIVATE focusrite-e2e)
 
 target_compile_definitions (
   e2e-example-app
@@ -27,5 +26,6 @@ target_link_libraries (
 set_target_properties (e2e-example-app PROPERTIES CXX_STANDARD 17)
 
 if (WIN32)
-  target_compile_options (e2e-example-app PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
+  target_compile_options (e2e-example-app
+                          PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
 endif ()

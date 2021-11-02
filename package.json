@@ -1,33 +1,67 @@
 {
-  "name": "juce-end-to-end",
-  "version": "1.0.0",
+  "name": "@focusrite-novation/juce-end-to-end",
+  "version": "0.0.4",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "prettier": "@focusrite-novation/ampify-prettier-config",
+  "files": [
+    "dist",
+    "source"
+  ],
   "directories": {
     "example": "example"
   },
   "scripts": {
-    "create-lib": "node scripts/create-lib.js",
-    "release": "node scripts/release.js"
+    "generate": "npx ts-node scripts/generate.ts",
+    "build-cpp": "npx ts-node scripts/build-cpp-library.ts",
+    "test-cpp": "cd cmake-build && ctest -j 8 -C Release --output-on-failure --output-junit unit-tests.xml",
+    "release-cpp": "npx ts-node scripts/release.js",
+    "lint": "eslint . --ext .ts",
+    "build": "tsc",
+    "test": "jest ./tests/**",
+    "test-example": "jest ./example/tests/**"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Focusrite-Novation/juce-end-to-end.git"
-  },
+  "repository": "git://github.com/Focusrite-Novation/juce-end-to-end.git",
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/Focusrite-Novation/juce-end-to-end/issues"
   },
   "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
-  "dependencies": {},
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "dependencies": {
+    "minimatch": "^3.0.4",
+    "uuid": "^8.3.2"
+  },
   "devDependencies": {
+    "@babel/core": "^7.15.8",
+    "@babel/preset-env": "^7.15.8",
+    "@babel/preset-typescript": "^7.15.0",
     "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
+    "@types/git-rev-sync": "^2.0.0",
+    "@types/glob": "^7.2.0",
+    "@types/jest": "^27.0.2",
+    "@types/minimatch": "^3.0.5",
+    "@types/node": "^14.17.27",
+    "@types/tar": "^6.1.0",
+    "@types/uuid": "^8.3.1",
+    "@typescript-eslint/eslint-plugin": "^5.1.0",
+    "@typescript-eslint/parser": "^5.1.0",
+    "babel-jest": "^27.3.1",
+    "eslint": "^8.0.1",
     "git-rev-sync": "^3.0.1",
     "glob": "^7.2.0",
+    "jest": "^27.3.1",
     "octokit": "^1.7.0",
-    "tar": "^6.1.11"
+    "tar": "^6.1.11",
+    "ts-node": "^10.3.1",
+    "typescript": "^4.4.4"
+  },
+  "engines": {
+    "node": ">14"
   }
 }
