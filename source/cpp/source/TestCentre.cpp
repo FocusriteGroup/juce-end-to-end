@@ -1,12 +1,12 @@
 #include "Connection.h"
 #include "DefaultCommandHandler.h"
 
-#include <ampify/e2e/Command.h>
-#include <ampify/e2e/Event.h>
-#include <ampify/e2e/TestCentre.h>
+#include <focusrite/e2e/Command.h>
+#include <focusrite/e2e/Event.h>
+#include <focusrite/e2e/TestCentre.h>
 #include <juce_events/juce_events.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 std::optional<int> getPort ()
 {

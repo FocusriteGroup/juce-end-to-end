@@ -1,6 +1,6 @@
-#include <ampify/e2e/Response.h>
+#include <focusrite/e2e/Response.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 struct Fixture
 {

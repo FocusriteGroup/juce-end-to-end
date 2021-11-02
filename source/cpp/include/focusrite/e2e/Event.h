@@ -3,7 +3,7 @@
 #include <juce_core/juce_core.h>
 #include <map>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class Event
 {

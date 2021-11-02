@@ -2,7 +2,7 @@
 
 #include <juce_core/juce_core.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class Connection
     : private juce::Thread

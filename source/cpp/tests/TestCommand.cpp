@@ -1,4 +1,4 @@
-#include <ampify/e2e/Command.h>
+#include <focusrite/e2e/Command.h>
 #include <juce_core/juce_core.h>
 
 const auto exampleJson = R"identifier(
@@ -16,7 +16,7 @@ const auto exampleJson = R"identifier(
 }
 )identifier";
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class CommandTests final : public juce::UnitTest
 {

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <ampify/e2e/CommandHandler.h>
+#include <focusrite/e2e/CommandHandler.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class DefaultCommandHandler : public CommandHandler
 {

@@ -11,7 +11,7 @@ const include = path.join(install, 'include');
 const lib = path.join(install, 'lib');
 const cmake = path.join(lib, 'cmake');
 
-const configFilename = 'AmpifyE2EConfig.cmake';
+const configFilename = 'FocusriteE2EConfig.cmake';
 const cmakeConfigSource = path.join(source, 'cmake', configFilename);
 const cmakeConfigDestination = path.join(cmake, configFilename);
 
@@ -31,7 +31,7 @@ const library = (configuration: Configuration) => {
 
 const archive = path.join(
   install,
-  `ampify-e2e-${platform.currentPlatform()}.tar.gz`
+  `focusrite-e2e-${platform.currentPlatform()}.tar.gz`
 );
 
 export default {

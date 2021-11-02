@@ -1,6 +1,6 @@
-#include <ampify/e2e/ComponentSearch.h>
+#include <focusrite/e2e/ComponentSearch.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 std::vector<juce::Component *>
 getDirectDescendantsMatching (juce::Component & parent,
@@ -89,10 +89,8 @@ juce::TopLevelWindow * ComponentSearch::findWindowWithId (const juce::String & i
     auto it = std::find_if (
         topWindows.begin (),
         topWindows.end (),
-        [&] (auto && window) {
-            return window->getProperties ().getWithDefault (windowId, {}).toString () ==
-                   id;
-        });
+        [&] (auto && window)
+        { return window->getProperties ().getWithDefault (windowId, {}).toString () == id; });
 
     return it == topWindows.end () ? nullptr : *it;
 }

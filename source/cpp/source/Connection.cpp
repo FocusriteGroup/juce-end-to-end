@@ -37,7 +37,7 @@ bool writeBytesToSocket (juce::StreamingSocket & socket, const void * data, int 
 
 }
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 std::shared_ptr<Connection> Connection::create (int port)
 {

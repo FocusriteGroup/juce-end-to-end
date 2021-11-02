@@ -1,10 +1,10 @@
 #pragma once
 
-#include <ampify/e2e/CommandHandler.h>
+#include <focusrite/e2e/CommandHandler.h>
 #include <memory>
 #include <optional>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class Event;
 class TestCentre
@@ -17,7 +17,6 @@ public:
     };
 
     static std::unique_ptr<TestCentre> create (LogLevel logLevel = LogLevel::silent);
-
 
     virtual ~TestCentre () = default;
 
