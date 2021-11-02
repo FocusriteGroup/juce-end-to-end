@@ -12,8 +12,8 @@ const generator =
 const generateBuildSystem = () => {
   const args = [
     'cmake',
-    '-DAMPIFY_E2E_MAKE_TESTS=ON',
-    '-DAMPIFY_E2E_FETCH_JUCE=ON',
+    '-DFOCUSRITE_E2E_MAKE_TESTS=ON',
+    '-DFOCUSRITE_E2E_FETCH_JUCE=ON',
     '-G',
     `"${generator}"`,
     '-S',

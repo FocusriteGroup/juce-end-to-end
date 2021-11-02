@@ -1,6 +1,6 @@
-#include <ampify/e2e/Event.h>
+#include <focusrite/e2e/Event.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 Event::Event (juce::String name)
     : _name (std::move (name))

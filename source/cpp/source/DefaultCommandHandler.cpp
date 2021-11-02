@@ -2,12 +2,12 @@
 
 #include "KeyPress.h"
 
-#include <ampify/e2e/ClickableComponent.h>
-#include <ampify/e2e/Command.h>
-#include <ampify/e2e/ComponentSearch.h>
+#include <focusrite/e2e/ClickableComponent.h>
+#include <focusrite/e2e/Command.h>
+#include <focusrite/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 void clickButton (juce::Button & button)
 {
@@ -25,7 +25,7 @@ void clickButton (juce::Button & button)
     }
 }
 
-void clickClickableComponent (ampify::e2e::ClickableComponent & clickable, int numClicks)
+void clickClickableComponent (focusrite::e2e::ClickableComponent & clickable, int numClicks)
 {
     if (numClicks == 1)
         clickable.performClick ();

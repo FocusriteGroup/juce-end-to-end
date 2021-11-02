@@ -1,6 +1,6 @@
-#include <ampify/e2e/Command.h>
+#include <focusrite/e2e/Command.h>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 juce::String Command::getType () const
 {
@@ -35,7 +35,7 @@ juce::var Command::getArgumentAsVar (const juce::String & argument) const
 {
     return _args.getProperty (argument, {});
 }
-   
+
 juce::var Command::getArgs () const
 {
     return _args;

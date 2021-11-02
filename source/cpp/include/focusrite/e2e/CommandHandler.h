@@ -1,8 +1,8 @@
 #pragma once
-#include <ampify/e2e/Response.h>
+#include <focusrite/e2e/Response.h>
 #include <optional>
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class Command;
 

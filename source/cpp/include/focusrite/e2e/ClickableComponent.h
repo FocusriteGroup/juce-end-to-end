@@ -1,6 +1,6 @@
 #pragma once
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 class ClickableComponent
 {

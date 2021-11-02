@@ -1,6 +1,6 @@
 #include "KeyPress.h"
 
-namespace ampify::e2e
+namespace focusrite::e2e
 {
 int mapKeyCode (const juce::String & code)
 {
