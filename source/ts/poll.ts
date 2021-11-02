@@ -2,7 +2,7 @@ export async function pollUntil<T>(
   matchingFunction: (data: T) => boolean,
   queryFunction: () => Promise<T>,
   timeout?: number
-) {
+): Promise<boolean> {
   if (!timeout) {
     timeout = 10000;
   }

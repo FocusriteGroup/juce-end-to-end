@@ -45,6 +45,5 @@ export default {
   cmakeConfigDestination,
   includeSource,
   library,
-
   archive,
 };

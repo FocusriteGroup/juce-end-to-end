@@ -1,7 +1,6 @@
 import {EventEmitter} from 'events';
 import path from 'path';
-import {spawn, execSync, ChildProcess} from 'child_process';
-import process from 'process';
+import {spawn, ChildProcess} from 'child_process';
 import util from 'util';
 import fs from 'fs';
 import {Connection, EventMatchingFunction} from './connection';
@@ -43,6 +42,7 @@ export class AppConnection extends EventEmitter {
 
   constructor(options: AppConnectionOptions) {
     super();
+
     this.appPath = options.appPath;
     this.logDirectory = options.logDirectory;
     this.server = new Server();
@@ -95,7 +95,10 @@ export class AppConnection extends EventEmitter {
   kill() {
     this.connection.kill();
     this.server.close();
-    if (this.process) this.process.kill();
+
+    if (this.process) {
+      this.process.kill();
+    }
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
@@ -107,7 +110,7 @@ export class AppConnection extends EventEmitter {
     name: string,
     matchingFunction?: EventMatchingFunction,
     timeout?: number
-  ) {
+  ): Promise<void> {
     await this.connection.waitForEvent(name, matchingFunction, timeout);
   }
 
@@ -137,7 +140,7 @@ export class AppConnection extends EventEmitter {
     return promise;
   }
 
-  async clickComponent(componentId: string, skip?: number) {
+  async clickComponent(componentId: string, skip?: number): Promise<void> {
     await this.sendCommand({
       type: 'click-component',
       args: {
@@ -148,7 +151,10 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async doubleClickComponent(componentId: string, skip?: number) {
+  async doubleClickComponent(
+    componentId: string,
+    skip?: number
+  ): Promise<void> {
     await this.sendCommand({
       type: 'click-component',
       args: {
@@ -159,7 +165,7 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async grabFocus(needNullFocus: boolean) {
+  async grabFocus(needNullFocus: boolean): Promise<void> {
     await this.sendCommand({
       type: 'grab-focus',
       args: {
@@ -168,17 +174,11 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  bringAppToFront() {
-    if (process.platform === 'darwin') {
-      let appPath = this.appPath.substring(0, this.appPath.indexOf('.app'));
-      appPath += '.app';
-      execSync(`open '${appPath}'`);
-    }
-  }
-
-  async keyPress(key: string, modifiers?: string, focusComponent?: string) {
-    this.bringAppToFront();
-
+  async keyPress(
+    key: string,
+    modifiers?: string,
+    focusComponent?: string
+  ): Promise<void> {
     await this.sendCommand({
       type: 'key-press',
       args: {
@@ -189,7 +189,7 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async invokeMenu(menu: string) {
+  async invokeMenu(menu: string): Promise<void> {
     await this.sendCommand({
       type: 'invoke-menu',
       args: {
@@ -202,7 +202,7 @@ export class AppConnection extends EventEmitter {
     componentName: string,
     visibility: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ) {
+  ): Promise<boolean> {
     const result = await pollUntil(
       (visible: boolean) => visible === visibility,
       async () => await this.getComponentVisibility(componentName),
@@ -227,7 +227,7 @@ export class AppConnection extends EventEmitter {
   async waitForComponentToBeVisible(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ) {
+  ): Promise<boolean> {
     return await this.waitForComponentVisibilityToBe(
       componentName,
       true,
@@ -239,7 +239,7 @@ export class AppConnection extends EventEmitter {
     componentName: string,
     enablement: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ) {
+  ): Promise<boolean> {
     const result = await pollUntil(
       (enabled: boolean) => enabled === enablement,
       async () => await this.getComponentEnablement(componentName),
@@ -262,7 +262,7 @@ export class AppConnection extends EventEmitter {
   async waitForComponentToBeEnabled(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ) {
+  ): Promise<boolean> {
     return await this.waitForComponentEnablementToBe(
       componentName,
       true,
@@ -273,7 +273,7 @@ export class AppConnection extends EventEmitter {
   async waitForComponentToBeDisabled(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ) {
+  ): Promise<boolean> {
     return await this.waitForComponentEnablementToBe(
       componentName,
       false,
@@ -293,7 +293,10 @@ export class AppConnection extends EventEmitter {
     return result.count;
   }
 
-  async saveScreenshot(componentId: string, outFileName: string) {
+  async saveScreenshot(
+    componentId: string,
+    outFileName: string
+  ): Promise<void> {
     if (!this.logDirectory) {
       console.error(
         'Unable to save a screenshot of the app as a log directory has not been set'
@@ -364,7 +367,10 @@ export class AppConnection extends EventEmitter {
     return response && response['component-id'];
   }
 
-  async tabToComponent(componentPattern: string, maxNumComponents = 1024) {
+  async tabToComponent(
+    componentPattern: string,
+    maxNumComponents = 1024
+  ): Promise<boolean> {
     for (let count = 0; count < maxNumComponents; count++) {
       await this.keyPress('tab');
       const focusedId = await this.getFocusedComponent();
