@@ -59,7 +59,7 @@ commands:
     steps: 
       - run:
           name: Write NPM Token to ~/.npmrc
-          command: echo "//registry.npmjs.org/:_authToken=$GIT_ACCESS_TOKEN" >> ~/.npmrc
+          command: echo "//npm.pkg.github.com/:_authToken=$GIT_ACCESS_TOKEN" >> ~/.npmrc
 
   install_cmake_macos:
     steps:
