@@ -148,10 +148,6 @@ Response keyPress (const Command & command)
 
 Response grabFocus (const Command & command)
 {
-    if (command.getArgument ("require-null-focus") == "true" &&
-        juce::Component::getCurrentlyFocusedComponent () != nullptr)
-        return Response::ok ();
-
     if (auto * window =
             ComponentSearch::findWindowWithId (command.getArgument (ComponentSearch::windowId)))
         window->grabKeyboardFocus ();

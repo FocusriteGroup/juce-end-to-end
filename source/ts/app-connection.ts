@@ -165,12 +165,9 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async grabFocus(needNullFocus: boolean): Promise<void> {
+  async grabFocus(): Promise<void> {
     await this.sendCommand({
       type: 'grab-focus',
-      args: {
-        'require-null-focus': needNullFocus,
-      },
     });
   }
 
