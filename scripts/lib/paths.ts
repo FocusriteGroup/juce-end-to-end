@@ -1,6 +1,7 @@
 import path from 'path';
 import * as platform from './platform';
 import {Configuration} from './configuration';
+import glob from 'glob';
 
 const source = process.env.E2E_SOURCE || process.cwd();
 const build = path.join(source, 'cmake-build');
@@ -16,24 +17,17 @@ const cmakeConfigDestination = path.join(cmake, configFilename);
 
 const includeSource = path.join(source, 'source', 'cpp', 'include');
 
-const libraryFilename = (configuration: Configuration) => {
+const library = (configuration: Configuration) => {
+  const configDir = path.join(build, 'source', 'cpp', configuration);
   const extension = platform.isMac() ? 'a' : 'lib';
-  const postFix = configuration === 'Debug' ? 'd' : '';
-  const prefix = platform.isMac() ? 'lib' : '';
-  return `${prefix}ampify-e2e${postFix}.${extension}`;
+  const pattern = `*.${extension}`;
+
+  const matches = glob.sync(pattern, {
+    cwd: configDir,
+  });
+
+  return matches.length > 0 ? path.join(configDir, matches[0]) : undefined;
 };
-
-const libraryBuild = (configuration: Configuration) =>
-  path.join(
-    build,
-    'source',
-    'cpp',
-    configuration,
-    libraryFilename(configuration)
-  );
-
-const libraryInstall = (configuration: Configuration) =>
-  path.join(lib, libraryFilename(configuration));
 
 const archive = path.join(
   install,
@@ -50,10 +44,7 @@ export default {
   cmakeConfigSource,
   cmakeConfigDestination,
   includeSource,
-
-  libraryFilename,
-  libraryBuild,
-  libraryInstall,
+  library,
 
   archive,
 };

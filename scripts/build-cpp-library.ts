@@ -14,10 +14,9 @@ const build = (configuration: Configuration) => {
 };
 
 const copyLibrary = (configuration: Configuration) => {
-  fs.copyFileSync(
-    paths.libraryBuild(configuration),
-    paths.libraryInstall(configuration)
-  );
+  const library = paths.library(configuration);
+  const filename = path.basename(library);
+  fs.copyFileSync(library, path.join(paths.lib, filename));
 };
 
 const copyHeaders = () => {
