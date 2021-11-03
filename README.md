@@ -1,12 +1,21 @@
 # JUCE End to End test framework
 
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+
 [![Focusrite-Novation](https://circleci.com/gh/Focusrite-Novation/juce-end-to-end.svg?style=shield&circle-token=11bdc9a65f58ecac7388d385b1ed052c848c4924)](https://app.circleci.com/pipelines/github/Focusrite-Novation/juce-end-to-end)
+
 [![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
+
 [![Language](https://img.shields.io/static/v1?label=Language&message=C%2B%2B&color=orange&style=flat)](./documentation/building.md)
+[![Code Style](https://img.shields.io/static/v1?label=Code%20Style&message=Clang%20Format&color=pink&style=flat)](https://clang.llvm.org/docs/ClangFormat.html)
+
 [![Language](https://img.shields.io/static/v1?label=Language&message=TypeScript&color=orange&style=flat)](./documentation/building.md)
+[![Code Style](https://img.shields.io/static/v1?label=Code%20Style&message=Prettier&color=pink&style=flat)](https://prettier.io)
+
 [![Language](https://img.shields.io/static/v1?label=Language&message=CMake&color=orange&style=flat)](https://www.cmake.org)
+[![Code Style](https://img.shields.io/static/v1?label=Code%20Style&message=CMake%20Format&color=pink&style=flat)](https://github.com/cheshirekow/cmake_format)
 
 ## What is it?
 
