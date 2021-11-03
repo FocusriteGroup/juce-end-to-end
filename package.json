@@ -40,7 +40,7 @@
   "devDependencies": {
     "@babel/core": "^7.15.8",
     "@babel/preset-env": "^7.15.8",
-    "@babel/preset-typescript": "^7.15.0",
+    "@babel/preset-typescript": "^7.16.0",
     "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
     "@types/git-rev-sync": "^2.0.0",
     "@types/glob": "^7.2.0",
