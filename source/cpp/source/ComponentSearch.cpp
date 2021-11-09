@@ -119,4 +119,9 @@ juce::Component * ComponentSearch::findWithId (const juce::String & componentId,
     return findComponent (createComponentMatcher (componentId), skip);
 }
 
+void ComponentSearch::setTestId (juce::Component & component, const juce::String & id)
+{
+    component.getProperties().set (testId, id);
+}
+
 }

@@ -24,13 +24,11 @@ public:
 
         updateLabel ();
 
-        _incrementButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
-                                               "increment-button");
-        _decrementButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
-                                               "decrement-button");
-        _enableButton.getProperties ().set (focusrite::e2e::ComponentSearch::testId,
-                                            "enable-button");
-        _valueLabel.getProperties ().set (focusrite::e2e::ComponentSearch::testId, "value-label");
+        using ComponentSearch = focusrite::e2e::ComponentSearch;
+        ComponentSearch::setTestId (_incrementButton, "increment-button");
+        ComponentSearch::setTestId (_decrementButton, "decrement-button");
+        ComponentSearch::setTestId (_enableButton, "enable-button");
+        ComponentSearch::setTestId (_valueLabel, "value-label");
     }
 
     void resized () override
