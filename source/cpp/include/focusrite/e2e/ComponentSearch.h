@@ -15,6 +15,8 @@ public:
 
     static int countChildComponents (const juce::Component & parent,
                                      const juce::String & matchingId);
+
+    static void setTestId (juce::Component & component, const juce::String & id);
 };
 
 }
