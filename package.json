@@ -1,7 +1,7 @@
 {
   "name": "@focusrite-novation/juce-end-to-end",
   "version": "0.0.6",
-  "description": "",
+  "description": "End-to-end testing library for Focusrite",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "prettier": "@focusrite-novation/ampify-prettier-config",
