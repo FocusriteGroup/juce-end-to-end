@@ -68,7 +68,7 @@ const commands = [
   {
     command: "all-debug",
     arguments: null,
-    description: "Run all in debug.",
+    description: "Run all in debug",
     generalUsage: true,
     dependencies: null,
     equivalent: ["npm run clean", "npm run generate", "npm run build-debug", "npm run test-debug"],
