@@ -139,13 +139,14 @@ The JavaScript library provides utilities to start the application, send it
 commands and query its state. You can use it with any testing/assertion library
 (e.g. Jest, Mocha). The examples below are written in TypeScript using Jest.
 
-1. Add the following line to a `.npmrc` file at the root of your repository:
-    ```
-    @focusrite-novation:registry=https://npm.pkg.github.com
-    ```
+1. Install Node (you can use a Node installer, a system package manager, or a Node version manager)
+1. Initialise an npm package at the root of your repository using
+   ```
+   npm init
+   ```
 1. Install the library using npm
     ```
-    npm install @focusrite-novation/juce-end-to-end
+    npm install @focusritegroup/juce-end-to-end
     ```
 1. In your test setup, before each test, create an `AppConnection` (passing it 
 the path to your built application) and wait for it to launch. You can pass the
