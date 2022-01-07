@@ -1,5 +1,5 @@
 {
-  "name": "@focusrite-novation/juce-end-to-end",
+  "name": "@focusritegroup/juce-end-to-end",
   "version": "0.0.7",
   "description": "End-to-end testing library for Focusrite",
   "main": "dist/index.js",
