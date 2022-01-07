@@ -30,9 +30,6 @@
     "url": "https://github.com/Focusrite-Novation/juce-end-to-end/issues"
   },
   "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "minimatch": "^3.0.4",
     "uuid": "^8.3.2"
