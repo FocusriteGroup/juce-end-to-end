@@ -154,7 +154,7 @@ app extra arguments or set environment variables if you need to put it into
 special state.
 
     ```TypeScript
-    import {AppConnection} from '@focusrite-novation/juce-end-to-end';
+    import {AppConnection} from '@focusritegroup/juce-end-to-end';
 
     describe('My app tests', () => {
         let appConnection: AppConnection;
