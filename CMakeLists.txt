@@ -10,7 +10,6 @@ if (FOCUSRITE_E2E_FETCH_JUCE)
   include (cmake/fetch-juce.cmake)
 endif ()
 
-include (cmake/replace-default-vs-variables.cmake)
 include (cmake/set_common_target_properties.cmake)
 
 project (focusrite-e2e-testing)
