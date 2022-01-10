@@ -1,4 +1,4 @@
-function(set_common_target_properties TARGET)
+function (set_common_target_properties TARGET)
 
   set_target_properties (${TARGET} PROPERTIES CXX_STANDARD 17)
 
@@ -10,7 +10,6 @@ function(set_common_target_properties TARGET)
 
   if (MSVC)
     target_compile_options (${TARGET} PRIVATE /W4 /WX)
-    target_compile_options (${TARGET} PRIVATE $<IF:$<CONFIG:Debug>,/MTd,/MT>)
   endif ()
 
-endfunction()
+endfunction ()
