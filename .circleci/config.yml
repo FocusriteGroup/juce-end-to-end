@@ -59,7 +59,7 @@ commands:
     steps: 
       - run:
           name: Write NPM Token to ~/.npmrc
-          command: echo "//npm.pkg.github.com/:_authToken=$GIT_ACCESS_TOKEN" >> ~/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$NPM_ACCESS_TOKEN" >> ~/.npmrc
 
   install_cmake_macos:
     steps:
@@ -207,7 +207,7 @@ jobs:
           at: .
       - run:
           name: Publish NPM package
-          command: npm publish
+          command: npm publish --access=public
 
 workflows:
 
@@ -262,5 +262,7 @@ workflows:
             - typescript_build
       - typescript_release:
           <<: *only_on_tag
+          context:
+            - NPMJS-CONFIG
           requires:
             - typescript_test

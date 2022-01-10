@@ -1,6 +1,6 @@
 {
-  "name": "@focusrite-novation/juce-end-to-end",
-  "version": "0.0.7",
+  "name": "@focusritegroup/juce-end-to-end",
+  "version": "0.0.9",
   "description": "End-to-end testing library for Focusrite",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,9 +30,6 @@
     "url": "https://github.com/Focusrite-Novation/juce-end-to-end/issues"
   },
   "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "dependencies": {
     "minimatch": "^3.0.4",
     "uuid": "^8.3.2"
