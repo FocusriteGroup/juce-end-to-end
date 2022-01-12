@@ -26,6 +26,11 @@ target_include_directories (focusrite-e2e PUBLIC include)
 set (JUCE_MODULES juce_core juce_events)
 
 foreach (JUCE_MODULE ${JUCE_MODULES})
+ 
+  if (NOT TARGET ${JUCE_MODULE})
+    message(FATAL_ERROR "Missing JUCE module: ${JUCE_MODULE}, enable FOCUSRITE_E2E_FETCH_JUCE to fetch JUCE")
+  endif()
+
   get_target_property (MODULE_INCLUDES ${JUCE_MODULE}
                        INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories (focusrite-e2e PUBLIC ${MODULE_INCLUDES})
@@ -43,8 +48,10 @@ source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${FOCUSRITE_E2E_SOURCES})
 
 if (FOCUSRITE_E2E_MAKE_TESTS)
 
-  add_executable (focusrite-e2e-tests ./tests/main.cpp ./tests/TestCommand.cpp
-                                      ./tests/TestResponse.cpp)
+  add_executable (
+    focusrite-e2e-tests
+    ./tests/main.cpp ./tests/TestCommand.cpp ./tests/TestComponentSearch.cpp
+    ./tests/TestResponse.cpp)
 
   target_link_libraries (focusrite-e2e-tests PRIVATE focusrite-e2e)
 

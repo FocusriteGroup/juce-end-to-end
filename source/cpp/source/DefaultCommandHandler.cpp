@@ -9,6 +9,47 @@
 
 namespace focusrite::e2e
 {
+enum class CommandArgument
+{
+    componentId,
+    focusComponent,
+    keyCode,
+    modifiers,
+    numClicks,
+    rootId,
+    skip,
+    title,
+    windowId,
+};
+
+juce::StringRef toString (CommandArgument argument)
+{
+    switch (argument)
+    {
+        case CommandArgument::componentId:
+            return "component-id";
+        case CommandArgument::focusComponent:
+            return "focus-component";
+        case CommandArgument::keyCode:
+            return "key-code";
+        case CommandArgument::modifiers:
+            return "modifiers";
+        case CommandArgument::numClicks:
+            return "num-clicks";
+        case CommandArgument::rootId:
+            return "root-id";
+        case CommandArgument::skip:
+            return "skip";
+        case CommandArgument::title:
+            return "title";
+        case CommandArgument::windowId:
+            return "window-id";
+    }
+
+    jassertfalse;
+    return {};
+}
+
 void clickButton (juce::Button & button)
 {
     if (button.onClick != nullptr)
@@ -77,7 +118,9 @@ bool clickClickableComponent (juce::Component & component, const Command & comma
     if (auto * clickable = dynamic_cast<ClickableComponent *> (&component))
     {
         clickClickableComponent (
-            *clickable, juce::jlimit (1, 2, command.getArgument ("num-clicks").getIntValue ()));
+            *clickable,
+            juce::jlimit (
+                1, 2, command.getArgument (toString (CommandArgument::numClicks)).getIntValue ()));
         return true;
     }
 
@@ -86,11 +129,11 @@ bool clickClickableComponent (juce::Component & component, const Command & comma
 
 Response clickComponent (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId == juce::String ())
         return Response::fail ("Missing component-id");
 
-    auto skip = command.getArgument ("skip").getIntValue ();
+    auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
 
     auto component = ComponentSearch::findWithId (componentId, skip);
     if (component == nullptr)
@@ -130,13 +173,13 @@ Response keyPressOnWindow (const juce::String & windowId, const juce::KeyPress &
 
 Response keyPress (const Command & command)
 {
-    auto keyCode = command.getArgument ("key-code");
+    auto keyCode = command.getArgument (toString (CommandArgument::keyCode));
     if (keyCode.isEmpty ())
         return Response::fail ("Missing key-code argument");
 
-    auto modifiers = command.getArgument ("modifiers");
-    auto componentId = command.getArgument ("focus-component");
-    auto windowId = command.getArgument (ComponentSearch::windowId);
+    auto modifiers = command.getArgument (toString (CommandArgument::modifiers));
+    auto componentId = command.getArgument (toString (CommandArgument::focusComponent));
+    auto windowId = command.getArgument (toString (CommandArgument::windowId));
 
     const auto keyPress = constructKeyPress (keyCode, modifiers);
 
@@ -148,8 +191,8 @@ Response keyPress (const Command & command)
 
 Response grabFocus (const Command & command)
 {
-    if (auto * window =
-            ComponentSearch::findWindowWithId (command.getArgument (ComponentSearch::windowId)))
+    if (auto * window = ComponentSearch::findWindowWithId (
+            command.getArgument (toString (CommandArgument::windowId))))
         window->grabKeyboardFocus ();
 
     return Response::ok ();
@@ -157,8 +200,8 @@ Response grabFocus (const Command & command)
 
 Response getScreenshot (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
-    const auto windowId = command.getArgument (ComponentSearch::windowId);
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    const auto windowId = command.getArgument (toString (CommandArgument::windowId));
 
     auto component = componentId.isEmpty () ? ComponentSearch::findWindowWithId (windowId)
                                             : ComponentSearch::findWithId (componentId);
@@ -175,7 +218,7 @@ Response getScreenshot (const Command & command)
 
 Response getComponentVisibility (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
         return Response::fail ("Missing component-id");
 
@@ -193,7 +236,7 @@ Response getComponentVisibility (const Command & command)
 
 Response getComponentEnablement (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
         return Response::fail ("Missing component-id");
 
@@ -211,7 +254,7 @@ Response getComponentEnablement (const Command & command)
 
 Response getComponentText (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
         return Response::fail ("Missing component-id");
 
@@ -242,13 +285,13 @@ Response getFocusComponent (const Command & command)
 
 Response countComponents (const Command & command)
 {
-    const auto componentId = command.getArgument ("component-id");
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
 
     if (componentId.isEmpty ())
         return Response::fail ("Missing component-id");
 
-    const auto rootId = command.getArgument ("root-id");
-    const auto windowId = command.getArgument (ComponentSearch::windowId);
+    const auto rootId = command.getArgument (toString (CommandArgument::rootId));
+    const auto windowId = command.getArgument (toString (CommandArgument::windowId));
 
     juce::Component * rootComponent = ComponentSearch::findWindowWithId (windowId);
 
@@ -277,7 +320,7 @@ Response invokeMenu (const Command & command)
     if (! application)
         return Response::fail ("Invalid application");
 
-    const auto menuTitle = command.getArgument ("title");
+    const auto menuTitle = command.getArgument (toString (CommandArgument::title));
     if (menuTitle.isEmpty ())
         return Response::fail ("Missing menu title");
 

@@ -2,6 +2,9 @@
 
 namespace focusrite::e2e
 {
+static constexpr char testId [] = "test-id";
+static constexpr char windowId [] = "window-id";
+
 std::vector<juce::Component *>
 getDirectDescendantsMatching (juce::Component & parent,
                               const std::function<bool (juce::Component &)> & predicate)
@@ -65,15 +68,34 @@ juce::Component * findComponent (const std::function<bool (juce::Component &)> &
     return nullptr;
 }
 
+bool componentHasMatchingProperty (const juce::Component & component,
+                                   const juce::String & pattern,
+                                   const juce::String & propertyName)
+{
+    const auto componentTestId =
+        component.getProperties ().getWithDefault (propertyName, {}).toString ();
+    const auto componentId = component.getComponentID ();
+
+    return componentTestId.matchesWildcard (pattern, false) ||
+           componentId.matchesWildcard (pattern, false);
+}
+
+bool componentHasId (const juce::Component & component, const juce::String & idPattern)
+{
+    return componentHasMatchingProperty (component, idPattern, testId);
+}
+
+bool windowHasId (const juce::TopLevelWindow & window, const juce::String & idPattern)
+{
+    return componentHasMatchingProperty (window, idPattern, windowId);
+}
+
 std::function<bool (juce::Component &)> createComponentMatcher (const juce::String & componentId)
 {
     return [componentId] (auto && component) -> bool
     {
-        return component.getProperties ()
-                   .getWithDefault (ComponentSearch::testId, {})
-                   .toString ()
-                   .matchesWildcard (componentId, false) &&
-               component.isVisible () && component.isShowing ();
+        return componentHasId (component, componentId) && component.isVisible () &&
+               component.isShowing ();
     };
 }
 
@@ -86,11 +108,9 @@ juce::TopLevelWindow * ComponentSearch::findWindowWithId (const juce::String & i
     if (id.isEmpty ())
         return topWindows.front ();
 
-    auto it = std::find_if (
-        topWindows.begin (),
-        topWindows.end (),
-        [&] (auto && window)
-        { return window->getProperties ().getWithDefault (windowId, {}).toString () == id; });
+    auto it = std::find_if (topWindows.begin (),
+                            topWindows.end (),
+                            [&] (auto && window) { return windowHasId (*window, id); });
 
     return it == topWindows.end () ? nullptr : *it;
 }
@@ -121,7 +141,12 @@ juce::Component * ComponentSearch::findWithId (const juce::String & componentId,
 
 void ComponentSearch::setTestId (juce::Component & component, const juce::String & id)
 {
-    component.getProperties().set (testId, id);
+    component.getProperties ().set (testId, id);
+}
+
+void ComponentSearch::setWindowId (juce::TopLevelWindow & window, const juce::String & id)
+{
+    window.getProperties ().set (windowId, id);
 }
 
 }

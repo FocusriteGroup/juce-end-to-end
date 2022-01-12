@@ -7,9 +7,6 @@ namespace focusrite::e2e
 class ComponentSearch
 {
 public:
-    static constexpr char testId [] = "test-id";
-    static constexpr char windowId [] = "window-id";
-
     static juce::Component * findWithId (const juce::String & componentId, int skip = 0);
     static juce::TopLevelWindow * findWindowWithId (const juce::String & windowId = {});
 
@@ -17,6 +14,7 @@ public:
                                      const juce::String & matchingId);
 
     static void setTestId (juce::Component & component, const juce::String & id);
+    static void setWindowId (juce::TopLevelWindow & window, const juce::String & id);
 };
 
 }
