@@ -136,7 +136,7 @@ Response keyPress (const Command & command)
 
     auto modifiers = command.getArgument ("modifiers");
     auto componentId = command.getArgument ("focus-component");
-    auto windowId = command.getArgument (ComponentSearch::windowId);
+    auto windowId = command.getArgument ("window-id");
 
     const auto keyPress = constructKeyPress (keyCode, modifiers);
 
@@ -148,8 +148,7 @@ Response keyPress (const Command & command)
 
 Response grabFocus (const Command & command)
 {
-    if (auto * window =
-            ComponentSearch::findWindowWithId (command.getArgument (ComponentSearch::windowId)))
+    if (auto * window = ComponentSearch::findWindowWithId (command.getArgument ("window-id")))
         window->grabKeyboardFocus ();
 
     return Response::ok ();
@@ -158,7 +157,7 @@ Response grabFocus (const Command & command)
 Response getScreenshot (const Command & command)
 {
     const auto componentId = command.getArgument ("component-id");
-    const auto windowId = command.getArgument (ComponentSearch::windowId);
+    const auto windowId = command.getArgument ("window-id");
 
     auto component = componentId.isEmpty () ? ComponentSearch::findWindowWithId (windowId)
                                             : ComponentSearch::findWithId (componentId);
@@ -248,7 +247,7 @@ Response countComponents (const Command & command)
         return Response::fail ("Missing component-id");
 
     const auto rootId = command.getArgument ("root-id");
-    const auto windowId = command.getArgument (ComponentSearch::windowId);
+    const auto windowId = command.getArgument ("window-id");
 
     juce::Component * rootComponent = ComponentSearch::findWindowWithId (windowId);
 

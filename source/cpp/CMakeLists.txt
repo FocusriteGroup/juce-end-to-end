@@ -43,8 +43,10 @@ source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${FOCUSRITE_E2E_SOURCES})
 
 if (FOCUSRITE_E2E_MAKE_TESTS)
 
-  add_executable (focusrite-e2e-tests ./tests/main.cpp ./tests/TestCommand.cpp
-                                      ./tests/TestResponse.cpp)
+  add_executable (
+    focusrite-e2e-tests
+    ./tests/main.cpp ./tests/TestCommand.cpp ./tests/TestComponentSearch.cpp
+    ./tests/TestResponse.cpp)
 
   target_link_libraries (focusrite-e2e-tests PRIVATE focusrite-e2e)
 

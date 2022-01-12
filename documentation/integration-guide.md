@@ -93,10 +93,17 @@ private:
 }
 ```
 
-If you wish to reference a `Component` by ID, you can do so as follows:
+If you wish to reference a `Component` by ID, you can set the component ID on the component:
 
 ```C++
-myComponent.getProperties ().set ("test-id", "my-component-id");
+myComponent.setComponentID ("my-component-id");
+```
+
+If you happen to be using the component ID for something else, you can set the test ID as follows:
+```C++
+#include <focusrite/e2e/ComponentSearch.h>
+// ...
+focusrite::e2e::ComponentSearch::setTestId ("my-component-id");
 ```
 
 If you wish to install a custom request handler in addition to the default one,
@@ -140,15 +147,16 @@ commands and query its state. You can use it with any testing/assertion library
 (e.g. Jest, Mocha). The examples below are written in TypeScript using Jest.
 
 1. Install Node (you can use a Node installer, a system package manager, or a Node version manager)
-1. Initialise an npm package at the root of your repository using
+2. Initialise an npm package at the root of your repository using
    ```
    npm init
    ```
-1. Install the library using npm
+3. Install the library using npm
     ```
     npm install @focusritegroup/juce-end-to-end
     ```
-1. In your test setup, before each test, create an `AppConnection` (passing it 
+4. Install a test framework (e.g. Jest)
+5. In your test setup, before each test, create an `AppConnection` (passing it 
 the path to your built application) and wait for it to launch. You can pass the
 app extra arguments or set environment variables if you need to put it into 
 special state.
@@ -166,7 +174,7 @@ special state.
     }
     ```
 
-1. After each test, quit the app and wait for it to shut down:
+6. After each test, quit the app and wait for it to shut down:
 
     ```TypeScript
     afterEach(async () => {
@@ -174,7 +182,7 @@ special state.
     });
     ```
 
-1. During each test, you can send the application commands to query the state
+7. During each test, you can send the application commands to query the state
 of the user interface. Here is a simple example:
 
     ```TypeScript
