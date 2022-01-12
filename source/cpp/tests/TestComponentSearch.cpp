@@ -68,6 +68,7 @@ public:
         componentA.addAndMakeVisible (componentB);
         componentA.addAndMakeVisible (componentC);
         window.addAndMakeVisible (componentA);
+        window.setVisible (true);
 
         expect (ComponentSearch::findWithId (componentAId) == &componentA);
         expect (ComponentSearch::findWithId (componentBId) == &componentB);
@@ -92,6 +93,7 @@ public:
         componentA.addAndMakeVisible (componentB);
         componentA.addAndMakeVisible (componentC);
         window.addAndMakeVisible (componentA);
+        window.setVisible (true);
 
         expect (ComponentSearch::findWithId (componentAId) == &componentA);
         expect (ComponentSearch::findWithId (componentBId) == &componentB);

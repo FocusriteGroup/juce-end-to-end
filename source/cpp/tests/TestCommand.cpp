@@ -54,37 +54,40 @@ public:
 
     void convertsTypeFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         expectEquals (command.getType (), juce::String ("command-type"));
     }
 
     void convertsUuidFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         expect (command.getUuid () == juce::Uuid ("beb16073-dbcd-49aa-b7d1-9466582a1e0e"));
     }
 
     void convertsStringArgumentFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         expectEquals (command.getArgument ("string-type"), juce::String ("string argument"));
     }
 
     void convertsIntArgumentFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         expectEquals (command.getArgumentAs<int> ("int-type"), 45675);
     }
 
     void convertsBoolArgumentFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         expect (command.getArgumentAs<bool> ("bool-type"));
     }
 
     void convertsObjectArgumentFromJson ()
     {
+        const auto command = Command::fromJson (exampleJson);
         const auto var = command.getArgumentAsVar ("object-type");
         expectEquals (var.getProperty ("value", {}).toString (), juce::String ("object"));
     }
-
-private:
-    const Command command = Command::fromJson (exampleJson);
 };
 
 [[maybe_unused]] static CommandTests commandTests;
