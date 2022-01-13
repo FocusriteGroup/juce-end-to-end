@@ -33,6 +33,14 @@ export interface EnvironmentVariables {
 
 const DEFAULT_TIMEOUT = 5000;
 
+const existsAsFile = (path: string) => {
+  try {
+    return fs.statSync(path).isFile();
+  } catch (error) {
+    return false;
+  }
+};
+
 export class AppConnection extends EventEmitter {
   appPath: string;
   process?: ChildProcess;
@@ -42,6 +50,12 @@ export class AppConnection extends EventEmitter {
 
   constructor(options: AppConnectionOptions) {
     super();
+
+    if (!existsAsFile(options.appPath)) {
+      throw new Error(
+        `The specified app path (${options.appPath}) doesn't exist`
+      );
+    }
 
     this.appPath = options.appPath;
     this.logDirectory = options.logDirectory;
