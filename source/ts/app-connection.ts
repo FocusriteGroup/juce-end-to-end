@@ -33,6 +33,14 @@ export interface EnvironmentVariables {
 
 const DEFAULT_TIMEOUT = 5000;
 
+const nextRunId = (() => {
+  let runId = 1;
+
+  return () => {
+    return runId++;
+  };
+})();
+
 const existsAsFile = (path: string) => {
   try {
     return fs.statSync(path).isFile();
@@ -79,12 +87,42 @@ export class AppConnection extends EventEmitter {
     this.connection.kill();
   }
 
+  createLogFiles():
+    | {stdout: fs.WriteStream; stderr: fs.WriteStream}
+    | undefined {
+    if (!this.logDirectory) {
+      return;
+    }
+
+    const runId = nextRunId();
+
+    const stdoutPath = path.join(
+      this.logDirectory,
+      `application-tests-stdout-${runId}.log`
+    );
+    const stderrPath = path.join(
+      this.logDirectory,
+      `application-tests-stderr-${runId}.log`
+    );
+
+    return {
+      stdout: fs.createWriteStream(stdoutPath, {flags: 'a'}),
+      stderr: fs.createWriteStream(stderrPath, {flags: 'a'}),
+    };
+  }
+
   launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {
     try {
       this.process = spawn(this.appPath, extraArgs, {env});
     } catch (error) {
       console.error(`Unable to launch: ${error.message}`);
       return;
+    }
+
+    const logs = this.createLogFiles();
+    if (logs) {
+      this.process.stdout.pipe(logs.stdout);
+      this.process.stderr.pipe(logs.stderr);
     }
 
     this.process.on('exit', (code, signal) => {
