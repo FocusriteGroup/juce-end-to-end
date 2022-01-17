@@ -88,6 +88,13 @@ export class AppConnection extends EventEmitter {
     }
 
     this.process.on('exit', (code, signal) => {
+      if (code || signal) {
+        const errorMessage = code
+          ? `App exited with error code ${code}`
+          : `App exited with signal ${signal}`;
+        throw new Error(errorMessage);
+      }
+
       this.emit('exit', {code, signal});
     });
   }
@@ -130,15 +137,10 @@ export class AppConnection extends EventEmitter {
 
   async waitForExit(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.on('exit', (info) => {
-        if (info.code !== 0) {
-          reject(`App exited with code ${info.code}`);
-          return;
-        }
-
-        if (info.signal) {
-          reject(`App exited with signal ${info.signal}`);
-          return;
+      this.on('exit', ({code, signal}) => {
+        assert(!code && !signal);
+        if (code || signal) {
+          reject(`App exited with error: ${code || signal}`);
         }
 
         resolve();
