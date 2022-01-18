@@ -3,7 +3,6 @@ cmake_minimum_required (VERSION 3.20)
 option (FOCUSRITE_E2E_MAKE_TESTS "Build example app")
 option (FOCUSRITE_E2E_FETCH_JUCE "Download JUCE")
 
-set (CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 set (CMAKE_DEBUG_POSTFIX d)
 
 if (FOCUSRITE_E2E_FETCH_JUCE)
