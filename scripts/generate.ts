@@ -14,6 +14,7 @@ const generateBuildSystem = () => {
     'cmake',
     '-DFOCUSRITE_E2E_MAKE_TESTS=ON',
     '-DFOCUSRITE_E2E_FETCH_JUCE=ON',
+    '-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"',
     '-G',
     `"${generator}"`,
     '-S',
