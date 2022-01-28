@@ -268,6 +268,9 @@ Response getComponentText (const Command & command)
     if (auto * label = dynamic_cast<const juce::Label *> (component))
         return Response::ok ().withParameter ("text", label->getText ());
 
+    if (auto * button = dynamic_cast<const juce::Button *> (component))
+        return Response::ok ().withParameter ("text", button->getButtonText ());
+
     return Response::fail ("Component doesn't have text");
 }
 
