@@ -136,7 +136,22 @@ int ComponentSearch::countChildComponents (const juce::Component & root,
 
 juce::Component * ComponentSearch::findWithId (const juce::String & componentId, int skip)
 {
-    return findComponent (createComponentMatcher (componentId), skip);
+    auto componentIds = juce::StringArray::fromTokens (componentId, "/", "");
+    if (componentIds.isEmpty ())
+        return nullptr;
+
+    auto * component = findComponent (createComponentMatcher (componentIds [0]), skip);
+    componentIds.remove (0);
+
+    for (auto && id : componentIds)
+    {
+        if (component == nullptr)
+            return nullptr;
+
+        component = findChildComponent (*component, createComponentMatcher (id), 0);
+    }
+
+    return component;
 }
 
 void ComponentSearch::setTestId (juce::Component & component, const juce::String & id)

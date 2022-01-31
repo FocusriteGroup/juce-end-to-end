@@ -68,4 +68,9 @@ if (FOCUSRITE_E2E_MAKE_TESTS)
                                 juce::juce_gui_basics
     PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags
            juce::juce_recommended_warning_flags)
+
+  set_target_properties (focusrite-e2e-tests
+      PROPERTIES
+      WIN32_EXECUTABLE true)
+
 endif ()
