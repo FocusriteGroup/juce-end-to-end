@@ -7,17 +7,16 @@ namespace focusrite::e2e
 template <typename Task>
 void runOnMessageQueue (Task task)
 {
-    auto messageManager = juce::MessageManager::getInstance ();
-    jassert (messageManager != nullptr);
+    juce::WaitableEvent event;
 
     juce::MessageManager::callAsync (
-        [task, messageManager]
+        [&]
         {
             task ();
-            messageManager->stopDispatchLoop ();
+            event.signal ();
         });
 
-    messageManager->runDispatchLoop ();
+    event.wait ();
 }
 
 class ComponentSearchTests final : public juce::UnitTest
@@ -39,15 +38,19 @@ public:
         auto tests = {
             Test {"Finds component with component ID", [=] { findsComponentWithId (); }},
             Test {"Finds component with test ID", [=] { findsComponentWithTestId (); }},
+            Test {"Finds nested components with slashes",
+                  [=] { findsNestedComponentsWithSlashes (); }},
         };
 
         for (auto && test : tests)
         {
-            beginTest (test.name);
-            runOnMessageQueue (test.entry);
+            runOnMessageQueue (
+                [=]
+                {
+                    beginTest (test.name);
+                    test.entry ();
+                });
         }
-
-        juce::MessageManager::deleteInstance ();
     }
 
     void findsComponentWithId ()
@@ -99,8 +102,51 @@ public:
         expect (ComponentSearch::findWithId (componentBId) == &componentB);
         expect (ComponentSearch::findWithId (componentCId) == &componentC);
     }
+
+    void findsNestedComponentsWithSlashes ()
+    {
+        constexpr auto componentAId = "component-a";
+        constexpr auto componentBId = "component-b";
+        constexpr auto componentCId = "component-c";
+
+        constexpr auto genericId = "generic";
+
+        juce::Component componentA;
+        juce::Component componentB;
+        juce::Component componentC;
+
+        componentA.setComponentID (componentAId);
+        componentB.setComponentID (componentBId);
+        componentC.setComponentID (componentCId);
+
+        componentA.addAndMakeVisible (componentB);
+        componentA.addAndMakeVisible (componentC);
+
+        juce::Component genericA;
+        juce::Component genericB;
+        juce::Component genericC;
+
+        genericA.setComponentID (genericId);
+        componentA.addAndMakeVisible (genericA);
+
+        genericB.setComponentID (genericId);
+        componentB.addAndMakeVisible (genericB);
+
+        genericC.setComponentID (genericId);
+        componentC.addAndMakeVisible (genericC);
+
+        juce::TopLevelWindow window ("window", true);
+        window.addAndMakeVisible (componentA);
+        window.setVisible (true);
+
+        expect (ComponentSearch::findWithId ("component-a/generic") == &genericA);
+        expect (ComponentSearch::findWithId ("component-b/generic") == &genericB);
+        expect (ComponentSearch::findWithId ("component-c/generic") == &genericC);
+        expect (ComponentSearch::findWithId ("component-a/component-b/*") == &genericB);
+        expect (ComponentSearch::findWithId ("component-a/component-c/*") == &genericC);
+        expect (ComponentSearch::findWithId ("component-a/*/generic") == &genericB);
+    }
 };
 
 [[maybe_unused]] static ComponentSearchTests componentSearchTests;
-
 }
