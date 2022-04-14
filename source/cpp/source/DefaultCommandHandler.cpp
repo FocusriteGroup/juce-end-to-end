@@ -134,7 +134,7 @@ bool clickClickableComponent (juce::Component & component, const Command & comma
 Response clickComponent (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
-    if (componentId == juce::String ())
+    if (componentId.isEmpty ())
         return Response::fail ("Missing component-id");
 
     auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
@@ -352,7 +352,7 @@ Response invokeMenu (const Command & command)
 std::variant<juce::Slider *, juce::String> getSlider (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
-    if (componentId == juce::String ())
+    if (componentId.isEmpty ())
         return "Missing component-id";
 
     const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
