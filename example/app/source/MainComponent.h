@@ -1,6 +1,5 @@
 #pragma once
 
-#include <focusrite/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
 
 class MainComponent final : public juce::Component
@@ -18,17 +17,20 @@ public:
         addAndMakeVisible (_decrementButton);
         addAndMakeVisible (_enableButton);
         addAndMakeVisible (_valueLabel);
+        addAndMakeVisible (_slider);
 
         _valueLabel.setJustificationType (juce::Justification::centred);
         _valueLabel.setColour (juce::Label::textColourId, juce::Colours::black);
 
         updateLabel ();
 
-        using ComponentSearch = focusrite::e2e::ComponentSearch;
-        ComponentSearch::setTestId (_incrementButton, "increment-button");
-        ComponentSearch::setTestId (_decrementButton, "decrement-button");
-        ComponentSearch::setTestId (_enableButton, "enable-button");
-        ComponentSearch::setTestId (_valueLabel, "value-label");
+        _incrementButton.setComponentID ("increment-button");
+        _decrementButton.setComponentID ("decrement-button");
+        _enableButton.setComponentID ("enable-button");
+        _valueLabel.setComponentID ("value-label");
+        _slider.setComponentID ("slider");
+
+        _slider.onValueChange = [this] { setValue (_slider.getValue ()); };
     }
 
     void resized () override
@@ -47,6 +49,8 @@ public:
             juce::FlexItem (_decrementButton).withHeight (rowHeight),
             spacer,
             juce::FlexItem (_valueLabel).withHeight (rowHeight),
+            spacer,
+            juce::FlexItem (_slider).withHeight (rowHeight),
         };
 
         flexBox.performLayout (getLocalBounds ().reduced (10));
@@ -90,4 +94,5 @@ private:
     juce::TextButton _decrementButton {"Decrement"};
     juce::TextButton _enableButton {"Disable"};
     juce::Label _valueLabel;
+    juce::Slider _slider {juce::Slider::LinearHorizontal, juce::Slider::NoTextBox};
 };

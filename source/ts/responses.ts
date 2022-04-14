@@ -20,6 +20,10 @@ export interface ComponentTextResponse {
   text: string;
 }
 
+export interface GetSliderValueResponse {
+  value: number;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',
