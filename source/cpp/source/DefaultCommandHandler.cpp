@@ -6,6 +6,7 @@
 #include <focusrite/e2e/Command.h>
 #include <focusrite/e2e/ComponentSearch.h>
 #include <juce_gui_basics/juce_gui_basics.h>
+#include <variant>
 
 namespace focusrite::e2e
 {
@@ -348,50 +349,60 @@ Response invokeMenu (const Command & command)
     return Response::fail ("Not handled");
 }
 
-Response getSliderValue (const Command & command)
+std::variant<juce::Slider *, juce::String> getSlider (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId == juce::String ())
-        return Response::fail ("Missing component-id");
+        return "Missing component-id";
 
     const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
 
     auto component = ComponentSearch::findWithId (componentId, skip);
     if (component == nullptr)
-        return Response::fail ("Component not found: " + componentId);
+        return "Component not found: " + componentId;
 
     auto * slider = dynamic_cast<juce::Slider *> (component);
     if (slider == nullptr)
-        return Response::fail ("Component is not a slider: " + componentId);
+        return "Component is not a slider: " + componentId;
 
-    return Response::ok ().withParameter (toString (CommandArgument::value), slider->getValue ());
+    return slider;
+}
+
+Response getSliderValue (const Command & command)
+{
+    auto sliderVariant = getSlider (command);
+    if (std::holds_alternative<juce::Slider *> (sliderVariant))
+    {
+        auto slider = std::get<juce::Slider *> (sliderVariant);
+        return Response::ok ().withParameter (toString (CommandArgument::value),
+                                              slider->getValue ());
+    }
+
+    const auto error = std::get<juce::String> (sliderVariant);
+    return Response::fail (error);
 }
 
 Response setSliderValue (const Command & command)
 {
-    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
-    if (componentId == juce::String ())
-        return Response::fail ("Missing component-id");
+    auto sliderVariant = getSlider (command);
+    if (std::holds_alternative<juce::Slider *> (sliderVariant))
+    {
+        auto slider = std::get<juce::Slider *> (sliderVariant);
 
-    const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
+        const auto value =
+            command.getArgument (toString (CommandArgument::value)).getDoubleValue ();
 
-    auto component = ComponentSearch::findWithId (componentId, skip);
-    if (component == nullptr)
-        return Response::fail ("Component not found: " + componentId);
+        const auto sliderRange = slider->getRange ();
+        if (! sliderRange.contains (value))
+            return Response::fail ("Slider value out of range: " + juce::String (value));
 
-    auto * slider = dynamic_cast<juce::Slider *> (component);
-    if (slider == nullptr)
-        return Response::fail ("Component is not a slider: " + componentId);
+        slider->setValue (value, juce::dontSendNotification);
 
-    const auto value = command.getArgument (toString (CommandArgument::value)).getDoubleValue ();
+        return Response::ok ();
+    }
 
-    const auto sliderRange = slider->getRange ();
-    if (! sliderRange.contains (value))
-        return Response::fail ("Slider value out of range: " + juce::String (value));
-
-    slider->setValue (value, juce::dontSendNotification);
-
-    return Response::ok ();
+    const auto error = std::get<juce::String> (sliderVariant);
+    return Response::fail (error);
 }
 
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
