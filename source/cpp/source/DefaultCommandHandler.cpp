@@ -396,7 +396,7 @@ Response setSliderValue (const Command & command)
         if (! sliderRange.contains (value))
             return Response::fail ("Slider value out of range: " + juce::String (value));
 
-        slider->setValue (value, juce::dontSendNotification);
+        slider->setValue (value, juce::sendNotificationSync);
 
         return Response::ok ();
     }
