@@ -41,11 +41,6 @@ juce::var Command::getArgs () const
     return _args;
 }
 
-bool Command::hasArgument (const juce::String & argument) const
-{
-    return _args.hasProperty (argument);
-}
-
 juce::String Command::describe () const
 {
     juce::String response;

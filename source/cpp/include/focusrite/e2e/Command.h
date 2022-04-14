@@ -17,8 +17,6 @@ public:
     [[nodiscard]] juce::var getArgumentAsVar (const juce::String & argument) const;
     [[nodiscard]] juce::var getArgs () const;
 
-    [[nodiscard]] bool hasArgument (const juce::String & argument) const;
-
     template <typename T>
     [[nodiscard]] T getArgumentAs (const juce::String & argument) const;
 
