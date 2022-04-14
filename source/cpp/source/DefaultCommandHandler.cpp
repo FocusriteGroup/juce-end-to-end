@@ -19,6 +19,7 @@ enum class CommandArgument
     rootId,
     skip,
     title,
+    value,
     windowId,
 };
 
@@ -42,6 +43,8 @@ juce::StringRef toString (CommandArgument argument)
             return "skip";
         case CommandArgument::title:
             return "title";
+        case CommandArgument::value:
+            return "value";
         case CommandArgument::windowId:
             return "window-id";
     }
@@ -345,6 +348,52 @@ Response invokeMenu (const Command & command)
     return Response::fail ("Not handled");
 }
 
+Response getSliderValue (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId == juce::String ())
+        return Response::fail ("Missing component-id");
+
+    const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
+
+    auto component = ComponentSearch::findWithId (componentId, skip);
+    if (component == nullptr)
+        return Response::fail ("Component not found: " + componentId);
+
+    auto * slider = dynamic_cast<juce::Slider *> (component);
+    if (slider == nullptr)
+        return Response::fail ("Component is not a slider: " + componentId);
+
+    return Response::ok ().withParameter (toString (CommandArgument::value), slider->getValue ());
+}
+
+Response setSliderValue (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId == juce::String ())
+        return Response::fail ("Missing component-id");
+
+    const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
+
+    auto component = ComponentSearch::findWithId (componentId, skip);
+    if (component == nullptr)
+        return Response::fail ("Component not found: " + componentId);
+
+    auto * slider = dynamic_cast<juce::Slider *> (component);
+    if (slider == nullptr)
+        return Response::fail ("Component is not a slider: " + componentId);
+
+    const auto value = command.getArgument (toString (CommandArgument::value)).getDoubleValue ();
+
+    const auto sliderRange = slider->getRange ();
+    if (! sliderRange.contains (value))
+        return Response::fail ("Slider value out of range: " + juce::String (value));
+
+    slider->setValue (value, juce::dontSendNotification);
+
+    return Response::ok ();
+}
+
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
 {
     static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
@@ -362,6 +411,8 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
             {"grab-focus", [&] (auto && command) { return grabFocus (command); }},
             {"quit", [&] (auto && command) { return quit (command); }},
             {"invoke-menu", [&] (auto && command) { return invokeMenu (command); }},
+            {"get-slider-value", [&] (auto && command) { return getSliderValue (command); }},
+            {"set-slider-value", [&] (auto && command) { return setSliderValue (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());

@@ -50,4 +50,11 @@ describe('Count App tests', () => {
       await appConnection.getComponentEnablement('decrement-button')
     ).toBeFalsy();
   });
+
+  it('Can set slider value', async () => {
+    const expectedValue = 6;
+    await appConnection.setSliderValue('slider', expectedValue);
+    const value = await appConnection.getSliderValue('slider');
+    expect(value).toBe(expectedValue);
+  });
 });

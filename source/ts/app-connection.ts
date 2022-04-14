@@ -12,6 +12,7 @@ import {
   ScreenshotResponse,
   ComponentCountResponse,
   ResponseData,
+  GetSliderValueResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
@@ -238,6 +239,27 @@ export class AppConnection extends EventEmitter {
         'focus-component': focusComponent || '',
       },
     });
+  }
+
+  async setSliderValue(sliderId: string, value: number): Promise<void> {
+    await this.sendCommand({
+      type: 'set-slider-value',
+      args: {
+        'component-id': sliderId,
+        value,
+      },
+    });
+  }
+
+  async getSliderValue(sliderId: string): Promise<number> {
+    const response = (await this.sendCommand({
+      type: 'get-slider-value',
+      args: {
+        'component-id': sliderId,
+      },
+    })) as GetSliderValueResponse;
+
+    return response.value;
   }
 
   async invokeMenu(menu: string): Promise<void> {
