@@ -101,9 +101,13 @@ juce::ModifierKeys mapModifierKeys (const juce::String & modifiers)
     return modifierKeys;
 }
 
-juce::KeyPress constructKeyPress (const juce::String & code, const juce::String & modifiers)
+juce::KeyPress constructKeyPress (const juce::String & code
+                                  , const juce::String & modifiers
+                                  , const juce::String & displayText)
 {
-    return {mapKeyCode (code), mapModifierKeys (modifiers), 0};
+    return {mapKeyCode (code)
+                , mapModifierKeys (modifiers)
+                , displayText.getLastCharacter()};
 }
 
 }

@@ -22,6 +22,7 @@ enum class CommandArgument
     title,
     value,
     windowId,
+    displayText
 };
 
 juce::StringRef toString (CommandArgument argument)
@@ -48,6 +49,8 @@ juce::StringRef toString (CommandArgument argument)
             return "value";
         case CommandArgument::windowId:
             return "window-id";
+        case CommandArgument::displayText:
+            return "display-text";
     }
 
     jassertfalse;

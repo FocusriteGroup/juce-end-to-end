@@ -229,7 +229,8 @@ export class AppConnection extends EventEmitter {
   async keyPress(
     key: string,
     modifiers?: string,
-    focusComponent?: string
+    focusComponent?: string,
+    displayText?: string
   ): Promise<void> {
     await this.sendCommand({
       type: 'key-press',
@@ -237,6 +238,7 @@ export class AppConnection extends EventEmitter {
         'key-code': key,
         'modifiers': modifiers || '',
         'focus-component': focusComponent || '',
+        'display-text': displayText || '',
       },
     });
   }
