@@ -1,0 +1,34 @@
+---
+Checks: >
+  -*,
+  
+  clang-diagnostic-*,
+  
+  clang-analyzer-*,
+  
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  
+  readability-*,
+  -readability-braces-around-statements,
+  -readability-uppercase-literal-suffix,
+  -readability-function-cognitive-complexity,
+  
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-exception-escape,
+  -bugprone-suspicious-include,
+
+WarningsAsErrors: '*'
+
+CheckOptions:
+  - { key: readability-identifier-length.IgnoredVariableNames,   value: ^(id|it)$ }
+  - { key: readability-identifier-length.IgnoredParameterNames,   value: ^(id|it)$ }
+
+
+HeaderFilterRegex: ''
+AnalyzeTemporaryDtors: false
+FormatStyle:     none
+...
+

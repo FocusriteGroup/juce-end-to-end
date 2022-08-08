@@ -84,14 +84,17 @@ public:
 
     void numberParameter ()
     {
+        static constexpr auto value = 12345;
         const auto data = _fixture->parsedOk.getProperty ("data", {});
-        expectEquals (int (data.getProperty ("number", {})), 12345);
+        expectEquals (int (data.getProperty ("number", {})), value);
     }
 
     void doubleParameter ()
     {
+        static constexpr auto value = 0.123456789;
+        static constexpr auto error = 1e-9;
         const auto data = _fixture->parsedFail.getProperty ("data", {});
-        expectWithinAbsoluteError (double (data.getProperty ("double", {})), 0.123456789, 1e-9);
+        expectWithinAbsoluteError (double (data.getProperty ("double", {})), value, error);
     }
 
 private:

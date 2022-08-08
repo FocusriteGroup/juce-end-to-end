@@ -19,7 +19,7 @@ public:
         return false;
     }
 
-    void initialise (const juce::String &) override
+    void initialise ([[maybe_unused]] const juce::String & commandLineArguments) override
     {
         _testsResult = std::async (&Application::runTests);
     }
@@ -30,7 +30,7 @@ public:
             _testsResult.get () == TestsResult::pass ? 0 : 1);
     }
 
-    void anotherInstanceStarted (const juce::String &) override
+    void anotherInstanceStarted ([[maybe_unused]] const juce::String & commandLineArgs) override
     {
     }
 
@@ -70,7 +70,7 @@ private:
         auto testsResults = TestsResult::pass;
 
         for (int resultIndex = 0; resultIndex < runner.getNumResults (); ++resultIndex)
-            if (auto result = runner.getResult (resultIndex))
+            if (const auto * result = runner.getResult (resultIndex))
                 if (result->failures > 0)
                     testsResults = TestsResult::fail;
 

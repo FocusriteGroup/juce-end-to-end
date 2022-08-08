@@ -7,7 +7,9 @@ class MainComponent final : public juce::Component
 public:
     MainComponent ()
     {
-        setSize (400, 240);
+        static constexpr auto width = 400;
+        static constexpr auto height = 240;
+        setSize (width, height);
 
         _incrementButton.onClick = [this] { increment (); };
         _decrementButton.onClick = [this] { decrement (); };
@@ -53,7 +55,8 @@ public:
             juce::FlexItem (_slider).withHeight (rowHeight),
         };
 
-        flexBox.performLayout (getLocalBounds ().reduced (10));
+        static constexpr auto margin = 10;
+        flexBox.performLayout (getLocalBounds ().reduced (margin));
     }
 
 private:

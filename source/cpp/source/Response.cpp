@@ -45,7 +45,7 @@ juce::String Response::toJson () const
     {
         auto data = std::make_unique<juce::DynamicObject> ();
 
-        for (auto & [key, value] : _parameters)
+        for (const auto & [key, value] : _parameters)
             data->setProperty (key, value);
 
         element->setProperty ("data", data.release ());
