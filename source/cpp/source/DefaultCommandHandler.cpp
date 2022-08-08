@@ -417,7 +417,8 @@ Response setTextEditorText (const Command & command)
     {
         if (auto * textEditor = dynamic_cast<juce::TextEditor *> (component))
         {
-            textEditor->setText (text, juce::sendNotificationSync);
+            static constexpr auto sendTextChangeMessage = true;
+            textEditor->setText (text, sendTextChangeMessage);
             return Response::ok ();
         }
 
