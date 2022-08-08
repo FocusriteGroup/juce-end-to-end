@@ -405,6 +405,28 @@ Response setSliderValue (const Command & command)
     return Response::fail (error);
 }
 
+Response setTextEditorText (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    const auto text = command.getArgument (toString (CommandArgument::value));
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+    {
+        if (auto * textEditor = dynamic_cast<juce::TextEditor *> (component))
+        {
+            textEditor->setText (text, juce::sendNotificationSync);
+            return Response::ok ();
+        }
+
+        return Response::fail (componentId + " is not a juce::TextEditor");
+    }
+
+    return Response::fail (componentId + " not found");
+}
+
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
 {
     static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
@@ -424,6 +446,10 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
             {"invoke-menu", [&] (auto && command) { return invokeMenu (command); }},
             {"get-slider-value", [&] (auto && command) { return getSliderValue (command); }},
             {"set-slider-value", [&] (auto && command) { return setSliderValue (command); }},
+            {
+                "set-text-editor-text",
+                [&] (auto && command) { return setTextEditorText (command); },
+            },
         };
 
     auto it = commandHandlers.find (command.getType ());
