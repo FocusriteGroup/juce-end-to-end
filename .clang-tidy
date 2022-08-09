@@ -29,6 +29,6 @@ CheckOptions:
 
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false
-FormatStyle:     none
+FormatStyle: none
 ...
 
