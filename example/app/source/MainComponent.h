@@ -20,6 +20,7 @@ public:
         addAndMakeVisible (_enableButton);
         addAndMakeVisible (_valueLabel);
         addAndMakeVisible (_slider);
+        addAndMakeVisible (_textEditor);
 
         _valueLabel.setJustificationType (juce::Justification::centred);
         _valueLabel.setColour (juce::Label::textColourId, juce::Colours::black);
@@ -31,8 +32,15 @@ public:
         _enableButton.setComponentID ("enable-button");
         _valueLabel.setComponentID ("value-label");
         _slider.setComponentID ("slider");
+        _textEditor.setComponentID ("text-editor");
 
-        _slider.onValueChange = [this] { setValue (_slider.getValue ()); };
+        _textEditor.onTextChange = [this]
+        {
+            const auto text = _textEditor.getText ();
+            setValue (text.getIntValue ());
+        };
+
+        _slider.onValueChange = [this] { setValue (static_cast<int> (_slider.getValue ())); };
     }
 
     void resized () override
@@ -50,9 +58,11 @@ public:
             spacer,
             juce::FlexItem (_decrementButton).withHeight (rowHeight),
             spacer,
-            juce::FlexItem (_valueLabel).withHeight (rowHeight),
-            spacer,
             juce::FlexItem (_slider).withHeight (rowHeight),
+            spacer,
+            juce::FlexItem (_textEditor).withHeight (rowHeight),
+            spacer,
+            juce::FlexItem (_valueLabel).withHeight (rowHeight),
         };
 
         static constexpr auto margin = 10;
@@ -89,6 +99,8 @@ private:
         auto willEnable = ! _incrementButton.isEnabled ();
         _incrementButton.setEnabled (willEnable);
         _decrementButton.setEnabled (willEnable);
+        _slider.setEnabled (willEnable);
+        _textEditor.setEnabled (willEnable);
         _enableButton.setButtonText (_incrementButton.isEnabled () ? "Disable" : "Enable");
     }
 
@@ -98,4 +110,5 @@ private:
     juce::TextButton _enableButton {"Disable"};
     juce::Label _valueLabel;
     juce::Slider _slider {juce::Slider::LinearHorizontal, juce::Slider::NoTextBox};
+    juce::TextEditor _textEditor;
 };
