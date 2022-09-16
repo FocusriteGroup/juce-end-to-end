@@ -6,7 +6,7 @@ orbs:
 aliases:
   - &macos-env
     macos:
-      xcode: 13.4.1
+      xcode: 14.0.0
       
   - &windows-env
     executor:
