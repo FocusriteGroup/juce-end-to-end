@@ -392,8 +392,7 @@ Response setSliderValue (const Command & command)
         const auto value =
             command.getArgument (toString (CommandArgument::value)).getDoubleValue ();
 
-        const auto sliderRange = slider->getRange ();
-        if (! sliderRange.contains (value))
+        if (value > slider->getMaximum () || value < slider->getMinimum ())
             return Response::fail ("Slider value out of range: " + juce::String (value));
 
         slider->setValue (value, juce::sendNotificationSync);
