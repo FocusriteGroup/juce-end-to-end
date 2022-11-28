@@ -10,7 +10,7 @@ const release = async () => {
 
   try {
     await new GithubReleaser({
-      owner: 'Focusrite-Novation',
+      owner: 'FocusriteGroup',
       repo: 'juce-end-to-end',
       tag: git.tag,
     }).release(paths.archive);
