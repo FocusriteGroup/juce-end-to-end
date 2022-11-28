@@ -156,13 +156,13 @@ commands and query its state. You can use it with any testing/assertion library
 1. Install Node (you can use a Node installer, a system package manager, or a Node version manager)
 2. Initialise an npm package at the root of your repository using
 
-   ```
+   ```sh
    npm init
    ```
 
 3. Install the library using npm
 
-    ```
+    ```sh
     npm install @focusritegroup/juce-end-to-end
     ```
 
