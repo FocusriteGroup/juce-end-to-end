@@ -4,7 +4,7 @@
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-[![Focusrite-Novation](https://circleci.com/gh/Focusrite-Novation/juce-end-to-end.svg?style=shield&circle-token=11bdc9a65f58ecac7388d385b1ed052c848c4924)](https://app.circleci.com/pipelines/github/Focusrite-Novation/juce-end-to-end)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/FocusriteGroup/juce-end-to-end/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/FocusriteGroup/juce-end-to-end/tree/main)
 
 [![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
 

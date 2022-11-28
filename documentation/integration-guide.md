@@ -7,10 +7,11 @@ library, as well as using the JavaScript package.
 
 ### Option 1: Pre-built library with CMake
 
-1. Download the latest archive(s) from [GitHub releases](https://github.com/Focusrite-Novation/juce-end-to-end/releases) 
+1. Download the latest archive(s) from [GitHub releases](https://github.com/FocusriteGroup/juce-end-to-end/releases)
 and add to your repository
 1. Add the following to your CMakeLists.txt (after JUCE has been made available)
 , changing the paths to reflect the layout of your repository
+
     ```CMake
     include (FetchContent)
 
@@ -29,13 +30,15 @@ and add to your repository
 
     find_package (FocusriteE2E REQUIRED)
     ```
+
 1. Link your target with the `focusrite-e2e::focusrite-e2e` target
+
     ```CMake
     target_link_libraries (MyApp PRIVATE focusrite-e2e::focusrite-e2e)
 
 ### Option 2: Pre-built library manually
 
-1. Download the latest archive(s) from [GitHub releases](https://github.com/Focusrite-Novation/juce-end-to-end/releases)
+1. Download the latest archive(s) from [GitHub releases](https://github.com/FocusriteGroup/juce-end-to-end/releases)
 , unpack, and add to your repository
 1. Add the enclosed `include` folder to your include path
 1. Link with the appropriate library in the `lib` folder
@@ -44,21 +47,24 @@ and add to your repository
 
 ### Option 3: From source with CMake
 
-1. Add [Focusrite-Novation/juce-end-to-end](https://github.com/Focusrite-Novation/juce-end-to-end) 
+1. Add [FocusriteGroup/juce-end-to-end](https://github.com/FocusriteGroup/juce-end-to-end)
 as a submodule to your project
-1. In your CMakeLists.txt, add the subdirectory (after JUCE has been made 
+1. In your CMakeLists.txt, add the subdirectory (after JUCE has been made
 available)
+
     ```CMake
     add_subdirectory (lib/juce-end-to-end)
     ```
+
 1. Link your target with the `focusrite-e2e::focusrite-e2e` target
+
     ```CMake
     target_link_libraries (MyApp PRIVATE focusrite-e2e::focusrite-e2e)
     ```
 
 ### Option 4: From source manually
 
-1. Add [Focusrite-Novation/juce-end-to-end](https://github.com/Focusrite-Novation/juce-end-to-end) 
+1. Add [FocusriteGroup/juce-end-to-end](https://github.com/FocusriteGroup/juce-end-to-end)
 as a submodule to your project
 1. Add the enclosed `include` folder to your include path
 1. Compile all sources in the `sources` folder
@@ -67,8 +73,8 @@ as a submodule to your project
 
 ### Create a `TestCentre`
 
-All you need to do to make your application testable is create a 
-`focusrite::e2e::TestCentre` that has the same lifecycle as your application. 
+All you need to do to make your application testable is create a
+`focusrite::e2e::TestCentre` that has the same lifecycle as your application.
 For example:
 
 ```C++
@@ -100,6 +106,7 @@ myComponent.setComponentID ("my-component-id");
 ```
 
 If you happen to be using the component ID for something else, you can set the test ID as follows:
+
 ```C++
 #include <focusrite/e2e/ComponentSearch.h>
 // ...
@@ -131,7 +138,7 @@ MyCommandHandler commandHandler;
 testCentre->addCommandHandler (commandHandler);
 ```
 
-You can also send custom events at any time, without needing to wait for a 
+You can also send custom events at any time, without needing to wait for a
 request:
 
 ```C++
@@ -148,17 +155,21 @@ commands and query its state. You can use it with any testing/assertion library
 
 1. Install Node (you can use a Node installer, a system package manager, or a Node version manager)
 2. Initialise an npm package at the root of your repository using
-   ```
+
+   ```sh
    npm init
    ```
+
 3. Install the library using npm
-    ```
+
+    ```sh
     npm install @focusritegroup/juce-end-to-end
     ```
+
 4. Install a test framework (e.g. Jest)
-5. In your test setup, before each test, create an `AppConnection` (passing it 
+5. In your test setup, before each test, create an `AppConnection` (passing it
 the path to your built application) and wait for it to launch. You can pass the
-app extra arguments or set environment variables if you need to put it into 
+app extra arguments or set environment variables if you need to put it into
 special state.
 
     ```TypeScript
@@ -197,7 +208,7 @@ of the user interface. Here is a simple example:
     });
     ```
 
-See the documentation for `AppConnection` for the full range of supported 
+See the documentation for `AppConnection` for the full range of supported
 commands and responses. If you need to extend this, you can send custom commands,
-as long as it can be serialised to JSON using 
+as long as it can be serialised to JSON using
 `appConnection.sendCommand (myCustomCommand);`

@@ -4,7 +4,6 @@
   "description": "End-to-end testing library for Focusrite",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "prettier": "@focusrite-novation/ampify-prettier-config",
   "files": [
     "dist",
     "source"
@@ -22,14 +21,14 @@
     "test": "jest ./tests/**",
     "test-example": "jest ./example/tests/**"
   },
-  "repository": "git://github.com/Focusrite-Novation/juce-end-to-end.git",
+  "repository": "git://github.com/FocusriteGroup/juce-end-to-end.git",
   "keywords": [],
   "author": "",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/Focusrite-Novation/juce-end-to-end/issues"
+    "url": "https://github.com/FocusriteGroup/juce-end-to-end/issues"
   },
-  "homepage": "https://github.com/Focusrite-Novation/juce-end-to-end#readme",
+  "homepage": "https://github.com/FocusriteGroup/juce-end-to-end#readme",
   "dependencies": {
     "minimatch": "^3.0.4",
     "uuid": "^9.0.0"
@@ -38,7 +37,6 @@
     "@babel/core": "^7.16.0",
     "@babel/preset-env": "^7.15.8",
     "@babel/preset-typescript": "^7.16.0",
-    "@focusrite-novation/ampify-prettier-config": "https://github.com/Focusrite-Novation/ampify-prettier-config.git#293d1f47ec2c2fafbf493384137a6a2cccaaeda9",
     "@types/git-rev-sync": "^2.0.0",
     "@types/glob": "^8.0.0",
     "@types/jest": "^27.4.0",
@@ -60,5 +58,15 @@
   },
   "engines": {
     "node": ">14"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true,
+    "bracketSpacing": false,
+    "quoteProps": "consistent",
+    "arrowParens": "always",
+    "printWidth": 80
   }
 }
