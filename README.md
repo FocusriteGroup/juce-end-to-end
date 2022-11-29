@@ -34,22 +34,18 @@ This package provides a mechanism to end-to-end test a JUCE application
 
 To integrate into your project, please read the [Integration Guide](./documentation/integration-guide.md)
 
-## Building
+## Continuous Integration
 
-You can build on the command line, or using an IDE (We support _XCode_, _CLion_ and _VS2019_ currently). See [here](./documentation/building.md) for how to build.
-
-## CI
-
-Our ci is [CircleCI](https://www.circleci.com). The config for circle is [here](./.circleci/config.yml)
+Our Continuous Integration is [CircleCI](https://www.circleci.com). The config for circle is [here](./.circleci/config.yml)
 
 ## Code formatting
 
 We use a variety of code formatting tools. Please make sure you have these installed on your system to keep the codebase styling consistent.
 
 - [C++](./documentation/cplusplus.md)
-- [Javascript](./documentation/javascript.md)
+- [JavaScript](./documentation/javascript.md)
 - [CMake](./documentation/cmake.md)
 
 ## Scripts
 
-We have a variety of scripts available in our package.json. [Learn more](./documentation/scripts.md)
+We have a variety of scripts available in our package.json.
