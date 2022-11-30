@@ -5,51 +5,11 @@ library, as well as using the JavaScript package.
 
 ## C++ Library
 
-### Option 1: Pre-built library with CMake
-
-1. Download the latest archive(s) from [GitHub releases](https://github.com/FocusriteGroup/juce-end-to-end/releases)
-and add to your repository
-1. Add the following to your CMakeLists.txt (after JUCE has been made available)
-, changing the paths to reflect the layout of your repository
-
-    ```CMake
-    include (FetchContent)
-
-    if (APPLE)
-        set (FOCUSRITE_E2E_ARCHIVE_PATH path/to/focusrite-e2e-macos.tar.gz)
-    elseif (WIN32)
-        set (FOCUSRITE_E2E_ARCHIVE_PATH path/to/focusrite-e2e-windows.tar.gz)
-    endif ()
-
-    fetchcontent_declare (focusrite-e2e URL ${FOCUSRITE_E2E_ARCHIVE_PATH})
-    fetchcontent_getproperties (focusrite-e2e)
-    if (NOT focusrite-e2e_POPULATED)
-        fetchcontent_populate (focusrite-e2e)
-        list (APPEND CMAKE_PREFIX_PATH ${focusrite-e2e_SOURCE_DIR}/lib/cmake)
-    endif ()
-
-    find_package (FocusriteE2E REQUIRED)
-    ```
-
-1. Link your target with the `focusrite-e2e::focusrite-e2e` target
-
-    ```CMake
-    target_link_libraries (MyApp PRIVATE focusrite-e2e::focusrite-e2e)
-
-### Option 2: Pre-built library manually
-
-1. Download the latest archive(s) from [GitHub releases](https://github.com/FocusriteGroup/juce-end-to-end/releases)
-, unpack, and add to your repository
-1. Add the enclosed `include` folder to your include path
-1. Link with the appropriate library in the `lib` folder
-1. Ensure `juce/modules` is available on your include path
-1. Ensure JUCE is linked with your executable
-
-### Option 3: From source with CMake
+### Option 1: CMake (using a submodule)
 
 1. Add [FocusriteGroup/juce-end-to-end](https://github.com/FocusriteGroup/juce-end-to-end)
-as a submodule to your project
-1. In your CMakeLists.txt, add the subdirectory (after JUCE has been made
+as a submodule to your project (for example, to `lib/juce-end-to-end`)
+1. In your CMakeLists.txt, add the directory (after JUCE has been made
 available)
 
     ```CMake
@@ -62,7 +22,27 @@ available)
     target_link_libraries (MyApp PRIVATE focusrite-e2e::focusrite-e2e)
     ```
 
-### Option 4: From source manually
+### Option 2: CMake (using FetchContent)
+
+1. Add the following to your CMake project to fetch juce-end-to-end, swapping the version for the version that you wish to use.
+    This should be done after JUCE has been made available.
+
+    ```CMake
+    include (FetchContent)
+    FetchContent_Declare (juce-end-to-end 
+                          GIT_REPOSITORY https://github.com/FocusriteGroup/juce-end-to-end
+                          GIT_TAG v0.0.15)
+
+    FetchContent_MakeAvailable (juce)
+    ```
+
+1. Link your target with the `focusrite-e2e::focusrite-e2e` target
+
+    ```CMake
+    target_link_libraries (MyApp PRIVATE focusrite-e2e::focusrite-e2e)
+    ```
+
+### Option 3: Manually
 
 1. Add [FocusriteGroup/juce-end-to-end](https://github.com/FocusriteGroup/juce-end-to-end)
 as a submodule to your project

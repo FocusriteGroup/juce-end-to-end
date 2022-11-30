@@ -179,24 +179,6 @@ jobs:
       - npm_install
       - test_typescript_library
 
-  macos_release:
-    <<: *macos-env
-    steps:
-      - checkout
-      - npm_install
-      - attach_workspace:
-          at: .
-      - run: npm run release-cpp
-
-  windows_release:
-    <<: *windows-env
-    steps:
-      - checkout
-      - npm_install
-      - attach_workspace:
-          at: .
-      - run: npm run release-cpp
-
   typescript_release:
     <<: *node-env
     steps:
@@ -232,28 +214,8 @@ workflows:
           requires:
             - typescript_build
 
-  build_test_and_release:
+  release:
     jobs:
-      - macos_build:
-          <<: *only_on_tag
-      - macos_test:
-          <<: *only_on_tag
-          requires:
-            - macos_build
-      - macos_release:
-          <<: *only_on_tag
-          requires:
-            - macos_test
-      - windows_build:
-          <<: *only_on_tag
-      - windows_test:
-          <<: *only_on_tag
-          requires:
-            - windows_build
-      - windows_release:
-          <<: *only_on_tag
-          requires:
-            - windows_test
       - typescript_build:
           <<: *only_on_tag
       - typescript_test:
@@ -263,6 +225,6 @@ workflows:
       - typescript_release:
           <<: *only_on_tag
           context:
-            - NPMJS-CONFIG
+            - NPM-CONFIG
           requires:
             - typescript_test
