@@ -24,6 +24,10 @@ export interface GetSliderValueResponse {
   value: number;
 }
 
+export interface GetItemIndexResponse {
+  value: number;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',
