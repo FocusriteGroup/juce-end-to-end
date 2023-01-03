@@ -72,8 +72,9 @@ public:
 
     void convertsIntArgumentFromJson ()
     {
+        static constexpr auto value = 45675;
         const auto command = Command::fromJson (exampleJson);
-        expectEquals (command.getArgumentAs<int> ("int-type"), 45675);
+        expectEquals (command.getArgumentAs<int> ("int-type"), value);
     }
 
     void convertsBoolArgumentFromJson ()

@@ -2,8 +2,8 @@
 
 namespace focusrite::e2e
 {
-static constexpr char testId [] = "test-id";
-static constexpr char windowId [] = "window-id";
+static constexpr auto testId = "test-id";
+static constexpr auto windowId = "window-id";
 
 std::vector<juce::Component *>
 getDirectDescendantsMatching (juce::Component & parent,
@@ -29,7 +29,7 @@ juce::Component * matchChildComponent (juce::Component & component,
 
     for (auto * child : component.getChildren ())
     {
-        if (! child)
+        if (child == nullptr)
             continue;
 
         if (auto * foundComponent = matchChildComponent (*child, predicate, skip))
@@ -52,7 +52,7 @@ std::vector<juce::TopLevelWindow *> getTopLevelWindows ()
 
     for (int windowIndex = 0; windowIndex < juce::TopLevelWindow::getNumTopLevelWindows ();
          ++windowIndex)
-        if (auto window = juce::TopLevelWindow::getTopLevelWindow (windowIndex))
+        if (auto * window = juce::TopLevelWindow::getTopLevelWindow (windowIndex))
             windows.push_back (window);
 
     return windows;
@@ -62,7 +62,7 @@ juce::Component * findComponent (const std::function<bool (juce::Component &)> &
                                  int skip = 0)
 {
     for (auto & window : getTopLevelWindows ())
-        if (auto component = findChildComponent (*window, predicate, skip))
+        if (auto * component = findChildComponent (*window, predicate, skip))
             return component;
 
     return nullptr;

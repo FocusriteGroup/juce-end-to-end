@@ -25,7 +25,7 @@ juce::String Event::toJson () const
     {
         auto data = std::make_unique<juce::DynamicObject> ();
 
-        for (auto & [name, value] : _parameters)
+        for (const auto & [name, value] : _parameters)
             data->setProperty (name, value);
 
         root->setProperty ("data", data.release ());

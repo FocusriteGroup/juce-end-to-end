@@ -4,7 +4,7 @@
 
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
 
-[![Focusrite-Novation](https://circleci.com/gh/Focusrite-Novation/juce-end-to-end.svg?style=shield&circle-token=11bdc9a65f58ecac7388d385b1ed052c848c4924)](https://app.circleci.com/pipelines/github/Focusrite-Novation/juce-end-to-end)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/FocusriteGroup/juce-end-to-end/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/FocusriteGroup/juce-end-to-end/tree/main)
 
 [![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
 
@@ -34,22 +34,18 @@ This package provides a mechanism to end-to-end test a JUCE application
 
 To integrate into your project, please read the [Integration Guide](./documentation/integration-guide.md)
 
-## Building
+## Continuous Integration
 
-You can build on the command line, or using an IDE (We support _XCode_, _CLion_ and _VS2019_ currently). See [here](./documentation/building.md) for how to build.
-
-## CI
-
-Our ci is [CircleCI](https://www.circleci.com). The config for circle is [here](./.circleci/config.yml)
+Our Continuous Integration is [CircleCI](https://www.circleci.com). The config for circle is [here](./.circleci/config.yml)
 
 ## Code formatting
 
 We use a variety of code formatting tools. Please make sure you have these installed on your system to keep the codebase styling consistent.
 
 - [C++](./documentation/cplusplus.md)
-- [Javascript](./documentation/javascript.md)
+- [JavaScript](./documentation/javascript.md)
 - [CMake](./documentation/cmake.md)
 
 ## Scripts
 
-We have a variety of scripts available in our package.json. [Learn more](./documentation/scripts.md)
+We have a variety of scripts available in our package.json.

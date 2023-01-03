@@ -139,7 +139,7 @@ Response clickComponent (const Command & command)
 
     auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
 
-    auto component = ComponentSearch::findWithId (componentId, skip);
+    auto * component = ComponentSearch::findWithId (componentId, skip);
     if (component == nullptr)
         return Response::fail ("Component not found: " + juce::String (componentId));
 
@@ -163,12 +163,12 @@ Response keyPressOnComponent (const juce::String & componentId, const juce::KeyP
 
 Response keyPressOnWindow (const juce::String & windowId, const juce::KeyPress & keyPress)
 {
-    auto window = ComponentSearch::findWindowWithId (windowId);
-    if (! window)
+    auto * window = ComponentSearch::findWindowWithId (windowId);
+    if (window == nullptr)
         return Response::fail ("Couldn't find window");
 
-    auto peer = window->getPeer ();
-    if (! peer)
+    auto * peer = window->getPeer ();
+    if (peer == nullptr)
         return Response::fail ("Window doesn't have peer");
 
     peer->handleKeyPress (keyPress);
@@ -207,8 +207,8 @@ Response getScreenshot (const Command & command)
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     const auto windowId = command.getArgument (toString (CommandArgument::windowId));
 
-    auto component = componentId.isEmpty () ? ComponentSearch::findWindowWithId (windowId)
-                                            : ComponentSearch::findWithId (componentId);
+    auto * component = componentId.isEmpty () ? ComponentSearch::findWindowWithId (windowId)
+                                              : ComponentSearch::findWithId (componentId);
 
     if (component == nullptr)
         return Response::fail ("Component not found: " + juce::String (componentId));
@@ -263,16 +263,16 @@ Response getComponentText (const Command & command)
         return Response::fail ("Missing component-id");
 
     auto * component = ComponentSearch::findWithId (componentId);
-    if (! component)
+    if (component == nullptr)
         return Response::fail ("No matching component");
 
-    if (auto * textBox = dynamic_cast<const juce::TextEditor *> (component))
+    if (const auto * textBox = dynamic_cast<const juce::TextEditor *> (component))
         return Response::ok ().withParameter ("text", textBox->getText ());
 
-    if (auto * label = dynamic_cast<const juce::Label *> (component))
+    if (const auto * label = dynamic_cast<const juce::Label *> (component))
         return Response::ok ().withParameter ("text", label->getText ());
 
-    if (auto * button = dynamic_cast<const juce::Button *> (component))
+    if (const auto * button = dynamic_cast<const juce::Button *> (component))
         return Response::ok ().withParameter ("text", button->getButtonText ());
 
     return Response::fail ("Component doesn't have text");
@@ -324,7 +324,7 @@ Response quit (const Command & command)
 Response invokeMenu (const Command & command)
 {
     auto * application = juce::JUCEApplication::getInstance ();
-    if (! application)
+    if (application == nullptr)
         return Response::fail ("Invalid application");
 
     const auto menuTitle = command.getArgument (toString (CommandArgument::title));
@@ -357,7 +357,7 @@ std::variant<juce::Slider *, juce::String> getSlider (const Command & command)
 
     const auto skip = command.getArgument (toString (CommandArgument::skip)).getIntValue ();
 
-    auto component = ComponentSearch::findWithId (componentId, skip);
+    auto * component = ComponentSearch::findWithId (componentId, skip);
     if (component == nullptr)
         return "Component not found: " + componentId;
 
@@ -373,7 +373,7 @@ Response getSliderValue (const Command & command)
     auto sliderVariant = getSlider (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
     {
-        auto slider = std::get<juce::Slider *> (sliderVariant);
+        auto * slider = std::get<juce::Slider *> (sliderVariant);
         return Response::ok ().withParameter (toString (CommandArgument::value),
                                               slider->getValue ());
     }
@@ -387,13 +387,12 @@ Response setSliderValue (const Command & command)
     auto sliderVariant = getSlider (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
     {
-        auto slider = std::get<juce::Slider *> (sliderVariant);
+        auto * slider = std::get<juce::Slider *> (sliderVariant);
 
         const auto value =
             command.getArgument (toString (CommandArgument::value)).getDoubleValue ();
 
-        const auto sliderRange = slider->getRange ();
-        if (! sliderRange.contains (value))
+        if (value > slider->getMaximum () || value < slider->getMinimum ())
             return Response::fail ("Slider value out of range: " + juce::String (value));
 
         slider->setValue (value, juce::sendNotificationSync);
@@ -403,6 +402,29 @@ Response setSliderValue (const Command & command)
 
     const auto error = std::get<juce::String> (sliderVariant);
     return Response::fail (error);
+}
+
+Response setTextEditorText (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    const auto text = command.getArgument (toString (CommandArgument::value));
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+    {
+        if (auto * textEditor = dynamic_cast<juce::TextEditor *> (component))
+        {
+            static constexpr auto sendTextChangeMessage = true;
+            textEditor->setText (text, sendTextChangeMessage);
+            return Response::ok ();
+        }
+
+        return Response::fail (componentId + " is not a juce::TextEditor");
+    }
+
+    return Response::fail (componentId + " not found");
 }
 
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
@@ -424,6 +446,10 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
             {"invoke-menu", [&] (auto && command) { return invokeMenu (command); }},
             {"get-slider-value", [&] (auto && command) { return getSliderValue (command); }},
             {"set-slider-value", [&] (auto && command) { return setSliderValue (command); }},
+            {
+                "set-text-editor-text",
+                [&] (auto && command) { return setTextEditorText (command); },
+            },
         };
 
     auto it = commandHandlers.find (command.getType ());

@@ -18,7 +18,7 @@ public:
         return "0.0.0";
     }
 
-    void initialise (const juce::String &) override
+    void initialise ([[maybe_unused]] const juce::String & commandLineArguments) override
     {
         _mainWindow.setVisible (true);
     }

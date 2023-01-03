@@ -14,26 +14,26 @@ describe('Count App tests', () => {
     await appConnection.quit();
   });
 
-  it('Starts at 0', async () => {
+  it('starts at 0', async () => {
     const value = await appConnection.getComponentText('value-label');
     expect(value).toEqual('0');
   });
 
-  it('Increments using the increment button', async () => {
+  it('increments using the increment button', async () => {
     await appConnection.clickComponent('increment-button');
 
     const value = await appConnection.getComponentText('value-label');
     expect(value).toEqual('1');
   });
 
-  it('Decrements using the decrement button', async () => {
+  it('decrements using the decrement button', async () => {
     await appConnection.clickComponent('decrement-button');
 
     const value = await appConnection.getComponentText('value-label');
     expect(value).toEqual('-1');
   });
 
-  it('Can be disabled', async () => {
+  it('can be disabled', async () => {
     expect(
       await appConnection.getComponentEnablement('increment-button')
     ).toBeTruthy();
@@ -51,10 +51,17 @@ describe('Count App tests', () => {
     ).toBeFalsy();
   });
 
-  it('Can set slider value', async () => {
+  it('sets value using the slider', async () => {
     const expectedValue = 6;
     await appConnection.setSliderValue('slider', expectedValue);
     const value = await appConnection.getSliderValue('slider');
     expect(value).toBe(expectedValue);
+  });
+
+  it('sets value using the text editor', async () => {
+    const expectedValue = 789;
+    await appConnection.setTextEditorText('text-editor', `${expectedValue}`);
+    const value = await appConnection.getComponentText('value-label');
+    expect(value).toBe(`${expectedValue}`);
   });
 });

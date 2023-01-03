@@ -262,6 +262,16 @@ export class AppConnection extends EventEmitter {
     return response.value;
   }
 
+  async setTextEditorText(componentId: string, value: string): Promise<void> {
+    await this.sendCommand({
+      type: 'set-text-editor-text',
+      args: {
+        'component-id': componentId,
+        value,
+      },
+    });
+  }
+
   async invokeMenu(menu: string): Promise<void> {
     await this.sendCommand({
       type: 'invoke-menu',
