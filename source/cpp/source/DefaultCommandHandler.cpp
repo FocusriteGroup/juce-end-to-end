@@ -362,11 +362,11 @@ std::variant<T *, juce::String> getComponent (const Command & command)
     if (component == nullptr)
         return "Component not found: " + componentId;
 
-    auto * castedComponenet = dynamic_cast<T *> (component);
-    if (castedComponenet == nullptr)
-        return "Component is not a " + juce::String(typeid(T).name()) + ": " + componentId;
+    auto * castedComponent = dynamic_cast<T *> (component);
+    if (castedComponent == nullptr)
+        return "Component is not a " + juce::String (typeid (T).name ()) + ": " + componentId;
 
-    return castedComponenet;
+    return castedComponent;
 }
 
 Response getSliderValue (const Command & command)
