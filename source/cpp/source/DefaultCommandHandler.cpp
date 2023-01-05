@@ -463,8 +463,7 @@ Response setComboBoxSelectedItemIndex (const Command & command)
     {
         auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
 
-        const auto value =
-            command.getArgument (toString (CommandArgument::value)).getIntValue ();
+        const auto value = command.getArgument (toString (CommandArgument::value)).getIntValue ();
 
         if (value > comboBox->getNumItems () || value < 0)
             return Response::fail ("ComboBox value out of range: " + juce::String (value));
@@ -476,6 +475,23 @@ Response setComboBoxSelectedItemIndex (const Command & command)
 
     const auto error = std::get<juce::String> (comboBoxVariant);
     return Response::fail (error);
+}
+
+Response getAccessibilityState (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ()
+            .withParameter (toString (CommandArgument::title), component->getTitle ())
+            .withParameter ("description", component->getDescription ())
+            .withParameter ("help", component->getHelpText ())
+            .withParameter ("accessible", component->isAccessible ())
+            .withParameter ("handler", component->getAccessibilityHandler () != nullptr);
+
+    return Response::fail (componentId + " not found");
 }
 
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
@@ -501,9 +517,14 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
                 "set-text-editor-text",
                 [&] (auto && command) { return setTextEditorText (command); },
             },
-            {"get-combo-box-selected-item-index", [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
-            {"get-combo-box-num-items", [&] (auto && command) { return getComboBoxNumItems (command); }},
-            {"set-combo-box-selected-item-index", [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
+            {"get-combo-box-selected-item-index",
+             [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
+            {"get-combo-box-num-items",
+             [&] (auto && command) { return getComboBoxNumItems (command); }},
+            {"set-combo-box-selected-item-index",
+             [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
+            {"get-accessibility-state",
+             [&] (auto && command) { return getAccessibilityState (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());
