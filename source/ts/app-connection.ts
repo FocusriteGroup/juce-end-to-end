@@ -265,14 +265,12 @@ export class AppConnection extends EventEmitter {
   }
 
   async getAccessibilityState(componentId: string): Promise<AccessibilityResponse> {
-    const response = (await this.sendCommand({
+    return (await this.sendCommand({
       type: 'get-accessibility-state',
       args: {
         'component-id': componentId,
       },
     })) as AccessibilityResponse;
-
-    return response;
   }
 
   async setTextEditorText(componentId: string, value: string): Promise<void> {
