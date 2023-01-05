@@ -28,6 +28,14 @@ export interface GetItemIndexResponse {
   value: number;
 }
 
+export interface AccessibilityResponse {
+  title: string;
+  description: string;
+  help: string;
+  accessible: boolean;
+  handler: boolean;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',

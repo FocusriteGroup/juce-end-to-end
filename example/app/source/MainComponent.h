@@ -41,6 +41,12 @@ public:
         };
 
         _slider.onValueChange = [this] { setValue (static_cast<int> (_slider.getValue ())); };
+
+        _incrementButton.setTitle ("Increment button title");
+        _incrementButton.setDescription ("Increment button description");
+        _incrementButton.setHelpText ("Increment button help text");
+
+        _decrementButton.setAccessible (false);
     }
 
     void resized () override
