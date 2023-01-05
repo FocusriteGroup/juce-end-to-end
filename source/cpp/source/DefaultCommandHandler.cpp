@@ -349,7 +349,8 @@ Response invokeMenu (const Command & command)
     return Response::fail ("Not handled");
 }
 
-std::variant<juce::Slider *, juce::String> getSlider (const Command & command)
+template <class T>
+std::variant<T *, juce::String> getComponent (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -361,16 +362,16 @@ std::variant<juce::Slider *, juce::String> getSlider (const Command & command)
     if (component == nullptr)
         return "Component not found: " + componentId;
 
-    auto * slider = dynamic_cast<juce::Slider *> (component);
-    if (slider == nullptr)
-        return "Component is not a slider: " + componentId;
+    auto * castedComponent = dynamic_cast<T *> (component);
+    if (castedComponent == nullptr)
+        return "Component is not a " + juce::String (typeid (T).name ()) + ": " + componentId;
 
-    return slider;
+    return castedComponent;
 }
 
 Response getSliderValue (const Command & command)
 {
-    auto sliderVariant = getSlider (command);
+    auto sliderVariant = getComponent<juce::Slider> (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
     {
         auto * slider = std::get<juce::Slider *> (sliderVariant);
@@ -384,7 +385,7 @@ Response getSliderValue (const Command & command)
 
 Response setSliderValue (const Command & command)
 {
-    auto sliderVariant = getSlider (command);
+    auto sliderVariant = getComponent<juce::Slider> (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
     {
         auto * slider = std::get<juce::Slider *> (sliderVariant);
@@ -427,6 +428,56 @@ Response setTextEditorText (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
+Response getComboBoxSelectedItemIndex (const Command & command)
+{
+    auto comboBoxVariant = getComponent<juce::ComboBox> (command);
+    if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
+    {
+        auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
+        return Response::ok ().withParameter (toString (CommandArgument::value),
+                                              comboBox->getSelectedItemIndex ());
+    }
+
+    const auto error = std::get<juce::String> (comboBoxVariant);
+    return Response::fail (error);
+}
+
+Response getComboBoxNumItems (const Command & command)
+{
+    auto comboBoxVariant = getComponent<juce::ComboBox> (command);
+    if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
+    {
+        auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
+        return Response::ok ().withParameter (toString (CommandArgument::value),
+                                              comboBox->getNumItems ());
+    }
+
+    const auto error = std::get<juce::String> (comboBoxVariant);
+    return Response::fail (error);
+}
+
+Response setComboBoxSelectedItemIndex (const Command & command)
+{
+    auto comboBoxVariant = getComponent<juce::ComboBox> (command);
+    if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
+    {
+        auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
+
+        const auto value =
+            command.getArgument (toString (CommandArgument::value)).getIntValue ();
+
+        if (value > comboBox->getNumItems () || value < 0)
+            return Response::fail ("ComboBox value out of range: " + juce::String (value));
+
+        comboBox->setSelectedItemIndex (value, juce::sendNotificationSync);
+
+        return Response::ok ();
+    }
+
+    const auto error = std::get<juce::String> (comboBoxVariant);
+    return Response::fail (error);
+}
+
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
 {
     static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
@@ -450,6 +501,9 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
                 "set-text-editor-text",
                 [&] (auto && command) { return setTextEditorText (command); },
             },
+            {"get-combo-box-selected-item-index", [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
+            {"get-combo-box-num-items", [&] (auto && command) { return getComboBoxNumItems (command); }},
+            {"set-combo-box-selected-item-index", [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());
