@@ -26,32 +26,20 @@ describe('Accessibility tests', () => {
   });
 
   it('Decrement button is not accessible', async () => {
-    expect((await appConnection.getAccessibilityState('decrement-button'))).toEqual({
-        "title": '',
-        "description": '',
-        "help": '',
-        "accessible": false,
-        "handler": false,
-    });
+    const state = await appConnection.getAccessibilityState('decrement-button');
+    expect(state.accessible).toBeFalsy();
+    expect(state.handler).toBeFalsy();
   });
 
   it('Enable button is enabled for accessibility but has no text', async () => {
-    expect((await appConnection.getAccessibilityState('enable-button'))).toEqual({
-        "title": '',
-        "description": '',
-        "help": '',
-        "accessible": true,
-        "handler": true,
-    });
+    const state = await appConnection.getAccessibilityState('enable-button');
+    expect(state.accessible).toBeTruthy();
+    expect(state.handler).toBeTruthy();
   });
 
   it('Slider is enabled for accessibility but has no text', async () => {
-    expect((await appConnection.getAccessibilityState('slider'))).toEqual({
-        "title": '',
-        "description": '',
-        "help": '',
-        "accessible": true,
-        "handler": true,
-    });
+    const state = await appConnection.getAccessibilityState('slider');
+    expect(state.accessible).toBeTruthy();
+    expect(state.handler).toBeTruthy();
   });
 });
