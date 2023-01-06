@@ -34,6 +34,7 @@ export interface AccessibilityResponse {
   help: string;
   accessible: boolean;
   handler: boolean;
+  display: string;
 }
 
 export enum ResponseType {

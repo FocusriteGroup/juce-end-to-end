@@ -45,6 +45,7 @@ public:
         _incrementButton.setTitle ("Increment button title");
         _incrementButton.setDescription ("Increment button description");
         _incrementButton.setHelpText ("Increment button help text");
+        _incrementButton.setTooltip ("Increment button tool tip");
 
         _decrementButton.setAccessible (false);
     }
@@ -91,6 +92,7 @@ private:
         if (newValue != _value)
         {
             _value = newValue;
+            _slider.setValue (_value, juce::NotificationType::dontSendNotification);
             updateLabel ();
         }
     }

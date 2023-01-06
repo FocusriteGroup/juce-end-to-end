@@ -19,9 +19,10 @@ describe('Accessibility tests', () => {
     expect((await appConnection.getAccessibilityState('increment-button'))).toEqual({
         "title": 'Increment button title',
         "description": 'Increment button description',
-        "help": 'Increment button help text',
+        "help": 'Increment button tool tip',
         "accessible": true,
         "handler": true,
+        "display": ''
     });
   });
 
@@ -41,5 +42,16 @@ describe('Accessibility tests', () => {
     const state = await appConnection.getAccessibilityState('slider');
     expect(state.accessible).toBeTruthy();
     expect(state.handler).toBeTruthy();
+    expect(parseFloat (state.display)).toEqual(0);
+  });
+
+  it('Slider display changes with the value change', async () => {
+    expect(parseFloat ((await appConnection.getAccessibilityState('slider')).display)).toEqual(0);
+
+    await appConnection.clickComponent('increment-button');
+    expect(parseFloat ((await appConnection.getAccessibilityState('slider')).display)).toEqual(1);
+
+    await appConnection.clickComponent('decrement-button');
+    expect(parseFloat ((await appConnection.getAccessibilityState('slider')).display)).toEqual(0);
   });
 });
