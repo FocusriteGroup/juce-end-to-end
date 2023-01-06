@@ -477,6 +477,41 @@ Response setComboBoxSelectedItemIndex (const Command & command)
     return Response::fail (error);
 }
 
+juce::String getAccessibilityHandlerDisplay (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return "";
+
+    if (auto * value = component.getAccessibilityHandler ()->getValueInterface ())
+        return value->getCurrentValueAsString ();
+
+    if (auto * text = component.getAccessibilityHandler ()->getTextInterface ())
+        return text->getAllText ();
+
+    return "";
+}
+
+juce::String getAccessibilityTitle (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getTitle ()
+               : component.getTitle ();
+}
+
+juce::String getAccessibilityDescription (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getDescription ()
+               : component.getDescription ();
+}
+
+juce::String getAccessibilityHelpText (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getHelp ()
+               : component.getHelpText ();
+}
+
 Response getAccessibilityState (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
@@ -485,11 +520,12 @@ Response getAccessibilityState (const Command & command)
 
     if (auto * component = ComponentSearch::findWithId (componentId))
         return Response::ok ()
-            .withParameter (toString (CommandArgument::title), component->getTitle ())
-            .withParameter ("description", component->getDescription ())
-            .withParameter ("help", component->getHelpText ())
+            .withParameter (toString (CommandArgument::title), getAccessibilityTitle (*component))
+            .withParameter ("description", getAccessibilityDescription (*component))
+            .withParameter ("help", getAccessibilityHelpText (*component))
             .withParameter ("accessible", component->isAccessible ())
-            .withParameter ("handler", component->getAccessibilityHandler () != nullptr);
+            .withParameter ("handler", component->getAccessibilityHandler () != nullptr)
+            .withParameter ("display", getAccessibilityHandlerDisplay (*component));
 
     return Response::fail (componentId + " not found");
 }
