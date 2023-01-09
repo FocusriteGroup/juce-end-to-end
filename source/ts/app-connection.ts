@@ -16,6 +16,7 @@ import {
   GetItemIndexResponse,
   AccessibilityResponse,
   AccessibilityParentResponse,
+  AccessibilityChildResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
@@ -283,6 +284,17 @@ export class AppConnection extends EventEmitter {
     })) as AccessibilityParentResponse;
 
     return parentResponse.parent;
+  }
+
+  async getAccessibilityChildren(componentId: string): Promise<Array<string>> {
+    const childResponse = (await this.sendCommand({
+      type: 'get-accessibility-children',
+      args: {
+        'component-id': componentId,
+      },
+    })) as AccessibilityChildResponse;
+
+    return childResponse.children.filter((str) => str !== '');
   }
 
   async setTextEditorText(componentId: string, value: string): Promise<void> {

@@ -523,6 +523,21 @@ juce::String getAccessibilityParent (juce::Component & component)
     return {};
 }
 
+juce::StringArray getAccessibilityChildren (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return {};
+
+    juce::StringArray result;
+    for (auto childAccessibilityHandler : component.getAccessibilityHandler ()->getChildren ())
+        if (childAccessibilityHandler != nullptr)
+            if (childAccessibilityHandler->getComponent ().isAccessible () &&
+                childAccessibilityHandler->getComponent ().getAccessibilityHandler () != nullptr)
+                result.add (childAccessibilityHandler->getComponent ().getComponentID ());
+
+    return result;
+}
+
 Response getAccessibilityState (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
@@ -549,6 +564,21 @@ Response getAccessibilityParent (const Command & command)
 
     if (auto * component = ComponentSearch::findWithId (componentId))
         return Response::ok ().withParameter ("parent", getAccessibilityParent (*component));
+
+    return Response::fail (componentId + " not found");
+}
+
+Response getAccessibilityChildren (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ().withParameter ("children", getAccessibilityChildren (*component));
+
+    if (auto * window = ComponentSearch::findWindowWithId (componentId))
+        return Response::ok ().withParameter ("children", getAccessibilityChildren (*window));
 
     return Response::fail (componentId + " not found");
 }
@@ -586,6 +616,8 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
              [&] (auto && command) { return getAccessibilityState (command); }},
             {"get-accessibility-parent",
              [&] (auto && command) { return getAccessibilityParent (command); }},
+            {"get-accessibility-children",
+             [&] (auto && command) { return getAccessibilityChildren (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());
