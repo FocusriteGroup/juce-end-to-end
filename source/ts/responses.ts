@@ -37,6 +37,10 @@ export interface AccessibilityResponse {
   display: string;
 }
 
+export interface AccessibilityParentResponse {
+  parent: string;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',

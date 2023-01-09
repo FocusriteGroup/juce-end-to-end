@@ -54,4 +54,14 @@ describe('Accessibility tests', () => {
     await appConnection.clickComponent('decrement-button');
     expect(parseFloat ((await appConnection.getAccessibilityState('slider')).display)).toEqual(0);
   });
+
+  it('Increment button has accessibility parent', async () => {
+    expect ((await appConnection.getAccessibilityParent('increment-button'))).toEqual('main-window');
+    expect ((await appConnection.getAccessibilityParent('enable-button'))).toEqual('main-window');
+    expect ((await appConnection.getAccessibilityParent('slider'))).toEqual('main-window');
+  });
+
+  it('Decrement button has no accessibility parent', async () => {
+    expect ((await appConnection.getAccessibilityParent('decrement-button'))).toEqual('');
+  });
 });

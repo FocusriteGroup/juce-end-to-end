@@ -512,6 +512,17 @@ juce::String getAccessibilityHelpText (juce::Component & component)
                : component.getHelpText ();
 }
 
+juce::String getAccessibilityParent (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return {};
+
+    if (auto * parent = component.getAccessibilityHandler ()->getParent ())
+        return parent->getComponent ().getComponentID ();
+
+    return {};
+}
+
 Response getAccessibilityState (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
@@ -526,6 +537,18 @@ Response getAccessibilityState (const Command & command)
             .withParameter ("accessible", component->isAccessible ())
             .withParameter ("handler", component->getAccessibilityHandler () != nullptr)
             .withParameter ("display", getAccessibilityHandlerDisplay (*component));
+
+    return Response::fail (componentId + " not found");
+}
+
+Response getAccessibilityParent (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ().withParameter ("parent", getAccessibilityParent (*component));
 
     return Response::fail (componentId + " not found");
 }
@@ -561,6 +584,8 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
              [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
             {"get-accessibility-state",
              [&] (auto && command) { return getAccessibilityState (command); }},
+            {"get-accessibility-parent",
+             [&] (auto && command) { return getAccessibilityParent (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());

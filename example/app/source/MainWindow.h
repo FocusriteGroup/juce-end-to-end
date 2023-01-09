@@ -12,6 +12,7 @@ public:
                                 juce::Colours::white,
                                 juce::DocumentWindow::allButtons)
     {
+        setComponentID ("main-window");
         setContentNonOwned (&_mainComponent, true);
         setUsingNativeTitleBar (true);
         setResizable (true, true);
