@@ -21,6 +21,7 @@ public:
         addAndMakeVisible (_valueLabel);
         addAndMakeVisible (_slider);
         addAndMakeVisible (_textEditor);
+        addAndMakeVisible (_comboBox);
 
         _valueLabel.setJustificationType (juce::Justification::centred);
         _valueLabel.setColour (juce::Label::textColourId, juce::Colours::black);
@@ -33,6 +34,7 @@ public:
         _valueLabel.setComponentID ("value-label");
         _slider.setComponentID ("slider");
         _textEditor.setComponentID ("text-editor");
+        _comboBox.setComponentID ("combo-box");
 
         _textEditor.onTextChange = [this]
         {
@@ -48,6 +50,11 @@ public:
         _incrementButton.setTooltip ("Increment button tool tip");
 
         _decrementButton.setAccessible (false);
+        
+        _comboBox.addItem ("First", 1);
+        _comboBox.addItem ("Second", 2);
+        _comboBox.addItem ("Third", 3);
+        _comboBox.setSelectedItemIndex (0);
     }
 
     void resized () override
@@ -70,6 +77,8 @@ public:
             juce::FlexItem (_textEditor).withHeight (rowHeight),
             spacer,
             juce::FlexItem (_valueLabel).withHeight (rowHeight),
+            spacer,
+            juce::FlexItem (_comboBox).withHeight (rowHeight),
         };
 
         static constexpr auto margin = 10;
@@ -119,4 +128,5 @@ private:
     juce::Label _valueLabel;
     juce::Slider _slider {juce::Slider::LinearHorizontal, juce::Slider::NoTextBox};
     juce::TextEditor _textEditor;
+    juce::ComboBox _comboBox;
 };
