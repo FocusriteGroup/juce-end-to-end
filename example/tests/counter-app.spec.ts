@@ -64,4 +64,11 @@ describe('Count App tests', () => {
     const value = await appConnection.getComponentText('value-label');
     expect(value).toBe(`${expectedValue}`);
   });
+    
+  it('sets value using the combo-box', async () => {
+    const expectedValue = 2;
+    await appConnection.setComboBoxSelectedItemIndex('combo-box', expectedValue);
+    const value = await appConnection.getComboBoxSelectedItemIndex('combo-box');
+    expect(value).toBe(expectedValue);
+  });
 });
