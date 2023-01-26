@@ -1,29 +1,27 @@
 const DEFAULT_TIMEOUT = 10000;
 
+const wait = async (milliseconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+
 export async function pollUntil<T>(
   matchingFunction: (data: T) => boolean,
   queryFunction: () => Promise<T>,
   timeout = DEFAULT_TIMEOUT
 ): Promise<boolean> {
-  return new Promise((resolve) => {
-    const timeoutTimer = setTimeout(() => {
-      resolve(false);
-    }, timeout);
+  const end = Date.now() + timeout;
 
-    const query = () => {
-      queryFunction().then((data) => {
-        if (matchingFunction(data)) {
-          clearTimeout(timeoutTimer);
-          resolve(true);
-          return;
-        }
+  do {
+    const data = await queryFunction();
 
-        query();
-      });
-    };
+    if (matchingFunction(data)) {
+      return true;
+    }
 
-    query();
-  });
+    const pollInterval = 5;
+    await wait(pollInterval);
+  } while (Date.now() < end);
+
+  return false;
 }
 
 export async function waitForResult<T>(
