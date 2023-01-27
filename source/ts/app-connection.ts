@@ -21,7 +21,7 @@ import {
 import {Command} from './commands';
 import minimatch from 'minimatch';
 import {strict as assert} from 'assert';
-import {pollUntil} from './poll';
+import {waitForResult} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -353,13 +353,15 @@ export class AppConnection extends EventEmitter {
     visibility: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
   ): Promise<boolean> {
-    const result = await pollUntil(
-      (visible: boolean) => visible === visibility,
-      async () => await this.getComponentVisibility(componentName),
-      timeoutInMilliseconds
-    );
+    try {
+      await waitForResult(
+        () => this.getComponentVisibility(componentName),
+        visibility,
+        timeoutInMilliseconds
+      );
 
-    if (!result) {
+      return true;
+    } catch (error) {
       const errorDescription = visibility ? 'visible' : 'hidden';
       const filename = `${++screenshotIndex}.png`;
       console.error(
@@ -370,8 +372,6 @@ export class AppConnection extends EventEmitter {
         `Component '${componentName}' didn't become ${errorDescription}`
       );
     }
-
-    return result;
   }
 
   async waitForComponentToBeVisible(
@@ -390,23 +390,23 @@ export class AppConnection extends EventEmitter {
     enablement: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
   ): Promise<boolean> {
-    const result = await pollUntil(
-      (enabled: boolean) => enabled === enablement,
-      async () => await this.getComponentEnablement(componentName),
-      timeoutInMilliseconds
-    );
+    try {
+      await waitForResult(
+        () => this.getComponentVisibility(componentName),
+        enablement,
+        timeoutInMilliseconds
+      );
 
-    const stateString = enablement ? 'enabled' : 'disabled';
-    const failString = `Component '${componentName}' didn't become ${stateString}`;
+      return true;
+    } catch (error) {
+      const stateString = enablement ? 'enabled' : 'disabled';
+      const failString = `Component '${componentName}' didn't become ${stateString}`;
 
-    if (!result) {
       const filename = `${++screenshotIndex}.png`;
       console.error(`${failString}, writing screenshot to ${filename}`);
       await this.saveScreenshot('', filename);
       throw new Error(failString);
     }
-
-    return result;
   }
 
   async waitForComponentToBeEnabled(
