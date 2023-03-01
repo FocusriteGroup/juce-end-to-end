@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import {execSync} from 'child_process';
-import glob from 'glob';
+import {globSync} from 'glob';
 import tar from 'tar';
 import paths from './lib/paths';
 import {removeDirectory, createDirectory} from './lib/directory';
@@ -15,12 +15,17 @@ const build = (configuration: Configuration) => {
 
 const copyLibrary = (configuration: Configuration) => {
   const library = paths.library(configuration);
+
+  if (!library) {
+    return;
+  }
+
   const filename = path.basename(library);
   fs.copyFileSync(library, path.join(paths.lib, filename));
 };
 
 const copyHeaders = () => {
-  const headers = glob.sync('**/*.h', {
+  const headers = globSync('**/*.h', {
     cwd: paths.includeSource,
   });
 

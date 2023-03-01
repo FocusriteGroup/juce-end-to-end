@@ -1,7 +1,7 @@
 import path from 'path';
 import * as platform from './platform';
 import {Configuration} from './configuration';
-import glob from 'glob';
+import {globSync} from 'glob';
 
 const source = process.env.E2E_SOURCE || process.cwd();
 const build = path.join(source, 'cmake-build');
@@ -22,7 +22,7 @@ const library = (configuration: Configuration) => {
   const extension = platform.isMac() ? 'a' : 'lib';
   const pattern = `*.${extension}`;
 
-  const matches = glob.sync(pattern, {
+  const matches = globSync(pattern, {
     cwd: configDir,
   });
 
