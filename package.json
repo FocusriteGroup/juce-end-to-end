@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/FocusriteGroup/juce-end-to-end#readme",
   "dependencies": {
-    "minimatch": "^5.1.1",
+    "minimatch": "^8.0.2",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
