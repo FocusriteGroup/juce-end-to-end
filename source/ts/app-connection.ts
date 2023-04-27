@@ -392,7 +392,7 @@ export class AppConnection extends EventEmitter {
   ): Promise<boolean> {
     try {
       await waitForResult(
-        () => this.getComponentVisibility(componentName),
+        () => this.getComponentEnablement(componentName),
         enablement,
         timeoutInMilliseconds
       );
