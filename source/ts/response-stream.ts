@@ -22,7 +22,7 @@ export class ResponseStream extends EventEmitter {
         return;
       }
 
-      this.data = this.data.slice(nextResponse.bytesConsumed);
+      this.data = this.data.subarray(nextResponse.bytesConsumed);
 
       if (!nextResponse.response) {
         return;

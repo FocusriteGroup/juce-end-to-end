@@ -44,7 +44,7 @@ export function getNextResponse(buffer: Buffer): NextResponse {
   }
 
   const rawResponse = buffer
-    .slice(constants.DATA_OFFSET, constants.DATA_OFFSET + dataSize)
+    .subarray(constants.DATA_OFFSET, constants.DATA_OFFSET + dataSize)
     .toString();
 
   return {
