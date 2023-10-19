@@ -34,7 +34,7 @@ describe('using pollUntil to see if a function matches a value', () => {
       (currentResult) => currentResult === 42,
       async () => {
         await wait(longerThanTheTimeout);
-        return functionThatReturns42();
+        return await functionThatReturns42();
       },
       timeoutMs
     );
