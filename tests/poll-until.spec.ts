@@ -10,7 +10,7 @@ describe('using pollUntil to see if a function matches a value', () => {
   it('returns true if the expected value is returned within the timeout time', async () => {
     const didReturnExpectedValue = await pollUntil(
       (currentResult) => currentResult === 42,
-      () => functionThatReturns42(),
+      functionThatReturns42,
       timeoutMs
     );
 
@@ -20,7 +20,7 @@ describe('using pollUntil to see if a function matches a value', () => {
   it('returns false if the expected value is not returned within the timeout time', async () => {
     const didReturnExpectedValue = await pollUntil(
       (currentResult) => currentResult === 21,
-      () => functionThatReturns42(),
+      functionThatReturns42,
       timeoutMs
     );
 
