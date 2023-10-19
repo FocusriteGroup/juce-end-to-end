@@ -3,7 +3,7 @@ const DEFAULT_TIMEOUT = 10000;
 const wait = async (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-const queryTimeout = (timeoutMs: number) =>
+const rejectAfter = (timeoutMs: number) =>
   new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error('Timed out')), timeoutMs)
   );
@@ -19,7 +19,7 @@ export async function pollUntil<T>(
     try {
       const data = await Promise.race([
         queryFunction(),
-        queryTimeout(end - Date.now()),
+        rejectAfter(end - Date.now()),
       ]);
 
       if (matchingFunction(data)) {
