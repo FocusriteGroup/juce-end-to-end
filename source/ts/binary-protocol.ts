@@ -28,7 +28,7 @@ export function isValid(buffer: Buffer): boolean {
 }
 
 interface NextResponse {
-  response?: Response;
+  response?: Response | Error;
   bytesConsumed: number;
 }
 
@@ -47,8 +47,16 @@ export function getNextResponse(buffer: Buffer): NextResponse {
     .subarray(constants.DATA_OFFSET, constants.DATA_OFFSET + dataSize)
     .toString();
 
+  let response: Response | Error;
+
+  try {
+    response = JSON.parse(rawResponse) as Response;
+  } catch (error) {
+    response = new Error(`Invalid JSON in response: ${error}`);
+  }
+
   return {
-    response: JSON.parse(rawResponse) as Response,
+    response,
     bytesConsumed: constants.HEADER_SIZE + dataSize,
   };
 }
