@@ -1,5 +1,6 @@
 import {EventEmitter} from 'events';
 import {getNextResponse, isValid} from './binary-protocol';
+import {strict as assert} from 'assert';
 
 export class ResponseStream extends EventEmitter {
   data: Buffer;
@@ -11,31 +12,28 @@ export class ResponseStream extends EventEmitter {
 
   #checkForData() {
     if (!isValid(this.data)) {
-      this.emit('error', new Error('Incorrect response'));
+      this.emit('error', new Error('Invalid header'));
       return;
     }
 
-    try {
-      const nextResponse = getNextResponse(this.data);
+    const nextResponse = getNextResponse(this.data);
 
-      if (nextResponse.bytesConsumed == 0) {
-        return;
-      }
-
-      this.data = this.data.slice(nextResponse.bytesConsumed);
-
-      if (!nextResponse.response) {
-        return;
-      }
-
-      this.emit('response', nextResponse.response);
-    } catch (error) {
-      this.emit('error', new Error('Error parsing response'));
+    if (nextResponse.bytesConsumed === 0) {
+      return;
     }
 
-    if (this.data.length) {
+    this.data = this.data.subarray(nextResponse.bytesConsumed);
+
+    assert(!!nextResponse.response);
+
+    if (nextResponse.response instanceof Error) {
+      this.emit('error', nextResponse.response);
       this.#checkForData();
+      return;
     }
+
+    this.emit('response', nextResponse.response);
+    this.#checkForData();
   }
 
   push(data: Uint8Array) {
