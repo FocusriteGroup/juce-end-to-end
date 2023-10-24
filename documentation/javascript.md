@@ -10,7 +10,7 @@ For _JavaScript_, _TypeScript_ and _HTML_ and other similar languages, we use Pr
 
 Install the [Prettier extension](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode).
 
-You will then need to update your VSCode [settings.json](https://vscode.readthedocs.io/en/latest/getstarted/settings/) file, to include the following:
+You will then need to update your VSCode [settings.json](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson) file, to include the following:
 
 ```json
 "[typescriptreact]": {
