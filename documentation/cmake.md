@@ -10,7 +10,7 @@ pip install cmakelang
 
 ## Format on save in VScode
 
-To have format on save in VSCode, you can install the [VSCode extension](<https://marketplace.visualstudio.com/items>? itemName=cheshirekow.cmake-format).
+To have format on save in VSCode, you can install the [cmake-format](https://marketplace.visualstudio.com/items?itemName=cheshirekow.cmake-format) extension.
 
 You will then need to update your VSCode [settings.json](https://code.visualstudio.com/docs/getstarted/settings#_settingsjson) file, to include the following:
 
