@@ -82,8 +82,10 @@ export class AppConnection extends EventEmitter {
       this.server = null;
     });
 
-    if (this.logDirectory && !fs.existsSync(this.logDirectory)) {
-      fs.mkdirSync(this.logDirectory);
+    if (this.logDirectory) {
+      fs.mkdirSync(this.logDirectory, {
+        recursive: true,
+      });
     }
   }
 
