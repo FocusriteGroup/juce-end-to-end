@@ -78,7 +78,7 @@ commands:
       - run: 
           name: Install CMake
           command: |
-            choco install cmake --version=3.28.0 --installargs '"ADD_CMAKE_TO_PATH=User"'
+            choco install cmake --version=3.27.9 --installargs '"ADD_CMAKE_TO_PATH=User"'
             PATH_TO_CMAKE='/c/Program Files/CMake/bin'
             echo "export PATH='$PATH_TO_CMAKE:$PATH'" >> $BASH_ENV
 
