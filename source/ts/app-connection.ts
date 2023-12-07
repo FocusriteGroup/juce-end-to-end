@@ -151,9 +151,9 @@ export class AppConnection extends EventEmitter {
     this.connection = new Connection(socket);
     this.connection.on('connect', () => this.emit('connect'));
     this.connection.on('disconnect', () => {
-      this.emit('disconnect');
-      this.connection.kill();
       this.server.close();
+      this.connection = undefined;
+      this.emit('disconnect');
     });
   }
 
