@@ -33,17 +33,10 @@ export class Connection extends EventEmitter {
     this.waitingEvents = [];
     this.socket = socket;
 
-    this.socket.on('close', () => {
-      this.emit('disconnect');
-    });
-
-    this.socket.on('connect', () => {
-      this.emit('connect');
-    });
-
-    this.socket.on('data', (data) => {
-      this.responseStream.push(data);
-    });
+    this.socket.on('close', () => this.emit('disconnect'));
+    this.socket.on('end', () => this.socket.destroy());
+    this.socket.on('connect', () => this.emit('connect'));
+    this.socket.on('data', (data) => this.responseStream.push(data));
 
     this.responseStream.on('response', (response: Response) => {
       if (response.type === ResponseType.response) {

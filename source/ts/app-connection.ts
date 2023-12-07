@@ -20,7 +20,6 @@ import {
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
-import {strict as assert} from 'assert';
 import {waitForResult} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
@@ -152,9 +151,9 @@ export class AppConnection extends EventEmitter {
     this.connection = new Connection(socket);
     this.connection.on('connect', () => this.emit('connect'));
     this.connection.on('disconnect', () => {
-      this.emit('disconnect');
-      this.connection.kill();
       this.server.close();
+      this.connection = undefined;
+      this.emit('disconnect');
     });
   }
 
@@ -168,7 +167,9 @@ export class AppConnection extends EventEmitter {
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
-    assert(this.connection);
+    if (!this.connection) {
+      throw new Error('Not connected to application');
+    }
     return await this.connection.send(command);
   }
 
@@ -183,7 +184,6 @@ export class AppConnection extends EventEmitter {
   async waitForExit(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.on('exit', ({code, signal}) => {
-        assert(!code && !signal);
         if (code || signal) {
           reject(`App exited with error: ${code || signal}`);
         }
@@ -268,7 +268,9 @@ export class AppConnection extends EventEmitter {
     return response.value;
   }
 
-  async getAccessibilityState(componentId: string): Promise<AccessibilityResponse> {
+  async getAccessibilityState(
+    componentId: string
+  ): Promise<AccessibilityResponse> {
     return (await this.sendCommand({
       type: 'get-accessibility-state',
       args: {
@@ -308,8 +310,11 @@ export class AppConnection extends EventEmitter {
       },
     });
   }
-    
-  async setComboBoxSelectedItemIndex(comboBoxId: string, value: number): Promise<void> {
+
+  async setComboBoxSelectedItemIndex(
+    comboBoxId: string,
+    value: number
+  ): Promise<void> {
     await this.sendCommand({
       type: 'set-combo-box-selected-item-index',
       args: {
@@ -329,7 +334,7 @@ export class AppConnection extends EventEmitter {
 
     return response.value;
   }
-    
+
   async getComboBoxNumItems(comboBoxId: string): Promise<number> {
     const response = (await this.sendCommand({
       type: 'get-combo-box-num-items',
@@ -354,24 +359,19 @@ export class AppConnection extends EventEmitter {
     componentName: string,
     visibility: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ): Promise<boolean> {
+  ): Promise<void> {
     try {
       await waitForResult(
         () => this.getComponentVisibility(componentName),
         visibility,
         timeoutInMilliseconds
       );
-
-      return true;
     } catch (error) {
       const errorDescription = visibility ? 'visible' : 'hidden';
       const filename = `${++screenshotIndex}.png`;
-      console.error(
-        `Component '${componentName}' didn't become ${errorDescription}, writing screenshot to ${filename}`
-      );
       await this.saveScreenshot('', filename);
       throw new Error(
-        `Component '${componentName}' didn't become ${errorDescription}`
+        `Component '${componentName}' didn't become ${errorDescription} (see screenshot ${filename})`
       );
     }
   }
@@ -379,8 +379,8 @@ export class AppConnection extends EventEmitter {
   async waitForComponentToBeVisible(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ): Promise<boolean> {
-    return await this.waitForComponentVisibilityToBe(
+  ): Promise<void> {
+    await this.waitForComponentVisibilityToBe(
       componentName,
       true,
       timeoutInMilliseconds
@@ -464,12 +464,8 @@ export class AppConnection extends EventEmitter {
     })) as ScreenshotResponse;
 
     try {
-      await writeFile(
-        path.join(this.logDirectory, outFileName),
-        response.image,
-        'base64'
-      );
-      console.log(`Screenshot of ${componentId} written to ${outFileName}`);
+      const outputFile = path.join(this.logDirectory, outFileName);
+      await writeFile(outputFile, response.image, 'base64');
     } catch (error) {
       console.error(
         `Error writing screenshot of ${componentId} to ${outFileName}`

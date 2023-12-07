@@ -14,11 +14,11 @@ const invokeWithTimeout = async <T>(
   );
 
   try {
-    const data = await Promise.race([queryFunction(), rejectingPromise]);
-    clearTimeout(timer);
-    return data;
+    return await Promise.race([queryFunction(), rejectingPromise]);
   } catch {
     throw new Error('Timed out.');
+  } finally {
+    clearTimeout(timer);
   }
 };
 
