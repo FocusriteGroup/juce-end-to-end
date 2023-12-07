@@ -20,7 +20,6 @@ import {
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
-import {strict as assert} from 'assert';
 import {waitForResult} from './poll';
 
 const writeFile = util.promisify(fs.writeFile);
@@ -168,7 +167,9 @@ export class AppConnection extends EventEmitter {
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
-    assert(this.connection);
+    if (!this.connection) {
+      throw new Error('Not connected to application');
+    }
     return await this.connection.send(command);
   }
 
@@ -183,7 +184,6 @@ export class AppConnection extends EventEmitter {
   async waitForExit(): Promise<void> {
     return new Promise((resolve, reject) => {
       this.on('exit', ({code, signal}) => {
-        assert(!code && !signal);
         if (code || signal) {
           reject(`App exited with error: ${code || signal}`);
         }
