@@ -7,3 +7,4 @@ cmake-build-release
 node_modules
 dist
 .DS_Store
+logs
