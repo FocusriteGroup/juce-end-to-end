@@ -1,5 +1,4 @@
 import net, {Socket} from 'net';
-import {strict as assert} from 'assert';
 import {EventEmitter} from 'events';
 
 export class Server extends EventEmitter {
@@ -19,7 +18,9 @@ export class Server extends EventEmitter {
 
   async listen(): Promise<number> {
     return new Promise((resolve) => {
-      assert(!this.server);
+      if (this.server) {
+        throw new Error('Server already running');
+      }
 
       this.server = new net.Server();
 
@@ -58,7 +59,10 @@ export class Server extends EventEmitter {
         resolve(this.lastConnection);
         this.lastConnection = null;
       } else {
-        assert(!!this.server);
+        if (!this.server) {
+          throw new Error('Missing TCP server');
+        }
+
         this.server.on('connection', (socket) => {
           resolve(socket);
         });
