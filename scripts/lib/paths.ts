@@ -3,7 +3,7 @@ import * as platform from './platform';
 import {Configuration} from './configuration';
 import {globSync} from 'glob';
 
-const source = process.env.E2E_SOURCE || process.cwd();
+const source = process.env['E2E_SOURCE'] || process.cwd();
 const build = path.join(source, 'cmake-build');
 
 const install = path.join(build, 'installation');
@@ -26,7 +26,11 @@ const library = (configuration: Configuration) => {
     cwd: configDir,
   });
 
-  return matches.length > 0 ? path.join(configDir, matches[0]) : undefined;
+  if (matches.length <= 0) {
+    throw new Error(`Library not found in ${configDir}`);
+  }
+
+  return path.join(configDir, matches[0]);
 };
 
 const archive = path.join(

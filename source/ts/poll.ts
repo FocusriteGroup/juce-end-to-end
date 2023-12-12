@@ -7,7 +7,7 @@ const invokeWithTimeout = async <T>(
   queryFunction: () => Promise<T>,
   timeoutMs: number
 ) => {
-  let timer: NodeJS.Timeout;
+  let timer: NodeJS.Timeout | undefined = undefined;
   const rejectingPromise = new Promise<never>(
     (_, reject) =>
       (timer = setTimeout(() => reject(new Error('Timed out.')), timeoutMs))

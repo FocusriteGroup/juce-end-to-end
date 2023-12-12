@@ -17,6 +17,7 @@ import {
   AccessibilityResponse,
   AccessibilityParentResponse,
   AccessibilityChildResponse,
+  GetFocusedComponentResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
@@ -77,10 +78,6 @@ export class AppConnection extends EventEmitter {
       this.stopServer();
     });
 
-    this.server.on('close', () => {
-      this.server = null;
-    });
-
     if (this.logDirectory) {
       fs.mkdirSync(this.logDirectory, {
         recursive: true,
@@ -90,7 +87,7 @@ export class AppConnection extends EventEmitter {
 
   stopServer() {
     this.server.close();
-    this.connection.kill();
+    this.connection?.kill();
   }
 
   createLogFiles():
@@ -121,14 +118,14 @@ export class AppConnection extends EventEmitter {
     try {
       this.process = spawn(this.appPath, extraArgs, {env});
     } catch (error) {
-      console.error(`Unable to launch: ${error.message}`);
+      console.error(`Unable to launch: ${error}`);
       return;
     }
 
     const logs = this.createLogFiles();
     if (logs) {
-      this.process.stdout.pipe(logs.stdout);
-      this.process.stderr.pipe(logs.stderr);
+      this.process.stdout?.pipe(logs.stdout);
+      this.process.stderr?.pipe(logs.stderr);
     }
 
     this.process.on('exit', (code, signal) => {
@@ -158,7 +155,7 @@ export class AppConnection extends EventEmitter {
   }
 
   kill() {
-    this.connection.kill();
+    this.connection?.kill();
     this.server.close();
 
     if (this.process) {
@@ -178,6 +175,10 @@ export class AppConnection extends EventEmitter {
     matchingFunction?: EventMatchingFunction,
     timeout?: number
   ): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Not connected to application');
+    }
+
     await this.connection.waitForEvent(name, matchingFunction, timeout);
   }
 
@@ -507,10 +508,10 @@ export class AppConnection extends EventEmitter {
   }
 
   async getFocusedComponent(): Promise<string | undefined> {
-    const response = await this.sendCommand({
+    const response = (await this.sendCommand({
       type: 'get-focus-component',
       args: {},
-    });
+    })) as GetFocusedComponentResponse;
 
     return response && response['component-id'];
   }
