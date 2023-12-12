@@ -26,7 +26,11 @@ const library = (configuration: Configuration) => {
     cwd: configDir,
   });
 
-  return matches.length > 0 ? path.join(configDir, matches[0]) : undefined;
+  if (matches.length <= 0) {
+    throw new Error(`Library not found in ${configDir}`);
+  }
+
+  return path.join(configDir, matches[0]);
 };
 
 const archive = path.join(
