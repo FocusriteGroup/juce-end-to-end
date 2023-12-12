@@ -3,10 +3,10 @@ import * as platform from './lib/platform';
 import paths from './lib/paths';
 import {removeDirectory, createDirectory} from './lib/directory';
 
-const skipClean = process.env.SKIP_CLEAN || false;
+const skipClean = process.env['SKIP_CLEAN'] || false;
 
 const generator =
-  process.env.GENERATOR ||
+  process.env['GENERATOR'] ||
   (platform.isMac() ? 'Xcode' : 'Visual Studio 16 2019');
 
 const generateBuildSystem = () => {

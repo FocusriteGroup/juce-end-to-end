@@ -3,7 +3,7 @@ import * as platform from './platform';
 import {Configuration} from './configuration';
 import {globSync} from 'glob';
 
-const source = process.env.E2E_SOURCE || process.cwd();
+const source = process.env['E2E_SOURCE'] || process.cwd();
 const build = path.join(source, 'cmake-build');
 
 const install = path.join(build, 'installation');
