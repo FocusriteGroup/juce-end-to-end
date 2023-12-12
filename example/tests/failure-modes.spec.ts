@@ -13,18 +13,25 @@ describe('invalid component', () => {
     await app.quit();
   });
 
-  it('rejects invalid components', async () => {
-    await expect(
-      app.waitForComponentToBeVisible('invalid', 100)
-    ).rejects.toThrow();
+  it.failing('fails when waiting for invalid components', async () => {
+    await app.waitForComponentToBeVisible('invalid', 100);
+  });
+
+  it.failing('fails when waiting for an event that never happens', async () => {
+    await app.waitForEvent('my-event', undefined, 100);
   });
 });
 
-it('rejects requests after the app has quit', async () => {
+it.failing('rejects requests after the app has quit', async () => {
   const app = new AppConnection({appPath, logDirectory: 'logs'});
   await app.launch();
   await app.quit();
-  await expect(
-    app.waitForComponentToBeVisible('value-label')
-  ).rejects.toThrow();
+  await app.waitForComponentToBeVisible('value-label');
+});
+
+it.failing('fails when the app crashes', async () => {
+  const app = new AppConnection({appPath, logDirectory: 'logs'});
+  await app.launch();
+  app.sendCommand({type: 'abort'});
+  await app.waitForExit();
 });
