@@ -45,6 +45,10 @@ export interface AccessibilityChildResponse {
   children: string[];
 }
 
+export interface GetFocusedComponentResponse {
+  'component-id': string;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',
