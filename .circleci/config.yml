@@ -6,8 +6,9 @@ orbs:
 aliases:
   - &macos-env
     macos:
-      xcode: 14.0.0
-      
+      xcode: 14.3.1
+    resource_class: macos.m1.medium.gen1
+
   - &windows-env
     executor:
       name: win/default
