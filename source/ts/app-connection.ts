@@ -1,6 +1,5 @@
 import {EventEmitter} from 'events';
 import path from 'path';
-import {spawn, ChildProcess} from 'child_process';
 import util from 'util';
 import fs from 'fs';
 import {Connection, EventMatchingFunction} from './connection';
@@ -22,6 +21,7 @@ import {
 import {Command} from './commands';
 import minimatch from 'minimatch';
 import {waitForResult} from './poll';
+import {AppProcess, EnvironmentVariables, launchApp} from './app-process';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -32,19 +32,7 @@ interface AppConnectionOptions {
   logDirectory?: string;
 }
 
-export interface EnvironmentVariables {
-  [key: string]: string;
-}
-
 const DEFAULT_TIMEOUT = 5000;
-
-const nextRunId = (() => {
-  let runId = 1;
-
-  return () => {
-    return runId++;
-  };
-})();
 
 const existsAsFile = (path: string) => {
   try {
@@ -56,10 +44,11 @@ const existsAsFile = (path: string) => {
 
 export class AppConnection extends EventEmitter {
   appPath: string;
-  process?: ChildProcess;
+  process?: AppProcess;
   server: Server;
   connection?: Connection;
   logDirectory?: string;
+  exitPromise?: Promise<void>;
 
   constructor(options: AppConnectionOptions) {
     super();
@@ -90,53 +79,26 @@ export class AppConnection extends EventEmitter {
     this.connection?.kill();
   }
 
-  createLogFiles():
-    | {stdout: fs.WriteStream; stderr: fs.WriteStream}
-    | undefined {
-    if (!this.logDirectory) {
-      return;
-    }
-
-    const runId = nextRunId();
-
-    const stdoutPath = path.join(
-      this.logDirectory,
-      `application-tests-stdout-${runId}.log`
-    );
-    const stderrPath = path.join(
-      this.logDirectory,
-      `application-tests-stderr-${runId}.log`
-    );
-
-    return {
-      stdout: fs.createWriteStream(stdoutPath, {flags: 'a'}),
-      stderr: fs.createWriteStream(stderrPath, {flags: 'a'}),
-    };
-  }
-
   launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {
-    try {
-      this.process = spawn(this.appPath, extraArgs, {env});
-    } catch (error) {
-      console.error(`Unable to launch: ${error}`);
-      return;
-    }
+    this.process = launchApp({
+      path: this.appPath,
+      logDirectory: this.logDirectory,
+      extraArgs,
+      env,
+    });
 
-    const logs = this.createLogFiles();
-    if (logs) {
-      this.process.stdout?.pipe(logs.stdout);
-      this.process.stderr?.pipe(logs.stderr);
-    }
+    this.exitPromise = new Promise<void>((resolve, reject) => {
+      this.process?.on('exit', (code, signal) => {
+        this.stopServer();
 
-    this.process.on('exit', (code, signal) => {
-      if (code || signal) {
-        const errorMessage = code
-          ? `App exited with error code ${code}`
-          : `App exited with signal ${signal}`;
-        throw new Error(errorMessage);
-      }
-
-      this.emit('exit', {code, signal});
+        if (code) {
+          reject(new Error(`App exited with error code: ${code}`));
+        } else if (signal) {
+          reject(new Error(`App exited with signal: ${signal}`));
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
@@ -157,10 +119,7 @@ export class AppConnection extends EventEmitter {
   kill() {
     this.connection?.kill();
     this.server.close();
-
-    if (this.process) {
-      this.process.kill();
-    }
+    this.process?.kill();
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
@@ -183,15 +142,11 @@ export class AppConnection extends EventEmitter {
   }
 
   async waitForExit(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.on('exit', ({code, signal}) => {
-        if (code || signal) {
-          reject(`App exited with error: ${code || signal}`);
-        }
+    if (!this.exitPromise) {
+      throw new Error(`Process hasn't been launched`);
+    }
 
-        resolve();
-      });
-    });
+    await this.exitPromise;
   }
 
   async quit(): Promise<void> {

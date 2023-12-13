@@ -1,4 +1,6 @@
 #pragma once
+
+#include <focusrite/e2e/Command.h>
 #include <focusrite/e2e/Response.h>
 #include <optional>
 
