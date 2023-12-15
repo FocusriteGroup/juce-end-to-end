@@ -108,8 +108,10 @@ export class AppConnection extends EventEmitter {
 
   async launch(extraArgs: string[] = [], env: EnvironmentVariables = {}) {
     const port = await this.server.listen();
+    console.log('Port received');
     this.launchProcess(extraArgs.concat([`--e2e-test-port=${port}`]), env);
     const socket = await this.server.waitForConnection();
+    console.log('Connection received');
 
     this.connection = new Connection(socket);
     this.connection.on('connect', () => this.emit('connect'));
