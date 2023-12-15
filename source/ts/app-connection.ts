@@ -91,6 +91,10 @@ export class AppConnection extends EventEmitter {
       throw new Error(`Failed to spawn process: ${error.message}`);
     });
 
+    this.process.on('spawn', () => {
+      console.log('spawned');
+    });
+
     this.exitPromise = new Promise<void>((resolve, reject) => {
       this.process?.on('exit', (code, signal) => {
         this.stopServer();
@@ -108,7 +112,6 @@ export class AppConnection extends EventEmitter {
 
   async launch(extraArgs: string[] = [], env: EnvironmentVariables = {}) {
     const port = await this.server.listen();
-    console.log('Port received');
     this.launchProcess(extraArgs.concat([`--e2e-test-port=${port}`]), env);
     const socket = await this.server.waitForConnection();
     console.log('Connection received');
