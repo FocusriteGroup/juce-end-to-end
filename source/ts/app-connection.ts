@@ -94,9 +94,14 @@ export class AppConnection extends EventEmitter {
     this.process.on('spawn', () => {
       console.log('spawned');
     });
+    this.process?.on('close', (code, signal) => {
+      console.log('closed');
+    });
 
     this.exitPromise = new Promise<void>((resolve, reject) => {
+      console.log('waiting for exit');
       this.process?.on('close', (code, signal) => {
+        console.log('closed in promise');
         this.stopServer();
 
         if (code) {

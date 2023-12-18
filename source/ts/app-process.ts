@@ -42,11 +42,11 @@ interface Options {
 export const launchApp = ({path, extraArgs, env, logDirectory}: Options) => {
   const process = spawn(path, extraArgs, {env});
 
-  if (logDirectory) {
-    const logs = createLogFiles(logDirectory);
-    process.stdout.pipe(logs.stdout);
-    process.stderr.pipe(logs.stderr);
-  }
+  // if (logDirectory) {
+  //   const logs = createLogFiles(logDirectory);
+  //   process.stdout.pipe(logs.stdout);
+  //   process.stderr.pipe(logs.stderr);
+  // }
 
   return process;
 };
