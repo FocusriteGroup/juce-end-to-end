@@ -87,19 +87,15 @@ export class AppConnection extends EventEmitter {
       env,
     });
 
-    this.process.on('error', (error) => {
-      throw new Error(`Failed to spawn process: ${error.message}`);
-    });
-
-    this.process.on('spawn', () => {
-      console.log('spawned');
-    });
-    this.process?.on('close', (code, signal) => {
-      console.log('closed');
-    });
-
     this.exitPromise = new Promise<void>((resolve, reject) => {
-      console.log('waiting for exit');
+      this.process?.on('error', (error) => {
+        throw new Error(`Failed to spawn process: ${error.message}`);
+      });
+
+      this.process?.on('spawn', () => {
+        console.log('spawned');
+      });
+
       this.process?.on('close', (code, signal) => {
         console.log('closed in promise');
         this.stopServer();
