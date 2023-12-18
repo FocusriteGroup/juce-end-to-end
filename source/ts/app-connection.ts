@@ -96,7 +96,7 @@ export class AppConnection extends EventEmitter {
     });
 
     this.exitPromise = new Promise<void>((resolve, reject) => {
-      this.process?.on('exit', (code, signal) => {
+      this.process?.on('close', (code, signal) => {
         this.stopServer();
 
         if (code) {
