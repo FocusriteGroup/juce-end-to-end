@@ -42,6 +42,14 @@ const existsAsFile = (path: string) => {
   }
 };
 
+const getRunId = (() => {
+  let runId = 0;
+
+  return () => {
+    return runId++;
+  };
+})();
+
 export class AppConnection extends EventEmitter {
   appPath: string;
   process?: AppProcess;
@@ -49,6 +57,7 @@ export class AppConnection extends EventEmitter {
   connection?: Connection;
   logDirectory?: string;
   exitPromise?: Promise<void>;
+  identifier = getRunId();
 
   constructor(options: AppConnectionOptions) {
     super();
@@ -89,21 +98,31 @@ export class AppConnection extends EventEmitter {
 
     this.exitPromise = new Promise<void>((resolve, reject) => {
       this.process?.on('error', (error) => {
-        throw new Error(`Failed to spawn process: ${error.message}`);
+        throw new Error(
+          `Failed to spawn process: ${error.message} for ID ${this.identifier}`
+        );
       });
 
       this.process?.on('spawn', () => {
-        console.log('spawned');
+        console.log(`spawned for ID ${this.identifier}`);
       });
 
       this.process?.on('close', (code, signal) => {
-        console.log('closed in promise');
+        console.log(`closed in promise for ID ${this.identifier}`);
         this.stopServer();
 
         if (code) {
-          reject(new Error(`App exited with error code: ${code}`));
+          reject(
+            new Error(
+              `App exited with error code: ${code} for ID ${this.identifier}`
+            )
+          );
         } else if (signal) {
-          reject(new Error(`App exited with signal: ${signal}`));
+          reject(
+            new Error(
+              `App exited with signal: ${signal} for ID ${this.identifier}`
+            )
+          );
         } else {
           resolve();
         }
