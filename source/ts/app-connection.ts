@@ -186,10 +186,13 @@ export class AppConnection extends EventEmitter {
     });
   }
 
-  async grabFocus(): Promise<void> {
+  async grabFocus(windowId?: string): Promise<void> {
     await this.sendCommand({
       type: 'grab-focus',
-    });
+      args: {
+        'window-id': windowId || '',
+      },
+      });
   }
 
   async keyPress(
@@ -306,11 +309,12 @@ export class AppConnection extends EventEmitter {
     return response.value;
   }
 
-  async invokeMenu(menu: string): Promise<void> {
+  async invokeMenu(menu: string, windowId?: string): Promise<void> {
     await this.sendCommand({
       type: 'invoke-menu',
       args: {
-        title: menu,
+        'title': menu,
+        'window-id': windowId || '',
       },
     });
   }

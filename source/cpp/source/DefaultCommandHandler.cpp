@@ -323,26 +323,37 @@ Response quit (const Command & command)
 
 Response invokeMenu (const Command & command)
 {
-    auto * application = juce::JUCEApplication::getInstance ();
-    if (application == nullptr)
-        return Response::fail ("Invalid application");
-
     const auto menuTitle = command.getArgument (toString (CommandArgument::title));
     if (menuTitle.isEmpty ())
         return Response::fail ("Missing menu title");
 
-    juce::Array<juce::CommandID> commands;
-    application->getAllCommands (commands);
+    juce::ApplicationCommandTarget* target = nullptr;
+    const auto windowId = command.getArgument (toString (CommandArgument::windowId));
+    if (windowId.isEmpty ())
+    {
+        target = juce::JUCEApplication::getInstance ();
+    }
+    else
+    {
+        auto component = ComponentSearch::findWindowWithId (windowId);
+        if (!component)
+            return Response::fail ("Could not find component specified by window-id");
+        target = juce::ApplicationCommandManager::findTargetForComponent (component);
+    }
+    if (!target)
+        return Response::fail ("Invalid target");
 
+    juce::Array<juce::CommandID> commands;
+    target->getAllCommands (commands);
     for (auto commandID : commands)
     {
         juce::ApplicationCommandInfo info (commandID);
-        application->getCommandInfo (commandID, info);
+        target->getCommandInfo (commandID, info);
 
         if (info.shortName != menuTitle)
             continue;
 
-        application->invoke (juce::ApplicationCommandTarget::InvocationInfo (commandID), false);
+        target->invoke (juce::ApplicationCommandTarget::InvocationInfo (commandID), false);
         return Response::ok ();
     }
 
