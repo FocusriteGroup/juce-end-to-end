@@ -13,7 +13,7 @@ class TestCentre
 {
 public:
     using LogLevel = focusrite::e2e::LogLevel;
-    
+
     static std::unique_ptr<TestCentre> create (LogLevel logLevel = LogLevel::silent, uint16_t port = 0);
 
     virtual ~TestCentre () = default;
@@ -22,6 +22,9 @@ public:
     virtual void removeCommandHandler (CommandHandler & handler) = 0;
 
     virtual void sendEvent (const Event & event) = 0;
+
+    virtual void addRootComponent(juce::Component * rootComponent) = 0;
+    virtual void removeRootComponent(juce::Component * rootComponent) = 0;
 };
 
 }

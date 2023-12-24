@@ -1,9 +1,11 @@
 #include "Connection.h"
 #include "DefaultCommandHandler.h"
 
+#include <focusrite/e2e/ComponentSearch.h>
 #include <focusrite/e2e/Command.h>
 #include <focusrite/e2e/Event.h>
 #include <focusrite/e2e/TestCentre.h>
+
 #include <juce_events/juce_events.h>
 
 namespace focusrite::e2e
@@ -64,6 +66,16 @@ public:
     void sendEvent (const Event & event) override
     {
         send (event.toJson ());
+    }
+
+    void addRootComponent(juce::Component * rootComponent) override
+    {
+        ComponentSearch::addRootComponent(rootComponent);
+    }
+
+    void removeRootComponent(juce::Component * rootComponent) override
+    {
+        ComponentSearch::removeRootComponent(rootComponent);
     }
 
 private:

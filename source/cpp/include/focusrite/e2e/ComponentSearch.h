@@ -15,6 +15,14 @@ public:
 
     static void setTestId (juce::Component & component, const juce::String & id);
     static void setWindowId (juce::TopLevelWindow & window, const juce::String & id);
+
+    static void addRootComponent(juce::Component * rootComponent);
+    static void removeRootComponent(juce::Component * rootComponent);
+private:
+    static juce::Component * findComponent (const std::function<bool (juce::Component &)> & predicate,
+                                    int skip = 0);
+
+    static std::set<juce::Component *> _rootComponents;
 };
 
 }

@@ -5,6 +5,8 @@ namespace focusrite::e2e
 static constexpr auto testId = "test-id";
 static constexpr auto windowId = "window-id";
 
+std::set<juce::Component *> ComponentSearch::_rootComponents { };
+
 std::vector<juce::Component *>
 getDirectDescendantsMatching (juce::Component & parent,
                               const std::function<bool (juce::Component &)> & predicate)
@@ -56,16 +58,6 @@ std::vector<juce::TopLevelWindow *> getTopLevelWindows ()
             windows.push_back (window);
 
     return windows;
-}
-
-juce::Component * findComponent (const std::function<bool (juce::Component &)> & predicate,
-                                 int skip = 0)
-{
-    for (auto & window : getTopLevelWindows ())
-        if (auto * component = findChildComponent (*window, predicate, skip))
-            return component;
-
-    return nullptr;
 }
 
 bool componentHasMatchingProperty (const juce::Component & component,
@@ -162,6 +154,34 @@ void ComponentSearch::setTestId (juce::Component & component, const juce::String
 void ComponentSearch::setWindowId (juce::TopLevelWindow & window, const juce::String & id)
 {
     window.getProperties ().set (windowId, id);
+}
+
+void ComponentSearch::addRootComponent(juce::Component * rootComponent)
+{
+    _rootComponents.insert(rootComponent);
+}
+
+void ComponentSearch::removeRootComponent(juce::Component * rootComponent)
+{
+    _rootComponents.erase(rootComponent);
+}
+
+juce::Component * ComponentSearch::findComponent (const std::function<bool (juce::Component &)> & predicate,
+                                 int skip)
+{
+    for (auto & window : getTopLevelWindows ())
+        if (auto * component = findChildComponent (*window, predicate, skip))
+            return component;
+
+    for (auto & rootComponent : _rootComponents)
+    { 
+        if (auto * component = findChildComponent (*rootComponent, predicate, skip))
+        {
+            return component;
+        }
+    }
+
+    return nullptr;
 }
 
 }
