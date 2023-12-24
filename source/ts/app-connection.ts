@@ -28,8 +28,9 @@ const writeFile = util.promisify(fs.writeFile);
 let screenshotIndex = 0;
 
 interface AppConnectionOptions {
-  appPath: string;
+  appPath?: string;
   logDirectory?: string;
+  listenPort?: number;
 }
 
 const DEFAULT_TIMEOUT = 5000;
@@ -43,24 +44,20 @@ const existsAsFile = (path: string) => {
 };
 
 export class AppConnection extends EventEmitter {
-  appPath: string;
+  appPath?: string;
   process?: AppProcess;
   server: Server;
   connection?: Connection;
   logDirectory?: string;
+  listenPort?: number;
   exitPromise?: Promise<void>;
 
   constructor(options: AppConnectionOptions) {
     super();
 
-    if (!existsAsFile(options.appPath)) {
-      throw new Error(
-        `The specified app path (${options.appPath}) doesn't exist`
-      );
-    }
-
     this.appPath = options.appPath;
     this.logDirectory = options.logDirectory;
+    this.listenPort = options.listenPort;
     this.server = new Server();
 
     this.server.on('error', () => {
@@ -79,7 +76,37 @@ export class AppConnection extends EventEmitter {
     this.connection?.kill();
   }
 
+  async waitForClient() {
+    if (!this.listenPort) {
+      throw new Error(
+        `Listening port must be specific to wait for client`
+      );
+    }
+
+    await this.server.listen(this.listenPort);
+    const socket = await this.server.waitForConnection();
+
+    this.connection = new Connection(socket);
+    this.connection.on('connect', () => this.emit('connect'));
+    this.connection.on('disconnect', () => {
+      this.server.close();
+      this.connection = undefined;
+      this.emit('disconnect');
+    });
+  }
+
   launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {
+    if (!this.appPath) {
+      throw new Error(
+        `App path must be specified to launch process`
+      );
+    }
+    if (!existsAsFile(this.appPath)) {
+      throw new Error(
+        `The specified app path (${this.appPath}) doesn't exist`
+      );
+    }
+
     this.process = launchApp({
       path: this.appPath,
       logDirectory: this.logDirectory,
@@ -107,7 +134,7 @@ export class AppConnection extends EventEmitter {
   }
 
   async launch(extraArgs: string[] = [], env: EnvironmentVariables = {}) {
-    const port = await this.server.listen();
+    const port = await this.server.listen(this.listenPort);
     this.launchProcess(extraArgs.concat([`--e2e-test-port=${port}`]), env);
     const socket = await this.server.waitForConnection();
 

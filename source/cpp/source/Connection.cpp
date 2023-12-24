@@ -42,13 +42,14 @@ bool writeBytesToSocket (juce::StreamingSocket & socket, const juce::MemoryBlock
 
 namespace focusrite::e2e
 {
-std::shared_ptr<Connection> Connection::create (int port)
+std::shared_ptr<Connection> Connection::create (LogLevel logLevel, int port)
 {
-    return std::shared_ptr<Connection> (new Connection (port));
+    return std::shared_ptr<Connection> (new Connection (logLevel, port));
 }
 
-Connection::Connection (int port)
+Connection::Connection (LogLevel logLevel, int port)
     : Thread ("Test fixture connection")
+    , _logLevel (logLevel)
     , _port (port)
 {
 }
@@ -70,10 +71,23 @@ void Connection::run ()
 {
     preventSigPipeExceptions ();
 
-    const auto connected = _socket.connect ("localhost", _port);
+    log (_logLevel, "Connecting to port: " + juce::String(_port));        
 
-    if (! connected)
-        return;
+    bool connected = false; 
+
+    while (! threadShouldExit () && ! connected)
+    {
+        connected = _socket.connect ("localhost", _port);
+        if (! connected)
+        {
+            log (_logLevel, "Failed to connect, waiting and retrying");
+            using namespace std::chrono_literals;
+            std::this_thread::sleep_for(1000ms);
+        }
+    }
+
+    if (connected)
+        log (_logLevel, "Connected");
 
     try
     {

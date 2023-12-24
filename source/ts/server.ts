@@ -14,7 +14,7 @@ export class Server extends EventEmitter {
     }
   }
 
-  async listen(): Promise<number> {
+  async listen(port?: number): Promise<number> {
     if (this.listenSocket) {
       throw new Error('Server already running');
     }
@@ -41,7 +41,7 @@ export class Server extends EventEmitter {
         resolve(address.port);
       });
 
-      this.listenSocket?.listen();
+      this.listenSocket?.listen(port);
     });
   }
 

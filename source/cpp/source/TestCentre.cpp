@@ -27,16 +27,20 @@ std::optional<int> getPort ()
 class E2ETestCentre final : public TestCentre
 {
 public:
-    E2ETestCentre (LogLevel logLevel)
+    E2ETestCentre (LogLevel logLevel, uint16_t port)
         : _logLevel (logLevel)
     {
-        auto port = getPort ();
         if (! port)
-            return;
+        {
+            auto portFromArgs = getPort ();
+            if (! portFromArgs)
+                return;
+            port = *portFromArgs;
+        }
 
         addCommandHandler (_defaultCommandHandler);
 
-        _connection = Connection::create (*port);
+        _connection = Connection::create (_logLevel, port);
         _connection->_onDataReceived = [this] (auto && block) { onDataReceived (block); };
         _connection->start ();
     }
@@ -99,20 +103,14 @@ private:
 
     void logCommand (const Command & command)
     {
-        if (_logLevel == LogLevel::silent)
-            return;
-
-        juce::Logger::writeToLog ("Received command: ");
-        juce::Logger::writeToLog (command.describe ());
+        log (_logLevel, "Received command: ");
+        log (_logLevel, command.describe ());
     }
 
     void logResponse (const Response & response)
     {
-        if (_logLevel == LogLevel::silent)
-            return;
-
-        juce::Logger::writeToLog ("Sending response: ");
-        juce::Logger::writeToLog (response.describe ());
+        log (_logLevel, "Sending response: ");
+        log (_logLevel, response.describe ());
     }
 
     const LogLevel _logLevel;
@@ -122,9 +120,9 @@ private:
     std::shared_ptr<Connection> _connection;
 };
 
-std::unique_ptr<TestCentre> TestCentre::create (LogLevel logLevel)
+std::unique_ptr<TestCentre> TestCentre::create (LogLevel logLevel, uint16_t port)
 {
-    return std::make_unique<E2ETestCentre> (logLevel);
+    return std::make_unique<E2ETestCentre> (logLevel, port);
 }
 
 }

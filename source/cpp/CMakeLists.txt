@@ -1,10 +1,12 @@
 add_library (
   focusrite-e2e
+  STATIC
   include/focusrite/e2e/ClickableComponent.h
   include/focusrite/e2e/Command.h
   include/focusrite/e2e/CommandHandler.h
   include/focusrite/e2e/ComponentSearch.h
   include/focusrite/e2e/Event.h
+  include/focusrite/e2e/Log.h
   include/focusrite/e2e/Response.h
   include/focusrite/e2e/TestCentre.h
   source/Command.cpp
@@ -16,6 +18,7 @@ add_library (
   source/Event.cpp
   source/KeyPress.cpp
   source/KeyPress.h
+  source/Log.cpp
   source/Response.cpp
   source/TestCentre.cpp)
 
@@ -45,6 +48,20 @@ set_common_target_properties (focusrite-e2e)
 
 get_target_property (FOCUSRITE_E2E_SOURCES focusrite-e2e SOURCES)
 source_group (TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${FOCUSRITE_E2E_SOURCES})
+
+# Hide symbols
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  set_target_properties(focusrite-e2e PROPERTIES
+    XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN YES
+    XCODE_ATTRIBUTE_GCC_INLINES_ARE_PRIVATE_EXTERN YES
+  )
+else()
+  set_target_properties(focusrite-e2e PROPERTIES
+    C_VISIBILITY_PRESET hidden
+    CXX_VISIBILITY_PRESET hidden
+    VISIBILITY_INLINES_HIDDEN ON
+  )
+endif()
 
 if (FOCUSRITE_E2E_MAKE_TESTS)
 

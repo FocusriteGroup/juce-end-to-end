@@ -1,8 +1,10 @@
 #pragma once
 
-#include <focusrite/e2e/CommandHandler.h>
 #include <memory>
 #include <optional>
+
+#include <focusrite/e2e/Log.h>
+#include <focusrite/e2e/CommandHandler.h>
 
 namespace focusrite::e2e
 {
@@ -10,13 +12,9 @@ class Event;
 class TestCentre
 {
 public:
-    enum class LogLevel
-    {
-        silent,
-        verbose,
-    };
-
-    static std::unique_ptr<TestCentre> create (LogLevel logLevel = LogLevel::silent);
+    using LogLevel = focusrite::e2e::LogLevel;
+    
+    static std::unique_ptr<TestCentre> create (LogLevel logLevel = LogLevel::silent, uint16_t port = 0);
 
     virtual ~TestCentre () = default;
 
