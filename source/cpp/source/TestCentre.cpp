@@ -37,7 +37,7 @@ public:
             auto portFromArgs = getPort ();
             if (! portFromArgs)
                 return;
-            port = *portFromArgs;
+            port = static_cast<uint16_t>(*portFromArgs);
         }
 
         addCommandHandler (_defaultCommandHandler);
