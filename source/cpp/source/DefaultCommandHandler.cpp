@@ -594,6 +594,24 @@ Response getAccessibilityChildren (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
+Response dumpComponentTree (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::ok ().withParameter ("components", 
+            ComponentSearch::dumpComponentTree());
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ().withParameter ("components", 
+            ComponentSearch::dumpComponentTree(component));
+
+    if (auto * window = ComponentSearch::findWindowWithId (componentId))
+        return Response::ok ().withParameter ("components", 
+            ComponentSearch::dumpComponentTree(window));
+
+    return Response::fail (componentId + " not found");
+}
+
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
 {
     static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
@@ -629,6 +647,8 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
              [&] (auto && command) { return getAccessibilityParent (command); }},
             {"get-accessibility-children",
              [&] (auto && command) { return getAccessibilityChildren (command); }},
+            {"dump-component-tree",
+             [&] (auto && command) { return dumpComponentTree (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());

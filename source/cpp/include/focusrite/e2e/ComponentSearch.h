@@ -18,6 +18,9 @@ public:
 
     static void addRootComponent(juce::Component * rootComponent);
     static void removeRootComponent(juce::Component * rootComponent);
+
+    static juce::var dumpComponentTree(juce::Component * parent = nullptr);
+    static juce::String getComponentPath(juce::Component * component);
 private:
     static juce::Component * findComponent (const std::function<bool (juce::Component &)> & predicate,
                                     int skip = 0);

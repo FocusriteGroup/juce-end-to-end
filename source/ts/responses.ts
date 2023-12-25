@@ -49,6 +49,10 @@ export interface GetFocusedComponentResponse {
   'component-id': string;
 }
 
+export interface ComponentTreeResponse {
+  components: Object;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',

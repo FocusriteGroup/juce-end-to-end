@@ -17,6 +17,7 @@ import {
   AccessibilityParentResponse,
   AccessibilityChildResponse,
   GetFocusedComponentResponse,
+  ComponentTreeResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
@@ -520,4 +521,16 @@ export class AppConnection extends EventEmitter {
 
     return false;
   }
+
+  async dumpComponentTree(componentId?: string): Promise<Object> {
+    const componentResponse = (await this.sendCommand({
+      type: 'dump-component-tree',
+      args: {
+        'component-id': componentId ?? '',
+      },
+    })) as ComponentTreeResponse;
+
+    return componentResponse.components;
+  }
+
 }

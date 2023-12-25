@@ -184,4 +184,78 @@ juce::Component * ComponentSearch::findComponent (const std::function<bool (juce
     return nullptr;
 }
 
+std::unique_ptr<juce::DynamicObject> createComponentTree(juce::Component* component)
+{
+    auto element = std::make_unique<juce::DynamicObject> ();
+    if (! component)
+        return element;
+
+    element->setProperty ("id", component->getComponentID());
+    element->setProperty ("name", component->getName());
+    element->setProperty ("visible", component->isVisible());
+    element->setProperty ("enabled", component->isEnabled());
+    if (const auto* label = dynamic_cast<juce::Label*>(component))
+    {
+        element->setProperty ("text", label->getText());
+    }
+    if (const auto* textEditor = dynamic_cast<juce::TextEditor*>(component))
+    {
+        element->setProperty ("text", textEditor->getText());
+    }
+    if (const auto* slider = dynamic_cast<juce::Slider*>(component))
+    {
+        element->setProperty ("value", slider->getValue());
+    }
+    
+    juce::Array<juce::var> children;
+    for (const auto& child: component->getChildren())
+    {
+        children.add (createComponentTree (child).release());
+    }
+
+    element->setProperty ("children", children);
+
+    return element;
+}
+
+juce::var ComponentSearch::dumpComponentTree(juce::Component * parent)
+{
+    juce::Array<juce::var> components;
+    if (parent)
+    {
+        components.add (createComponentTree (parent).release ());
+    }
+    else 
+    {
+        const auto topLevelWindows = getTopLevelWindows ();
+        std::set<juce::Component * > topLevelComponents { 
+            topLevelWindows.begin (), topLevelWindows.end () };
+        topLevelComponents.insert (_rootComponents.begin (), _rootComponents.end ());
+
+        for (const auto& component: topLevelComponents)
+        {
+            components.add (createComponentTree (component).release());
+        }
+    }
+    return components;
+}
+
+juce::String ComponentSearch::getComponentPath(juce::Component * component)
+{
+    const auto topLevelWindows = getTopLevelWindows ();
+    std::set<juce::Component * > topLevelComponents { 
+        topLevelWindows.begin (), topLevelWindows.end () };
+    topLevelComponents.insert (_rootComponents.begin (), _rootComponents.end ());
+
+    juce::String path;
+    while (component && 
+        topLevelComponents.find(component) == topLevelComponents.end()) 
+    {
+        path = component->getComponentID() + 
+            ((!path.isEmpty()) ? juce::String("/") + path : juce::String());
+        component = component->getParentComponent();
+    }
+    return path;
+}
+
 }

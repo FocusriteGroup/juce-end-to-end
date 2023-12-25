@@ -6,6 +6,7 @@
 #include <focusrite/e2e/Event.h>
 #include <focusrite/e2e/TestCentre.h>
 
+#include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_events/juce_events.h>
 
 namespace focusrite::e2e
@@ -26,7 +27,7 @@ std::optional<int> getPort ()
     return std::nullopt;
 }
 
-class E2ETestCentre final : public TestCentre
+class E2ETestCentre final : public TestCentre, public juce::MouseListener
 {
 public:
     E2ETestCentre (LogLevel logLevel, uint16_t port)
@@ -45,9 +46,14 @@ public:
         _connection = Connection::create (_logLevel, port);
         _connection->_onDataReceived = [this] (auto && block) { onDataReceived (block); };
         _connection->start ();
+
+        juce::Desktop::getInstance ().addGlobalMouseListener (this);
     }
 
-    ~E2ETestCentre () override = default;
+    ~E2ETestCentre () override 
+    {
+        juce::Desktop::getInstance ().removeGlobalMouseListener (this);
+    }
 
     void addCommandHandler (CommandHandler & handler) override
     {
@@ -123,6 +129,11 @@ private:
     {
         log (_logLevel, "Sending response: ");
         log (_logLevel, response.describe ());
+    }
+
+    void mouseDoubleClick (const juce::MouseEvent &event) override
+    {
+        log (_logLevel, "Mouse double-click on: " + ComponentSearch::getComponentPath(event.eventComponent));
     }
 
     const LogLevel _logLevel;
