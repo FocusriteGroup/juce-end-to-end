@@ -70,6 +70,24 @@ void clickButton (juce::Button & button)
     }
 }
 
+bool doubleClickComponent (juce::Component & component, const Command & command)
+{
+    int clicks = juce::jlimit (1, 2, 
+        command.getArgument (toString (CommandArgument::numClicks)).getIntValue ());
+    if (clicks != 2)
+    {
+        return false;
+    }
+    auto source = juce::Desktop::getInstance().getMainMouseSource();
+    auto modifierKeys = juce::ModifierKeys(juce::ModifierKeys::leftButtonModifier);
+    auto pressure = 1.0f;
+    auto mouseEvent = juce::MouseEvent(source, {}, modifierKeys, pressure, 
+        0.0f, 0.0f, 0.0f, 0.0f, &component, &component, {}, {}, {}, clicks, false);
+
+    component.mouseDoubleClick(mouseEvent);
+    return true;
+}
+
 void clickClickableComponent (focusrite::e2e::ClickableComponent & clickable, int numClicks)
 {
     if (numClicks == 1)
@@ -143,9 +161,10 @@ Response clickComponent (const Command & command)
     if (component == nullptr)
         return Response::fail ("Component not found: " + juce::String (componentId));
 
-    auto handled = clickButton (*component);
-    handled = handled || clickTextEditor (*component);
-    handled = handled || clickClickableComponent (*component, command);
+    auto handled = doubleClickComponent (*component, command) || 
+        clickButton (*component) || 
+        clickTextEditor (*component) || 
+        clickClickableComponent (*component, command);
 
     return handled ? Response::ok ()
                    : Response::fail ("Component not clickable: " + juce::String (componentId));
