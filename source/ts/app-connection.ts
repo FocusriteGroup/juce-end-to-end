@@ -328,7 +328,7 @@ export class AppConnection extends EventEmitter {
       );
     } catch (error) {
       const errorDescription = visibility ? 'visible' : 'hidden';
-      const filename = `${++screenshotIndex}.png`;
+      const filename = `${++screenshotIndex}-${new Date().toISOString()}.png`;
       await this.saveScreenshot('', filename);
       throw new Error(
         `Component '${componentName}' didn't become ${errorDescription} (see screenshot ${filename})`
@@ -364,7 +364,7 @@ export class AppConnection extends EventEmitter {
       const stateString = enablement ? 'enabled' : 'disabled';
       const failString = `Component '${componentName}' didn't become ${stateString}`;
 
-      const filename = `${++screenshotIndex}.png`;
+      const filename = `${++screenshotIndex}-${new Date().toISOString()}.png`;
       console.error(`${failString}, writing screenshot to ${filename}`);
       await this.saveScreenshot('', filename);
       throw new Error(failString);
