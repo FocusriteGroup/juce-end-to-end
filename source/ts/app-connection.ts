@@ -315,6 +315,15 @@ export class AppConnection extends EventEmitter {
     });
   }
 
+  async saveFailureScreenshot(): Promise<string> {
+    const dateString = new Date().toISOString().replace(/:/g, '-');
+    const filename = `${++screenshotIndex}-${dateString}.png`;
+
+    await this.saveScreenshot('', filename);
+
+    return filename;
+  }
+
   async waitForComponentVisibilityToBe(
     componentName: string,
     visibility: boolean,
@@ -327,11 +336,10 @@ export class AppConnection extends EventEmitter {
         timeoutInMilliseconds
       );
     } catch (error) {
-      const errorDescription = visibility ? 'visible' : 'hidden';
-      const filename = `${++screenshotIndex}-${new Date().toISOString()}.png`;
-      await this.saveScreenshot('', filename);
+      const expectedVisibility = visibility ? 'visible' : 'hidden';
+      const screenshotFilename = await this.saveFailureScreenshot();
       throw new Error(
-        `Component '${componentName}' didn't become ${errorDescription} (see screenshot ${filename})`
+        `Component '${componentName}' didn't become ${expectedVisibility} (see screenshot ${screenshotFilename})`
       );
     }
   }
@@ -361,13 +369,11 @@ export class AppConnection extends EventEmitter {
 
       return true;
     } catch (error) {
-      const stateString = enablement ? 'enabled' : 'disabled';
-      const failString = `Component '${componentName}' didn't become ${stateString}`;
-
-      const filename = `${++screenshotIndex}-${new Date().toISOString()}.png`;
-      console.error(`${failString}, writing screenshot to ${filename}`);
-      await this.saveScreenshot('', filename);
-      throw new Error(failString);
+      const expectedEnablement = enablement ? 'enabled' : 'disabled';
+      const screenshotFilename = await this.saveFailureScreenshot();
+      throw new Error(
+        `Component '${componentName}' didn't become ${expectedEnablement} (see screenshot ${screenshotFilename})`
+      );
     }
   }
 
