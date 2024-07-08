@@ -1,12 +1,4 @@
-add_library (
-  focusrite-e2e
-  include/focusrite/e2e/ClickableComponent.h
-  include/focusrite/e2e/Command.h
-  include/focusrite/e2e/CommandHandler.h
-  include/focusrite/e2e/ComponentSearch.h
-  include/focusrite/e2e/Event.h
-  include/focusrite/e2e/Response.h
-  include/focusrite/e2e/TestCentre.h
+add_library (focusrite-e2e STATIC
   source/Command.cpp
   source/ComponentSearch.cpp
   source/Connection.cpp
@@ -23,23 +15,7 @@ add_library (focusrite-e2e::focusrite-e2e ALIAS focusrite-e2e)
 
 target_include_directories (focusrite-e2e PUBLIC include)
 
-set (JUCE_MODULES juce_core juce_events)
-
-foreach (JUCE_MODULE ${JUCE_MODULES})
- 
-  if (NOT TARGET ${JUCE_MODULE})
-    message(FATAL_ERROR "Missing JUCE module: ${JUCE_MODULE}, enable FOCUSRITE_E2E_FETCH_JUCE to fetch JUCE")
-  endif()
-
-  get_target_property (MODULE_INCLUDES ${JUCE_MODULE}
-                       INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories (focusrite-e2e PUBLIC ${MODULE_INCLUDES})
-endforeach ()
-
-target_include_directories (focusrite-e2e PRIVATE ${juce_SOURCE_DIR}/modules)
-
-target_compile_definitions (focusrite-e2e
-                            PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1)
+target_link_libraries(focusrite-e2e PUBLIC focusrite-e2e::juce_modules)
 
 set_common_target_properties (focusrite-e2e)
 
