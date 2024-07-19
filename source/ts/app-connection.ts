@@ -344,6 +344,22 @@ export class AppConnection extends EventEmitter {
     }
   }
 
+  async waitForComponentVisibilitiesToBe(
+    visibilitiesMap: {[key: string]: boolean},
+    timeoutInMilliseconds = DEFAULT_TIMEOUT
+  ): Promise<void> {
+    await Promise.all(
+      Object.entries(visibilitiesMap).map(
+        async ([componentName, visibility]) =>
+          await this.waitForComponentVisibilityToBe(
+            componentName,
+            visibility,
+            timeoutInMilliseconds
+          )
+      )
+    );
+  }
+
   async waitForComponentToBeVisible(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
