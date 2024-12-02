@@ -1,6 +1,5 @@
 import {EventEmitter} from 'events';
 import path from 'path';
-import {spawn, ChildProcess} from 'child_process';
 import util from 'util';
 import fs from 'fs';
 import {Connection, EventMatchingFunction} from './connection';
@@ -13,11 +12,16 @@ import {
   ComponentCountResponse,
   ResponseData,
   GetSliderValueResponse,
+  GetItemIndexResponse,
+  AccessibilityResponse,
+  AccessibilityParentResponse,
+  AccessibilityChildResponse,
+  GetFocusedComponentResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
-import {strict as assert} from 'assert';
-import {pollUntil} from './poll';
+import {waitForResult} from './poll';
+import {AppProcess, EnvironmentVariables, launchApp} from './app-process';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -28,19 +32,7 @@ interface AppConnectionOptions {
   logDirectory?: string;
 }
 
-export interface EnvironmentVariables {
-  [key: string]: string;
-}
-
 const DEFAULT_TIMEOUT = 5000;
-
-const nextRunId = (() => {
-  let runId = 1;
-
-  return () => {
-    return runId++;
-  };
-})();
 
 const existsAsFile = (path: string) => {
   try {
@@ -52,10 +44,11 @@ const existsAsFile = (path: string) => {
 
 export class AppConnection extends EventEmitter {
   appPath: string;
-  process?: ChildProcess;
+  process?: AppProcess;
   server: Server;
   connection?: Connection;
   logDirectory?: string;
+  exitPromise?: Promise<void>;
 
   constructor(options: AppConnectionOptions) {
     super();
@@ -74,67 +67,42 @@ export class AppConnection extends EventEmitter {
       this.stopServer();
     });
 
-    this.server.on('close', () => {
-      this.server = null;
-    });
-
-    if (this.logDirectory && !fs.existsSync(this.logDirectory)) {
-      fs.mkdirSync(this.logDirectory);
+    if (this.logDirectory) {
+      fs.mkdirSync(this.logDirectory, {
+        recursive: true,
+      });
     }
   }
 
   stopServer() {
     this.server.close();
-    this.connection.kill();
-  }
-
-  createLogFiles():
-    | {stdout: fs.WriteStream; stderr: fs.WriteStream}
-    | undefined {
-    if (!this.logDirectory) {
-      return;
-    }
-
-    const runId = nextRunId();
-
-    const stdoutPath = path.join(
-      this.logDirectory,
-      `application-tests-stdout-${runId}.log`
-    );
-    const stderrPath = path.join(
-      this.logDirectory,
-      `application-tests-stderr-${runId}.log`
-    );
-
-    return {
-      stdout: fs.createWriteStream(stdoutPath, {flags: 'a'}),
-      stderr: fs.createWriteStream(stderrPath, {flags: 'a'}),
-    };
+    this.connection?.kill();
   }
 
   launchProcess(extraArgs: string[], env: EnvironmentVariables = {}) {
-    try {
-      this.process = spawn(this.appPath, extraArgs, {env});
-    } catch (error) {
-      console.error(`Unable to launch: ${error.message}`);
-      return;
-    }
+    this.process = launchApp({
+      path: this.appPath,
+      logDirectory: this.logDirectory,
+      extraArgs,
+      env,
+    });
 
-    const logs = this.createLogFiles();
-    if (logs) {
-      this.process.stdout.pipe(logs.stdout);
-      this.process.stderr.pipe(logs.stderr);
-    }
+    this.process.on('error', (error) => {
+      throw new Error(`Failed to spawn process: ${error.message}`);
+    });
 
-    this.process.on('exit', (code, signal) => {
-      if (code || signal) {
-        const errorMessage = code
-          ? `App exited with error code ${code}`
-          : `App exited with signal ${signal}`;
-        throw new Error(errorMessage);
-      }
+    this.exitPromise = new Promise<void>((resolve, reject) => {
+      this.process?.on('exit', (code, signal) => {
+        this.stopServer();
 
-      this.emit('exit', {code, signal});
+        if (code) {
+          reject(new Error(`App exited with error code: ${code}`));
+        } else if (signal) {
+          reject(new Error(`App exited with signal: ${signal}`));
+        } else {
+          resolve();
+        }
+      });
     });
   }
 
@@ -146,23 +114,22 @@ export class AppConnection extends EventEmitter {
     this.connection = new Connection(socket);
     this.connection.on('connect', () => this.emit('connect'));
     this.connection.on('disconnect', () => {
-      this.emit('disconnect');
-      this.connection.kill();
       this.server.close();
+      this.connection = undefined;
+      this.emit('disconnect');
     });
   }
 
   kill() {
-    this.connection.kill();
+    this.connection?.kill();
     this.server.close();
-
-    if (this.process) {
-      this.process.kill();
-    }
+    this.process?.kill();
   }
 
   async sendCommand(command: Command): Promise<ResponseData> {
-    assert(this.connection);
+    if (!this.connection) {
+      throw new Error('Not connected to application');
+    }
     return await this.connection.send(command);
   }
 
@@ -171,20 +138,19 @@ export class AppConnection extends EventEmitter {
     matchingFunction?: EventMatchingFunction,
     timeout?: number
   ): Promise<void> {
+    if (!this.connection) {
+      throw new Error('Not connected to application');
+    }
+
     await this.connection.waitForEvent(name, matchingFunction, timeout);
   }
 
   async waitForExit(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.on('exit', ({code, signal}) => {
-        assert(!code && !signal);
-        if (code || signal) {
-          reject(`App exited with error: ${code || signal}`);
-        }
+    if (!this.exitPromise) {
+      throw new Error(`Process hasn't been launched`);
+    }
 
-        resolve();
-      });
-    });
+    await this.exitPromise;
   }
 
   async quit(): Promise<void> {
@@ -262,6 +228,39 @@ export class AppConnection extends EventEmitter {
     return response.value;
   }
 
+  async getAccessibilityState(
+    componentId: string
+  ): Promise<AccessibilityResponse> {
+    return (await this.sendCommand({
+      type: 'get-accessibility-state',
+      args: {
+        'component-id': componentId,
+      },
+    })) as AccessibilityResponse;
+  }
+
+  async getAccessibilityParent(componentId: string): Promise<string> {
+    const parentResponse = (await this.sendCommand({
+      type: 'get-accessibility-parent',
+      args: {
+        'component-id': componentId,
+      },
+    })) as AccessibilityParentResponse;
+
+    return parentResponse.parent;
+  }
+
+  async getAccessibilityChildren(componentId: string): Promise<Array<string>> {
+    const childResponse = (await this.sendCommand({
+      type: 'get-accessibility-children',
+      args: {
+        'component-id': componentId,
+      },
+    })) as AccessibilityChildResponse;
+
+    return childResponse.children.filter((str) => str !== '');
+  }
+
   async setTextEditorText(componentId: string, value: string): Promise<void> {
     await this.sendCommand({
       type: 'set-text-editor-text',
@@ -270,6 +269,41 @@ export class AppConnection extends EventEmitter {
         value,
       },
     });
+  }
+
+  async setComboBoxSelectedItemIndex(
+    comboBoxId: string,
+    value: number
+  ): Promise<void> {
+    await this.sendCommand({
+      type: 'set-combo-box-selected-item-index',
+      args: {
+        'component-id': comboBoxId,
+        value,
+      },
+    });
+  }
+
+  async getComboBoxSelectedItemIndex(comboBoxId: string): Promise<number> {
+    const response = (await this.sendCommand({
+      type: 'get-combo-box-selected-item-index',
+      args: {
+        'component-id': comboBoxId,
+      },
+    })) as GetItemIndexResponse;
+
+    return response.value;
+  }
+
+  async getComboBoxNumItems(comboBoxId: string): Promise<number> {
+    const response = (await this.sendCommand({
+      type: 'get-combo-box-num-items',
+      args: {
+        'component-id': comboBoxId,
+      },
+    })) as GetItemIndexResponse;
+
+    return response.value;
   }
 
   async invokeMenu(menu: string): Promise<void> {
@@ -281,37 +315,40 @@ export class AppConnection extends EventEmitter {
     });
   }
 
+  async saveFailureScreenshot(): Promise<string> {
+    const dateString = new Date().toISOString().replace(/:/g, '-');
+    const filename = `${++screenshotIndex}-${dateString}.png`;
+
+    await this.saveScreenshot('', filename);
+
+    return filename;
+  }
+
   async waitForComponentVisibilityToBe(
     componentName: string,
     visibility: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ): Promise<boolean> {
-    const result = await pollUntil(
-      (visible: boolean) => visible === visibility,
-      async () => await this.getComponentVisibility(componentName),
-      timeoutInMilliseconds
-    );
-
-    if (!result) {
-      const errorDescription = visibility ? 'visible' : 'hidden';
-      const filename = `${++screenshotIndex}.png`;
-      console.error(
-        `Component '${componentName}' didn't become ${errorDescription}, writing screenshot to ${filename}`
+  ): Promise<void> {
+    try {
+      await waitForResult(
+        () => this.getComponentVisibility(componentName),
+        visibility,
+        timeoutInMilliseconds
       );
-      await this.saveScreenshot('', filename);
+    } catch (error) {
+      const expectedVisibility = visibility ? 'visible' : 'hidden';
+      const screenshotFilename = await this.saveFailureScreenshot();
       throw new Error(
-        `Component '${componentName}' didn't become ${errorDescription}`
+        `Component '${componentName}' didn't become ${expectedVisibility} (see screenshot ${screenshotFilename})`
       );
     }
-
-    return result;
   }
 
   async waitForComponentToBeVisible(
     componentName: string,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
-  ): Promise<boolean> {
-    return await this.waitForComponentVisibilityToBe(
+  ): Promise<void> {
+    await this.waitForComponentVisibilityToBe(
       componentName,
       true,
       timeoutInMilliseconds
@@ -323,23 +360,21 @@ export class AppConnection extends EventEmitter {
     enablement: boolean,
     timeoutInMilliseconds = DEFAULT_TIMEOUT
   ): Promise<boolean> {
-    const result = await pollUntil(
-      (enabled: boolean) => enabled === enablement,
-      async () => await this.getComponentEnablement(componentName),
-      timeoutInMilliseconds
-    );
+    try {
+      await waitForResult(
+        () => this.getComponentEnablement(componentName),
+        enablement,
+        timeoutInMilliseconds
+      );
 
-    const stateString = enablement ? 'enabled' : 'disabled';
-    const failString = `Component '${componentName}' didn't become ${stateString}`;
-
-    if (!result) {
-      const filename = `${++screenshotIndex}.png`;
-      console.error(`${failString}, writing screenshot to ${filename}`);
-      await this.saveScreenshot('', filename);
-      throw new Error(failString);
+      return true;
+    } catch (error) {
+      const expectedEnablement = enablement ? 'enabled' : 'disabled';
+      const screenshotFilename = await this.saveFailureScreenshot();
+      throw new Error(
+        `Component '${componentName}' didn't become ${expectedEnablement} (see screenshot ${screenshotFilename})`
+      );
     }
-
-    return result;
   }
 
   async waitForComponentToBeEnabled(
@@ -395,12 +430,8 @@ export class AppConnection extends EventEmitter {
     })) as ScreenshotResponse;
 
     try {
-      await writeFile(
-        path.join(this.logDirectory, outFileName),
-        response.image,
-        'base64'
-      );
-      console.log(`Screenshot of ${componentId} written to ${outFileName}`);
+      const outputFile = path.join(this.logDirectory, outFileName);
+      await writeFile(outputFile, response.image, 'base64');
     } catch (error) {
       console.error(
         `Error writing screenshot of ${componentId} to ${outFileName}`
@@ -442,10 +473,10 @@ export class AppConnection extends EventEmitter {
   }
 
   async getFocusedComponent(): Promise<string | undefined> {
-    const response = await this.sendCommand({
+    const response = (await this.sendCommand({
       type: 'get-focus-component',
       args: {},
-    });
+    })) as GetFocusedComponentResponse;
 
     return response && response['component-id'];
   }
