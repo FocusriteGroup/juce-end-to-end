@@ -28,6 +28,10 @@ export interface GetItemIndexResponse {
   value: number;
 }
 
+export interface GetComboBoxItemsResponse {
+    [key: number] : string;
+}
+
 export interface AccessibilityResponse {
   title: string;
   description: string;

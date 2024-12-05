@@ -17,6 +17,7 @@ import {
   AccessibilityParentResponse,
   AccessibilityChildResponse,
   GetFocusedComponentResponse,
+  GetComboBoxItemsResponse,
 } from './responses';
 import {Command} from './commands';
 import minimatch from 'minimatch';
@@ -304,6 +305,15 @@ export class AppConnection extends EventEmitter {
     })) as GetItemIndexResponse;
 
     return response.value;
+  }
+
+  async getComboBoxItems(comboBoxId: string): Promise<GetComboBoxItemsResponse> {
+     return (await this.sendCommand({
+      type: 'get-combo-box-items',
+      args: {
+        'component-id': comboBoxId,
+      },
+    })) as GetComboBoxItemsResponse;
   }
 
   async invokeMenu(menu: string): Promise<void> {
