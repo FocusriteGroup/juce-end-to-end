@@ -29,7 +29,7 @@ export interface GetItemIndexResponse {
 }
 
 export interface GetComboBoxItemsResponse {
-    [key: number] : string;
+    items : string[];
 }
 
 export interface AccessibilityResponse {

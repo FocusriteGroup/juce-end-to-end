@@ -476,7 +476,7 @@ Response getComboBoxItems (const Command & command)
             items.add (comboBox->getItemText (i));
         }
 
-        return Response::ok ().withParameter (toString (CommandArgument::value), items);
+        return Response::ok ().withParameter ("items", items);
     }
 
     const auto error = std::get<juce::String> (comboBoxVariant);
