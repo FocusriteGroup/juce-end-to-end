@@ -456,6 +456,33 @@ Response getComboBoxNumItems (const Command & command)
     return Response::fail (error);
 }
 
+Response getComboBoxItems (const Command & command)
+{
+    auto comboBoxVariant = getComponent<juce::ComboBox> (command);
+    if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
+    {
+        auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
+        const auto numItems = comboBox->getNumItems ();
+
+        if (numItems == 0)
+        {
+            return Response::fail (juce::String ("ComboBox is empty"));
+        }
+
+        juce::StringArray items;
+
+        for (auto i = 0; i < numItems; ++i)
+        {
+            items.add (comboBox->getItemText (i));
+        }
+
+        return Response::ok ().withParameter ("items", items);
+    }
+
+    const auto error = std::get<juce::String> (comboBoxVariant);
+    return Response::fail (error);
+}
+
 Response setComboBoxSelectedItemIndex (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
@@ -610,6 +637,7 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
              [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
             {"get-combo-box-num-items",
              [&] (auto && command) { return getComboBoxNumItems (command); }},
+            {"get-combo-box-items", [&] (auto && command) { return getComboBoxItems (command); }},
             {"set-combo-box-selected-item-index",
              [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
             {"get-accessibility-state",
