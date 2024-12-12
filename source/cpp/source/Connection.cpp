@@ -20,16 +20,19 @@ struct Header
 
 static_assert (sizeof (Header) == 2 * sizeof (uint32_t), "Expecting header to be 8 bytes");
 
-bool writeBytesToSocket (juce::StreamingSocket & socket, const void * data, int numBytes)
+bool writeBytesToSocket (juce::StreamingSocket & socket, const juce::MemoryBlock & data)
 {
-    while (numBytes > 0)
+    int offset = 0;
+
+    while (static_cast<size_t> (offset) < data.getSize ())
     {
-        const auto numBytesWritten = socket.write (data, numBytes);
+        const auto numBytesWritten =
+            socket.write (&data [offset], static_cast<int> (data.getSize ()) - offset);
 
         if (numBytesWritten < 0)
             return false;
 
-        numBytes -= numBytesWritten;
+        offset += numBytesWritten;
     }
 
     return true;
@@ -115,16 +118,15 @@ void Connection::send (const juce::MemoryBlock & data)
 {
     jassert (isConnected ());
 
-    Header header {juce::ByteOrder::swapIfBigEndian (Header::magicNumber),
-                   juce::ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()))};
-
-    if (! writeBytesToSocket (_socket, &header, sizeof (header)))
+    if (const Header header {juce::ByteOrder::swapIfBigEndian (Header::magicNumber),
+                             juce::ByteOrder::swapIfBigEndian (uint32_t (data.getSize ()))};
+        ! writeBytesToSocket (_socket, {&header, sizeof (header)}))
     {
         closeSocket ();
         return;
     }
 
-    if (! writeBytesToSocket (_socket, data.getData (), int (data.getSize ())))
+    if (! writeBytesToSocket (_socket, data))
         closeSocket ();
 }
 

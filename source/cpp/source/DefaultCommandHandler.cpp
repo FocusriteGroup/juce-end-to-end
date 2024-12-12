@@ -456,6 +456,33 @@ Response getComboBoxNumItems (const Command & command)
     return Response::fail (error);
 }
 
+Response getComboBoxItems (const Command & command)
+{
+    auto comboBoxVariant = getComponent<juce::ComboBox> (command);
+    if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
+    {
+        auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
+        const auto numItems = comboBox->getNumItems ();
+
+        if (numItems == 0)
+        {
+            return Response::fail (juce::String ("ComboBox is empty"));
+        }
+
+        juce::StringArray items;
+
+        for (auto i = 0; i < numItems; ++i)
+        {
+            items.add (comboBox->getItemText (i));
+        }
+
+        return Response::ok ().withParameter ("items", items);
+    }
+
+    const auto error = std::get<juce::String> (comboBoxVariant);
+    return Response::fail (error);
+}
+
 Response setComboBoxSelectedItemIndex (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
@@ -463,8 +490,7 @@ Response setComboBoxSelectedItemIndex (const Command & command)
     {
         auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
 
-        const auto value =
-            command.getArgument (toString (CommandArgument::value)).getIntValue ();
+        const auto value = command.getArgument (toString (CommandArgument::value)).getIntValue ();
 
         if (value > comboBox->getNumItems () || value < 0)
             return Response::fail ("ComboBox value out of range: " + juce::String (value));
@@ -476,6 +502,112 @@ Response setComboBoxSelectedItemIndex (const Command & command)
 
     const auto error = std::get<juce::String> (comboBoxVariant);
     return Response::fail (error);
+}
+
+juce::String getAccessibilityHandlerDisplay (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return "";
+
+    if (auto * value = component.getAccessibilityHandler ()->getValueInterface ())
+        return value->getCurrentValueAsString ();
+
+    if (auto * text = component.getAccessibilityHandler ()->getTextInterface ())
+        return text->getAllText ();
+
+    return "";
+}
+
+juce::String getAccessibilityTitle (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getTitle ()
+               : component.getTitle ();
+}
+
+juce::String getAccessibilityDescription (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getDescription ()
+               : component.getDescription ();
+}
+
+juce::String getAccessibilityHelpText (juce::Component & component)
+{
+    return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
+               ? component.getAccessibilityHandler ()->getHelp ()
+               : component.getHelpText ();
+}
+
+juce::String getAccessibilityParent (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return {};
+
+    if (auto * parent = component.getAccessibilityHandler ()->getParent ())
+        return parent->getComponent ().getComponentID ();
+
+    return {};
+}
+
+juce::StringArray getAccessibilityChildren (juce::Component & component)
+{
+    if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
+        return {};
+
+    juce::StringArray result;
+    for (auto childAccessibilityHandler : component.getAccessibilityHandler ()->getChildren ())
+        if (childAccessibilityHandler != nullptr)
+            if (childAccessibilityHandler->getComponent ().isAccessible () &&
+                childAccessibilityHandler->getComponent ().getAccessibilityHandler () != nullptr)
+                result.add (childAccessibilityHandler->getComponent ().getComponentID ());
+
+    return result;
+}
+
+Response getAccessibilityState (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ()
+            .withParameter (toString (CommandArgument::title), getAccessibilityTitle (*component))
+            .withParameter ("description", getAccessibilityDescription (*component))
+            .withParameter ("help", getAccessibilityHelpText (*component))
+            .withParameter ("accessible", component->isAccessible ())
+            .withParameter ("handler", component->getAccessibilityHandler () != nullptr)
+            .withParameter ("display", getAccessibilityHandlerDisplay (*component));
+
+    return Response::fail (componentId + " not found");
+}
+
+Response getAccessibilityParent (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ().withParameter ("parent", getAccessibilityParent (*component));
+
+    return Response::fail (componentId + " not found");
+}
+
+Response getAccessibilityChildren (const Command & command)
+{
+    const auto componentId = command.getArgument (toString (CommandArgument::componentId));
+    if (componentId.isEmpty ())
+        return Response::fail ("Missing component-id");
+
+    if (auto * component = ComponentSearch::findWithId (componentId))
+        return Response::ok ().withParameter ("children", getAccessibilityChildren (*component));
+
+    if (auto * window = ComponentSearch::findWindowWithId (componentId))
+        return Response::ok ().withParameter ("children", getAccessibilityChildren (*window));
+
+    return Response::fail (componentId + " not found");
 }
 
 std::optional<Response> DefaultCommandHandler::process (const Command & command)
@@ -501,9 +633,19 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
                 "set-text-editor-text",
                 [&] (auto && command) { return setTextEditorText (command); },
             },
-            {"get-combo-box-selected-item-index", [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
-            {"get-combo-box-num-items", [&] (auto && command) { return getComboBoxNumItems (command); }},
-            {"set-combo-box-selected-item-index", [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
+            {"get-combo-box-selected-item-index",
+             [&] (auto && command) { return getComboBoxSelectedItemIndex (command); }},
+            {"get-combo-box-num-items",
+             [&] (auto && command) { return getComboBoxNumItems (command); }},
+            {"get-combo-box-items", [&] (auto && command) { return getComboBoxItems (command); }},
+            {"set-combo-box-selected-item-index",
+             [&] (auto && command) { return setComboBoxSelectedItemIndex (command); }},
+            {"get-accessibility-state",
+             [&] (auto && command) { return getAccessibilityState (command); }},
+            {"get-accessibility-parent",
+             [&] (auto && command) { return getAccessibilityParent (command); }},
+            {"get-accessibility-children",
+             [&] (auto && command) { return getAccessibilityChildren (command); }},
         };
 
     auto it = commandHandlers.find (command.getType ());

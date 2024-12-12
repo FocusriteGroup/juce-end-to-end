@@ -5,6 +5,6 @@ export interface Command {
 
 export interface SentCommand extends Command {
   uuid: string;
-  onReceived(response: object): void;
+  onReceived(response?: object): void;
   onError(error: Error): void;
 }

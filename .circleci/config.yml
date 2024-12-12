@@ -6,8 +6,9 @@ orbs:
 aliases:
   - &macos-env
     macos:
-      xcode: 14.0.0
-      
+      xcode: 14.3.1
+    resource_class: macos.m1.medium.gen1
+
   - &windows-env
     executor:
       name: win/default
@@ -66,9 +67,9 @@ commands:
       - run: 
           name: Install CMake
           command: |
-            curl -OsL https://github.com/Kitware/CMake/releases/download/v3.21.3/cmake-3.21.3-macos10.10-universal.tar.gz
-            tar xf cmake-3.21.3-macos10.10-universal.tar.gz --strip-components=1
-            rm cmake-3.21.3-macos10.10-universal.tar.gz
+            curl -o cmake.tar.gz -sL https://github.com/Kitware/CMake/releases/download/v3.28.0/cmake-3.28.0-macos-universal.tar.gz
+            tar xf cmake.tar.gz --strip-components=1
+            rm cmake.tar.gz
             chmod -R a+rwx "$PWD/CMake.app"
             export PATH="$PATH:$PWD/CMake.app/Contents/bin"
             sudo "$PWD/CMake.app/Contents/bin/cmake-gui" --install
@@ -78,7 +79,7 @@ commands:
       - run: 
           name: Install CMake
           command: |
-            choco install cmake --version=3.21.3 --installargs '"ADD_CMAKE_TO_PATH=User"'
+            choco install cmake -y --version=3.27.9 --installargs '"ADD_CMAKE_TO_PATH=User"'
             PATH_TO_CMAKE='/c/Program Files/CMake/bin'
             echo "export PATH='$PATH_TO_CMAKE:$PATH'" >> $BASH_ENV
 

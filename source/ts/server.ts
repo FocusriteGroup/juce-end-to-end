@@ -1,68 +1,61 @@
 import net, {Socket} from 'net';
-import {strict as assert} from 'assert';
 import {EventEmitter} from 'events';
 
 export class Server extends EventEmitter {
-  server?: net.Server;
-  lastConnection?: net.Socket;
+  listenSocket?: net.Server;
 
   constructor() {
     super();
   }
 
   close() {
-    if (this.server) {
-      this.server.close();
-      this.server = null;
+    if (this.listenSocket) {
+      this.listenSocket.close();
     }
   }
 
   async listen(): Promise<number> {
+    if (this.listenSocket) {
+      throw new Error('Server already running');
+    }
+
+    this.listenSocket = new net.Server();
+
+    this.listenSocket?.on('error', (error) => {
+      this.listenSocket?.close();
+      this.emit('error', error);
+      throw new Error(`Error on listen socket: ${error.message}`);
+    });
+
+    this.listenSocket?.on('close', () => {
+      this.listenSocket = undefined;
+    });
+
     return new Promise((resolve) => {
-      assert(!this.server);
-
-      this.server = new net.Server();
-
-      this.server.on('close', () => {
-        this.emit('close');
-        this.server = null;
-      });
-
-      this.server.on('connection', (socket) => {
-        this.lastConnection = socket;
-        this.emit('connection', socket);
-      });
-
-      this.server.on('error', (error) => {
-        console.error(`Error on listen socket: ${error.message}`);
-
-        if (this.server) {
-          this.server.close();
+      this.listenSocket?.on('listening', () => {
+        if (!this.listenSocket) {
+          throw new Error('Listen socket has closed');
         }
 
-        this.emit('error', error);
-      });
-
-      this.server.on('listening', () => {
-        const address = this.server.address() as net.AddressInfo;
+        const address = this.listenSocket.address() as net.AddressInfo;
         resolve(address.port);
       });
 
-      this.server.listen();
+      this.listenSocket?.listen();
     });
   }
 
   async waitForConnection(): Promise<Socket> {
-    return new Promise((resolve) => {
-      if (this.lastConnection) {
-        resolve(this.lastConnection);
-        this.lastConnection = null;
-      } else {
-        assert(!!this.server);
-        this.server.on('connection', (socket) => {
-          resolve(socket);
-        });
-      }
+    if (!this.listenSocket) {
+      throw new Error('Server not listening');
+    }
+
+    return new Promise<Socket>((resolve, reject) => {
+      this.listenSocket?.on('close', () =>
+        reject(new Error('Listen socket closed'))
+      );
+
+      this.listenSocket?.on('connection', resolve);
     });
   }
 }

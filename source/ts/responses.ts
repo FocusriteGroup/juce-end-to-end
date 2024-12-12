@@ -28,6 +28,31 @@ export interface GetItemIndexResponse {
   value: number;
 }
 
+export interface GetComboBoxItemsResponse {
+    items : string[];
+}
+
+export interface AccessibilityResponse {
+  title: string;
+  description: string;
+  help: string;
+  accessible: boolean;
+  handler: boolean;
+  display: string;
+}
+
+export interface AccessibilityParentResponse {
+  parent: string;
+}
+
+export interface AccessibilityChildResponse {
+  children: string[];
+}
+
+export interface GetFocusedComponentResponse {
+  'component-id': string;
+}
+
 export enum ResponseType {
   response = 'response',
   event = 'event',
