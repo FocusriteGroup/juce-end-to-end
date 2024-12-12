@@ -464,11 +464,6 @@ Response getComboBoxItems (const Command & command)
         auto * comboBox = std::get<juce::ComboBox *> (comboBoxVariant);
         const auto numItems = comboBox->getNumItems ();
 
-        if (numItems == 0)
-        {
-            return Response::fail (juce::String ("ComboBox is empty"));
-        }
-
         juce::StringArray items;
 
         for (auto i = 0; i < numItems; ++i)
