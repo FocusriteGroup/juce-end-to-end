@@ -4,7 +4,6 @@ option (FOCUSRITE_E2E_MAKE_TESTS "Build example app")
 option (FOCUSRITE_E2E_FETCH_JUCE "Download JUCE")
 
 set (CMAKE_DEBUG_POSTFIX d)
-set (CXX_STANDARD_REQUIRED 17)
 
 if (FOCUSRITE_E2E_FETCH_JUCE)
   include (cmake/fetch-juce.cmake)
