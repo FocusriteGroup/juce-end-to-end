@@ -50,7 +50,7 @@
     "jest": "^29.3.1",
     "tar": "^6.1.11",
     "ts-node": "^10.4.0",
-    "typescript": "^5.0.4"
+    "typescript": "^5.7.2"
   },
   "engines": {
     "node": ">=20"
