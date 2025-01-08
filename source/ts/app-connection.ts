@@ -308,7 +308,7 @@ export class AppConnection extends EventEmitter {
   }
 
   async getComboBoxItems(comboBoxId: string): Promise<string[]> {
-     const response = (await this.sendCommand({
+    const response = (await this.sendCommand({
       type: 'get-combo-box-items',
       args: {
         'component-id': comboBoxId,
