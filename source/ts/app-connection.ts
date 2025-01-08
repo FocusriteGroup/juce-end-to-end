@@ -271,38 +271,6 @@ export class AppConnection extends EventEmitter {
       },
     });
   }
-    
-  async setComboBoxSelectedItemIndex(comboBoxId: string, value: number): Promise<void> {
-    await this.sendCommand({
-      type: 'set-combo-box-selected-item-index',
-      args: {
-        'component-id': comboBoxId,
-        value,
-      },
-    });
-  }
-
-  async getComboBoxSelectedItemIndex(comboBoxId: string): Promise<number> {
-    const response = (await this.sendCommand({
-      type: 'get-combo-box-selected-item-index',
-      args: {
-        'component-id': comboBoxId,
-      },
-    })) as GetItemIndexResponse;
-
-    return response.value;
-  }
-    
-  async getComboBoxNumItems(comboBoxId: string): Promise<number> {
-    const response = (await this.sendCommand({
-      type: 'get-combo-box-num-items',
-      args: {
-        'component-id': comboBoxId,
-      },
-    })) as GetItemIndexResponse;
-
-    return response.value;
-  }
 
   async setComboBoxSelectedItemIndex(
     comboBoxId: string,
