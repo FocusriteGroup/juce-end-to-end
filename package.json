@@ -15,7 +15,7 @@
     "generate": "npx ts-node scripts/generate.ts",
     "build-cpp": "npx ts-node scripts/build-cpp-library.ts",
     "test-cpp": "cd cmake-build && ctest -j 8 -C Release --output-on-failure --output-junit unit-tests.xml",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "build": "tsc",
     "test": "jest ./tests/**",
     "test-example": "jest ./example/tests/**"
