@@ -71,4 +71,14 @@ describe('Count App tests', () => {
     const value = await appConnection.getComboBoxSelectedItemIndex('combo-box');
     expect(value).toBe(expectedValue);
   });
+
+  it('checks that all values in combox box are present and in the correct order', async () => {
+    const expectedValues = ['First', 'Second', 'Third'];
+    const items = await appConnection.getComboBoxItems('combo-box');
+    let index = 0;
+    for (const value of expectedValues) {
+      expect(value).toEqual(items[index]);
+      index++;
+    }
+  });
 });
