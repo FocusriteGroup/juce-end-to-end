@@ -25,7 +25,7 @@ This package provides a mechanism to end-to-end test a JUCE application
 
 - [CMake](https://www.cmake.org). Must be 3.18 or higher. Normally just get the latest version
   - CMake is used as the build system, as we as a pseudo package manager. It is the simplest way to use JE2E
-- [Node](https://nodejs.org/en/). Should be 14.x, with npm 6.14.x
+- [Node](https://nodejs.org/en/). See the [package.json](./package.json) for the supported version(s).
   - Node is used to manage the build and test process. You can manually execute any of the normal commands in Cmake and your compiler if you don't wish to use Node
 - [JUCE](https://juce.com). Should be >= 6.x
   - This project is designed to integrate with JUCE. We use large parts of the JUCE mainline. To make this project work, JUCE should be available on your compile path
