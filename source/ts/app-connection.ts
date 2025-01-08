@@ -20,7 +20,7 @@ import {
   GetComboBoxItemsResponse,
 } from './responses';
 import {Command} from './commands';
-import minimatch from 'minimatch';
+import {minimatch} from 'minimatch';
 import {waitForResult} from './poll';
 import {AppProcess, EnvironmentVariables, launchApp} from './app-process';
 
