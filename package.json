@@ -30,7 +30,7 @@
   "homepage": "https://github.com/FocusriteGroup/juce-end-to-end#readme",
   "dependencies": {
     "minimatch": "^10.0.1",
-    "uuid": "^10.0.0"
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.16.0",
