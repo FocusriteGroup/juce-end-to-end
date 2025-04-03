@@ -1,4 +1,5 @@
 import {AppConnection} from '../../source/ts';
+import {ComponentHandle} from '../../source/ts/component-handle';
 import {appPath} from './app-path';
 
 describe('invalid component', () => {
@@ -14,7 +15,7 @@ describe('invalid component', () => {
   });
 
   it.failing('fails when waiting for invalid components', async () => {
-    await app.waitForComponentToBeVisible('invalid', 100);
+    await app.getComponent('invalid').waitToBeVisible(100);
   });
 
   it.failing('fails when waiting for an event that never happens', async () => {
@@ -26,7 +27,7 @@ it.failing('rejects requests after the app has quit', async () => {
   const app = new AppConnection({appPath, logDirectory: 'logs'});
   await app.launch();
   await app.quit();
-  await app.waitForComponentToBeVisible('value-label');
+  await app.getComponent('value-label').waitToBeVisible(100);
 });
 
 it.failing('fails when the app crashes', async () => {
