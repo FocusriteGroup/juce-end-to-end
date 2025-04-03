@@ -23,6 +23,7 @@ import {Command} from './commands';
 import {minimatch} from 'minimatch';
 import {waitForResult} from './poll';
 import {AppProcess, EnvironmentVariables, launchApp} from './app-process';
+import {ComponentHandle} from './component-handle';
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -506,5 +507,9 @@ export class AppConnection extends EventEmitter {
     }
 
     return false;
+  }
+
+  getComponent(componentID: string) {
+    return new ComponentHandle(componentID, this);
   }
 }
