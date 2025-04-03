@@ -33,7 +33,7 @@ interface AppConnectionOptions {
   logDirectory?: string;
 }
 
-const DEFAULT_TIMEOUT = 5000;
+export const DEFAULT_TIMEOUT = 5000;
 
 const existsAsFile = (path: string) => {
   try {
