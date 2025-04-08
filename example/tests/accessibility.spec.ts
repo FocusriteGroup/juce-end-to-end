@@ -21,7 +21,7 @@ describe('Accessibility tests', () => {
     window = appConnection.getComponent('main-window');
 
     await appConnection.launch();
-    valueLabel.waitToBeVisible();
+    await valueLabel.waitToBeVisible();
   });
 
   afterEach(async () => {
