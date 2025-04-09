@@ -1,13 +1,29 @@
 import {AppConnection} from '../../source/ts';
 import {appPath} from './app-path';
+import {ComponentHandle} from '../../source/ts/component-handle';
 
 describe('Count App tests', () => {
   let appConnection: AppConnection;
+  let valueLabel: ComponentHandle;
+  let incrementButton: ComponentHandle;
+  let decrementButton: ComponentHandle;
+  let enableButton: ComponentHandle;
+  let slider: ComponentHandle;
+  let textEditor: ComponentHandle;
+  let comboBox: ComponentHandle;
 
   beforeEach(async () => {
     appConnection = new AppConnection({appPath});
+    valueLabel = appConnection.getComponent('value-label');
+    incrementButton = appConnection.getComponent('increment-button');
+    decrementButton = appConnection.getComponent('decrement-button');
+    enableButton = appConnection.getComponent('enable-button');
+    slider = appConnection.getComponent('slider');
+    textEditor = appConnection.getComponent('text-editor');
+    comboBox = appConnection.getComponent('combo-box');
+
     await appConnection.launch();
-    await appConnection.waitForComponentToBeVisible('value-label');
+    await valueLabel.waitToBeVisible();
   });
 
   afterEach(async () => {
@@ -15,70 +31,56 @@ describe('Count App tests', () => {
   });
 
   it('starts at 0', async () => {
-    const value = await appConnection.getComponentText('value-label');
-    expect(value).toEqual('0');
+    expect(valueLabel.getText()).resolves.toEqual('0');
   });
 
   it('increments using the increment button', async () => {
-    await appConnection.clickComponent('increment-button');
-
-    const value = await appConnection.getComponentText('value-label');
-    expect(value).toEqual('1');
+    await incrementButton.click();
+    expect(valueLabel.getText()).resolves.toEqual('1');
   });
 
   it('decrements using the decrement button', async () => {
-    await appConnection.clickComponent('decrement-button');
-
-    const value = await appConnection.getComponentText('value-label');
-    expect(value).toEqual('-1');
+    await decrementButton.click();
+    expect(valueLabel.getText()).resolves.toEqual('-1');
   });
 
   it('can be disabled', async () => {
-    expect(
-      await appConnection.getComponentEnablement('increment-button')
-    ).toBeTruthy();
-    expect(
-      await appConnection.getComponentEnablement('decrement-button')
-    ).toBeTruthy();
+    expect(incrementButton.getEnablement()).resolves.toBeTruthy();
+    expect(decrementButton.getEnablement()).resolves.toBeTruthy();
 
-    await appConnection.clickComponent('enable-button');
+    await enableButton.click();
 
-    expect(
-      await appConnection.getComponentEnablement('increment-button')
-    ).toBeFalsy();
-    expect(
-      await appConnection.getComponentEnablement('decrement-button')
-    ).toBeFalsy();
+    expect(incrementButton.getEnablement()).resolves.toBeFalsy();
+    expect(decrementButton.getEnablement()).resolves.toBeFalsy();
   });
 
   it('sets value using the slider', async () => {
+    expect(slider.getSliderValue()).resolves.toBe(0);
+
     const expectedValue = 6;
-    await appConnection.setSliderValue('slider', expectedValue);
-    const value = await appConnection.getSliderValue('slider');
-    expect(value).toBe(expectedValue);
+    slider.setSliderValue(expectedValue);
+    expect(slider.getSliderValue()).resolves.toBe(expectedValue);
   });
 
   it('sets value using the text editor', async () => {
-    const expectedValue = 789;
-    await appConnection.setTextEditorText('text-editor', `${expectedValue}`);
-    const value = await appConnection.getComponentText('value-label');
-    expect(value).toBe(`${expectedValue}`);
+    const expectedValue = '789';
+    await textEditor.setTextEditorText(expectedValue);
+    expect(valueLabel.getText()).resolves.toBe(expectedValue);
   });
-    
+
   it('sets value using the combo-box', async () => {
     const expectedValue = 2;
-    await appConnection.setComboBoxSelectedItemIndex('combo-box', expectedValue);
-    const value = await appConnection.getComboBoxSelectedItemIndex('combo-box');
-    expect(value).toBe(expectedValue);
+    await comboBox.setComboBoxSelectedItemIndex(expectedValue);
+    expect(comboBox.getComboBoxSelectedItemIndex()).resolves.toBe(
+      expectedValue
+    );
   });
 
   it('checks that all values in combox box are present and in the correct order', async () => {
-    const expectedValues = ['First', 'Second', 'Third'];
-    const items = await appConnection.getComboBoxItems('combo-box');
-    let index = 0;
-    for (const value of expectedValues) {
-      expect(value).toEqual(items[index]);
-      index++;
-    }
+    expect(comboBox.getComboBoxItems()).resolves.toStrictEqual([
+      'First',
+      'Second',
+      'Third',
+    ]);
   });
 });
