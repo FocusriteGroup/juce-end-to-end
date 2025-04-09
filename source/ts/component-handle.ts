@@ -1,7 +1,6 @@
 import {AppConnection} from '.';
 import {AccessibilityResponse} from './responses';
 import {DEFAULT_TIMEOUT} from './app-connection';
-import {time} from 'console';
 
 export class ComponentHandle {
   appConnection: AppConnection;
