@@ -24,3 +24,14 @@ target_link_libraries (
          juce::juce_recommended_warning_flags)
 
 set_target_properties (e2e-example-app PROPERTIES CXX_STANDARD 17)
+
+add_test(
+    NAME e2e-test-example-app
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMAND ${NPX_COMMAND} jest "${CMAKE_SOURCE_DIR}/example/tests"
+)
+set_tests_properties(e2e-test-example-app
+PROPERTIES
+    FIXTURES_REQUIRED NPM_INSTALL
+    ENVIRONMENT APP_CONFIGURATION=$<CONFIG>
+)

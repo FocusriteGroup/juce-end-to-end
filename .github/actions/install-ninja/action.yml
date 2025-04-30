@@ -1,0 +1,22 @@
+name: 'Install Ninja'
+
+description: 'Installs Ninja'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download Ninja
+      shell: bash
+      run: |
+        if [[ "${{ runner.os }}" == "Windows" ]]; then 
+          OSPackage="ninja-win.zip"
+        else
+          OSPackage="ninja-mac.zip"
+        fi
+        
+        curl -o ninja.zip -OsL "https://github.com/ninja-build/ninja/releases/latest/download/${OSPackage}"
+        unzip -d ninja ninja.zip
+
+    - name: Add Ninja to PATH (bash)
+      shell: bash
+      run: echo "$(pwd)/ninja" >> "$GITHUB_PATH"

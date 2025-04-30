@@ -1,0 +1,38 @@
+name: 'Install sccache'
+
+description: 'Installs sccache'
+
+outputs:
+  path:
+    description: 'Path to the sccache executable'
+    value: ${{ steps.sccache-location.outputs.sccache-path }}
+  cache-dir:
+    description: 'Path to the sccache cache directory'
+    value: ${{ steps.sccache-location.outputs.sccache-cache-dir }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download sccache (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        curl -OsL https://github.com/mozilla/sccache/releases/download/v0.10.0/sccache-v0.10.0-x86_64-pc-windows-msvc.zip
+        unzip -jd sccache sccache-v0.10.0-x86_64-pc-windows-msvc.zip
+
+    - name: Download sccache (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        curl -OsL "https://github.com/mozilla/sccache/releases/download/v0.10.0/sccache-v0.10.0-aarch64-apple-darwin.tar.gz"
+        tar -xzf sccache-v0.10.0-aarch64-apple-darwin.tar.gz
+        mv sccache-v0.10.0-aarch64-apple-darwin sccache
+        echo 'SCCACHE_CACHE_MULTIARCH="0"' >> $GITHUB_ENV
+
+    - name: Set and output sccache location
+      id: sccache-location
+      shell: bash
+      run: |
+        echo 'sccache-path=${{ github.workspace }}/sccache/sccache' >> "$GITHUB_OUTPUT"
+        echo 'SCCACHE_DIR=${{ github.workspace }}/sccache-cache' >> "$GITHUB_ENV"
+        echo 'sccache-cache-dir=${{ github.workspace }}/sccache-cache' >> "$GITHUB_OUTPUT"
