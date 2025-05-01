@@ -19,8 +19,6 @@ enable_testing ()
 add_subdirectory (source/cpp)
 
 if (FOCUSRITE_E2E_MAKE_TESTS)
-  include(CTest)
-
   if (WIN32)
     set (NPM_COMMAND npm.cmd)
     set (NPX_COMMAND npx.cmd)

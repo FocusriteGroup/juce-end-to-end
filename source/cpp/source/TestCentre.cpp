@@ -8,7 +8,7 @@
 
 namespace focusrite::e2e
 {
-std::optional<int> getPort ()
+[[nodiscard]] static std::optional<int> getPort ()
 {
     for (const auto & param : juce::JUCEApplicationBase::getCommandLineParameterArray ())
     {

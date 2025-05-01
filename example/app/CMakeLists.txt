@@ -18,10 +18,10 @@ target_compile_definitions (
     JUCE_APPLICATION_VERSION_STRING="$<TARGET_PROPERTY:e2e-example-app,JUCE_VERSION>"
 )
 
-target_link_libraries (
-  e2e-example-app PRIVATE juce::juce_gui_extra
-  PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags
-         juce::juce_recommended_warning_flags)
+target_link_libraries (e2e-example-app
+PRIVATE
+  juce::juce_gui_extra
+)
 
 set_target_properties (e2e-example-app PROPERTIES CXX_STANDARD 17)
 
@@ -35,3 +35,5 @@ PROPERTIES
     FIXTURES_REQUIRED NPM_INSTALL
     ENVIRONMENT APP_CONFIGURATION=$<CONFIG>
 )
+
+set_common_target_properties (e2e-example-app)

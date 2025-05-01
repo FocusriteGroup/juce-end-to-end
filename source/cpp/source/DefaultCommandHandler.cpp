@@ -24,7 +24,7 @@ enum class CommandArgument
     windowId,
 };
 
-juce::StringRef toString (CommandArgument argument)
+[[nodiscard]] static juce::StringRef toString (CommandArgument argument)
 {
     switch (argument)
     {
@@ -54,7 +54,7 @@ juce::StringRef toString (CommandArgument argument)
     return {};
 }
 
-void clickButton (juce::Button & button)
+static void clickButton (juce::Button & button)
 {
     if (button.onClick != nullptr)
     {
@@ -70,7 +70,7 @@ void clickButton (juce::Button & button)
     }
 }
 
-void clickClickableComponent (focusrite::e2e::ClickableComponent & clickable, int numClicks)
+static void clickClickableComponent (focusrite::e2e::ClickableComponent & clickable, int numClicks)
 {
     if (numClicks == 1)
         clickable.performClick ();
@@ -79,7 +79,7 @@ void clickClickableComponent (focusrite::e2e::ClickableComponent & clickable, in
         clickable.performDoubleClick ();
 }
 
-juce::String snapshotComponent (juce::Component & component)
+[[nodiscard]] static juce::String snapshotComponent (juce::Component & component)
 {
     auto image = component.createComponentSnapshot (component.getLocalBounds ());
 
@@ -95,7 +95,7 @@ juce::String snapshotComponent (juce::Component & component)
     return juce::Base64::toBase64 (rawStream.getData (), rawStream.getDataSize ());
 }
 
-bool clickButton (juce::Component & component)
+[[nodiscard]] static bool clickButton (juce::Component & component)
 {
     if (auto * button = dynamic_cast<juce::Button *> (&component))
     {
@@ -106,7 +106,7 @@ bool clickButton (juce::Component & component)
     return false;
 }
 
-bool clickTextEditor (juce::Component & component)
+[[nodiscard]] static bool clickTextEditor (juce::Component & component)
 {
     if (auto * textBox = dynamic_cast<juce::TextEditor *> (&component))
     {
@@ -117,7 +117,8 @@ bool clickTextEditor (juce::Component & component)
     return false;
 }
 
-bool clickClickableComponent (juce::Component & component, const Command & command)
+[[nodiscard]] static bool clickClickableComponent (juce::Component & component,
+                                                   const Command & command)
 {
     if (auto * clickable = dynamic_cast<ClickableComponent *> (&component))
     {
@@ -131,7 +132,7 @@ bool clickClickableComponent (juce::Component & component, const Command & comma
     return false;
 }
 
-Response clickComponent (const Command & command)
+[[nodiscard]] static Response clickComponent (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -151,7 +152,8 @@ Response clickComponent (const Command & command)
                    : Response::fail ("Component not clickable: " + juce::String (componentId));
 }
 
-Response keyPressOnComponent (const juce::String & componentId, const juce::KeyPress & keyPress)
+[[nodiscard]] static Response keyPressOnComponent (const juce::String & componentId,
+                                                   const juce::KeyPress & keyPress)
 {
     auto * component = ComponentSearch::findWithId (componentId);
     if (component == nullptr)
@@ -161,7 +163,8 @@ Response keyPressOnComponent (const juce::String & componentId, const juce::KeyP
     return Response::ok ();
 }
 
-Response keyPressOnWindow (const juce::String & windowId, const juce::KeyPress & keyPress)
+[[nodiscard]] static Response keyPressOnWindow (const juce::String & windowId,
+                                                const juce::KeyPress & keyPress)
 {
     auto * window = ComponentSearch::findWindowWithId (windowId);
     if (window == nullptr)
@@ -175,7 +178,7 @@ Response keyPressOnWindow (const juce::String & windowId, const juce::KeyPress &
     return Response::ok ();
 }
 
-Response keyPress (const Command & command)
+[[nodiscard]] static Response keyPress (const Command & command)
 {
     auto keyCode = command.getArgument (toString (CommandArgument::keyCode));
     if (keyCode.isEmpty ())
@@ -193,7 +196,7 @@ Response keyPress (const Command & command)
     return keyPressOnWindow (windowId, keyPress);
 }
 
-Response grabFocus (const Command & command)
+[[nodiscard]] static Response grabFocus (const Command & command)
 {
     if (auto * window = ComponentSearch::findWindowWithId (
             command.getArgument (toString (CommandArgument::windowId))))
@@ -202,7 +205,7 @@ Response grabFocus (const Command & command)
     return Response::ok ();
 }
 
-Response getScreenshot (const Command & command)
+[[nodiscard]] static Response getScreenshot (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     const auto windowId = command.getArgument (toString (CommandArgument::windowId));
@@ -220,7 +223,7 @@ Response getScreenshot (const Command & command)
     return Response::ok ().withParameter ("image", image);
 }
 
-Response getComponentVisibility (const Command & command)
+[[nodiscard]] static Response getComponentVisibility (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -238,7 +241,7 @@ Response getComponentVisibility (const Command & command)
     return Response::ok ().withParameter ("exists", exists).withParameter ("showing", showing);
 }
 
-Response getComponentEnablement (const Command & command)
+[[nodiscard]] static Response getComponentEnablement (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -256,7 +259,7 @@ Response getComponentEnablement (const Command & command)
     return Response::ok ().withParameter ("exists", exists).withParameter ("enabled", enabled);
 }
 
-Response getComponentText (const Command & command)
+[[nodiscard]] static Response getComponentText (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -278,7 +281,7 @@ Response getComponentText (const Command & command)
     return Response::fail ("Component doesn't have text");
 }
 
-Response getFocusComponent (const Command & command)
+[[nodiscard]] static Response getFocusComponent (const Command & command)
 {
     juce::ignoreUnused (command);
 
@@ -290,7 +293,7 @@ Response getFocusComponent (const Command & command)
     return Response::ok ().withParameter ("component-id", testId);
 }
 
-Response countComponents (const Command & command)
+[[nodiscard]] static Response countComponents (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
 
@@ -315,13 +318,13 @@ Response countComponents (const Command & command)
         "count", ComponentSearch::countChildComponents (*rootComponent, componentId));
 }
 
-Response quit (const Command & command)
+[[nodiscard]] static Response quit (const Command & command)
 {
     juce::ignoreUnused (command);
     return Response::ok ();
 }
 
-Response invokeMenu (const Command & command)
+[[nodiscard]] static Response invokeMenu (const Command & command)
 {
     auto * application = juce::JUCEApplication::getInstance ();
     if (application == nullptr)
@@ -350,7 +353,7 @@ Response invokeMenu (const Command & command)
 }
 
 template <class T>
-std::variant<T *, juce::String> getComponent (const Command & command)
+[[nodiscard]] static std::variant<T *, juce::String> getComponent (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -369,7 +372,7 @@ std::variant<T *, juce::String> getComponent (const Command & command)
     return castedComponent;
 }
 
-Response getSliderValue (const Command & command)
+[[nodiscard]] static Response getSliderValue (const Command & command)
 {
     auto sliderVariant = getComponent<juce::Slider> (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
@@ -383,7 +386,7 @@ Response getSliderValue (const Command & command)
     return Response::fail (error);
 }
 
-Response setSliderValue (const Command & command)
+[[nodiscard]] static Response setSliderValue (const Command & command)
 {
     auto sliderVariant = getComponent<juce::Slider> (command);
     if (std::holds_alternative<juce::Slider *> (sliderVariant))
@@ -405,7 +408,7 @@ Response setSliderValue (const Command & command)
     return Response::fail (error);
 }
 
-Response setTextEditorText (const Command & command)
+[[nodiscard]] static Response setTextEditorText (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -428,7 +431,7 @@ Response setTextEditorText (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
-Response getComboBoxSelectedItemIndex (const Command & command)
+[[nodiscard]] static Response getComboBoxSelectedItemIndex (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
     if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
@@ -442,7 +445,7 @@ Response getComboBoxSelectedItemIndex (const Command & command)
     return Response::fail (error);
 }
 
-Response getComboBoxNumItems (const Command & command)
+[[nodiscard]] static Response getComboBoxNumItems (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
     if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
@@ -456,7 +459,7 @@ Response getComboBoxNumItems (const Command & command)
     return Response::fail (error);
 }
 
-Response getComboBoxItems (const Command & command)
+[[nodiscard]] static Response getComboBoxItems (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
     if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
@@ -478,7 +481,7 @@ Response getComboBoxItems (const Command & command)
     return Response::fail (error);
 }
 
-Response setComboBoxSelectedItemIndex (const Command & command)
+[[nodiscard]] static Response setComboBoxSelectedItemIndex (const Command & command)
 {
     auto comboBoxVariant = getComponent<juce::ComboBox> (command);
     if (std::holds_alternative<juce::ComboBox *> (comboBoxVariant))
@@ -499,7 +502,7 @@ Response setComboBoxSelectedItemIndex (const Command & command)
     return Response::fail (error);
 }
 
-juce::String getAccessibilityHandlerDisplay (juce::Component & component)
+[[nodiscard]] static juce::String getAccessibilityHandlerDisplay (juce::Component & component)
 {
     if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
         return "";
@@ -513,28 +516,28 @@ juce::String getAccessibilityHandlerDisplay (juce::Component & component)
     return "";
 }
 
-juce::String getAccessibilityTitle (juce::Component & component)
+[[nodiscard]] static juce::String getAccessibilityTitle (juce::Component & component)
 {
     return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
                ? component.getAccessibilityHandler ()->getTitle ()
                : component.getTitle ();
 }
 
-juce::String getAccessibilityDescription (juce::Component & component)
+[[nodiscard]] static juce::String getAccessibilityDescription (juce::Component & component)
 {
     return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
                ? component.getAccessibilityHandler ()->getDescription ()
                : component.getDescription ();
 }
 
-juce::String getAccessibilityHelpText (juce::Component & component)
+[[nodiscard]] static juce::String getAccessibilityHelpText (juce::Component & component)
 {
     return (component.isAccessible () && component.getAccessibilityHandler () != nullptr)
                ? component.getAccessibilityHandler ()->getHelp ()
                : component.getHelpText ();
 }
 
-juce::String getAccessibilityParent (juce::Component & component)
+[[nodiscard]] static juce::String getAccessibilityParent (juce::Component & component)
 {
     if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
         return {};
@@ -545,7 +548,7 @@ juce::String getAccessibilityParent (juce::Component & component)
     return {};
 }
 
-juce::StringArray getAccessibilityChildren (juce::Component & component)
+[[nodiscard]] static juce::StringArray getAccessibilityChildren (juce::Component & component)
 {
     if (! component.isAccessible () || component.getAccessibilityHandler () == nullptr)
         return {};
@@ -560,7 +563,7 @@ juce::StringArray getAccessibilityChildren (juce::Component & component)
     return result;
 }
 
-Response getAccessibilityState (const Command & command)
+[[nodiscard]] static Response getAccessibilityState (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -578,7 +581,7 @@ Response getAccessibilityState (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
-Response getAccessibilityParent (const Command & command)
+[[nodiscard]] static Response getAccessibilityParent (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -590,7 +593,7 @@ Response getAccessibilityParent (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
-Response getAccessibilityChildren (const Command & command)
+[[nodiscard]] static Response getAccessibilityChildren (const Command & command)
 {
     const auto componentId = command.getArgument (toString (CommandArgument::componentId));
     if (componentId.isEmpty ())
@@ -605,7 +608,7 @@ Response getAccessibilityChildren (const Command & command)
     return Response::fail (componentId + " not found");
 }
 
-std::optional<Response> DefaultCommandHandler::process (const Command & command)
+std::optional<Response> DefaultCommandHandler::process (const Command & commandToProcess)
 {
     static const std::map<juce::String, std::function<Response (const Command &)>> commandHandlers =
         {
@@ -643,11 +646,11 @@ std::optional<Response> DefaultCommandHandler::process (const Command & command)
              [&] (auto && command) { return getAccessibilityChildren (command); }},
         };
 
-    auto it = commandHandlers.find (command.getType ());
+    auto it = commandHandlers.find (commandToProcess.getType ());
 
     if (it == commandHandlers.end ())
         return std::nullopt;
 
-    return it->second (command);
+    return it->second (commandToProcess);
 }
 }

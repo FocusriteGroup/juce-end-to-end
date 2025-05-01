@@ -5,7 +5,7 @@ namespace focusrite::e2e
 static constexpr auto testId = "test-id";
 static constexpr auto windowId = "window-id";
 
-std::vector<juce::Component *>
+[[nodiscard]] static std::vector<juce::Component *>
 getDirectDescendantsMatching (juce::Component & parent,
                               const std::function<bool (juce::Component &)> & predicate)
 {
@@ -14,16 +14,17 @@ getDirectDescendantsMatching (juce::Component & parent,
     return {children.begin (), children.end ()};
 }
 
-juce::Component * matchChildComponent (juce::Component & component,
-                                       const std::function<bool (juce::Component &)> & predicate,
-                                       int & skip)
+[[nodiscard]] static juce::Component *
+matchChildComponent (juce::Component & component,
+                     const std::function<bool (juce::Component &)> & predicate,
+                     int & skip)
 {
     jassert (skip >= 0);
 
     auto matchingChildren = getDirectDescendantsMatching (component, predicate);
 
     if (skip < int (matchingChildren.size ()))
-        return matchingChildren [skip];
+        return matchingChildren [static_cast<std::size_t> (skip)];
 
     skip -= int (matchingChildren.size ());
 
@@ -39,14 +40,15 @@ juce::Component * matchChildComponent (juce::Component & component,
     return nullptr;
 }
 
-juce::Component * findChildComponent (juce::Component & component,
-                                      const std::function<bool (juce::Component &)> & predicate,
-                                      int skip = 0)
+[[nodiscard]] static juce::Component *
+findChildComponent (juce::Component & component,
+                    const std::function<bool (juce::Component &)> & predicate,
+                    int skip = 0)
 {
     return matchChildComponent (component, predicate, skip);
 }
 
-std::vector<juce::TopLevelWindow *> getTopLevelWindows ()
+[[nodiscard]] static std::vector<juce::TopLevelWindow *> getTopLevelWindows ()
 {
     std::vector<juce::TopLevelWindow *> windows;
 
@@ -58,8 +60,8 @@ std::vector<juce::TopLevelWindow *> getTopLevelWindows ()
     return windows;
 }
 
-juce::Component * findComponent (const std::function<bool (juce::Component &)> & predicate,
-                                 int skip = 0)
+[[nodiscard]] static juce::Component *
+findComponent (const std::function<bool (juce::Component &)> & predicate, int skip = 0)
 {
     for (auto & window : getTopLevelWindows ())
         if (auto * component = findChildComponent (*window, predicate, skip))
@@ -68,9 +70,9 @@ juce::Component * findComponent (const std::function<bool (juce::Component &)> &
     return nullptr;
 }
 
-bool componentHasMatchingProperty (const juce::Component & component,
-                                   const juce::String & pattern,
-                                   const juce::String & propertyName)
+[[nodiscard]] static bool componentHasMatchingProperty (const juce::Component & component,
+                                                        const juce::String & pattern,
+                                                        const juce::String & propertyName)
 {
     const auto componentTestId =
         component.getProperties ().getWithDefault (propertyName, {}).toString ();
@@ -80,17 +82,20 @@ bool componentHasMatchingProperty (const juce::Component & component,
            componentId.matchesWildcard (pattern, false);
 }
 
-bool componentHasId (const juce::Component & component, const juce::String & idPattern)
+[[nodiscard]] static bool componentHasId (const juce::Component & component,
+                                          const juce::String & idPattern)
 {
     return componentHasMatchingProperty (component, idPattern, testId);
 }
 
-bool windowHasId (const juce::TopLevelWindow & window, const juce::String & idPattern)
+[[nodiscard]] static bool windowHasId (const juce::TopLevelWindow & window,
+                                       const juce::String & idPattern)
 {
     return componentHasMatchingProperty (window, idPattern, windowId);
 }
 
-std::function<bool (juce::Component &)> createComponentMatcher (const juce::String & componentId)
+[[nodiscard]] static std::function<bool (juce::Component &)>
+createComponentMatcher (const juce::String & componentId)
 {
     return [componentId] (auto && component) -> bool
     {

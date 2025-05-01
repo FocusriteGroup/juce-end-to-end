@@ -10,8 +10,6 @@ public:
     static Response ok ();
     static Response fail (const juce::String & message);
 
-    ~Response () = default;
-
     [[nodiscard]] Response withParameter (const juce::String & name, const juce::var & value) const;
 
     [[nodiscard]] Response withUuid (const juce::Uuid & uuid) const;
