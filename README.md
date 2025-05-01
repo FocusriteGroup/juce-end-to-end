@@ -1,6 +1,6 @@
 # JUCE End to End
 
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) [![CircleCI](https://dl.circleci.com/status-badge/img/gh/FocusriteGroup/juce-end-to-end/tree/main.svg?style=shield)](https://dl.circleci.com/status-badge/redirect/gh/FocusriteGroup/juce-end-to-end/tree/main) [![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md) [![Platform](https://img.shields.io/static/v1?label=Platform&message=macOS%20%7C%20windows&color=pink&style=flat)](./documentation/building.md)
 
 [![Language](https://img.shields.io/static/v1?label=Language&message=C%2B%2B&color=orange&style=flat)](./documentation/building.md)
 [![Code Style](https://img.shields.io/static/v1?label=Code%20Style&message=Clang%20Format&color=pink&style=flat)](https://clang.llvm.org/docs/ClangFormat.html)
@@ -31,10 +31,6 @@ See the [example app](./example/) for an example of how to integrate this framew
 Watch Joe's ADC talk for an even more detailed explanation of the framework, and to see it in action testing Ampify Studio!
 
 [![Joe's ADC Talk](https://img.youtube.com/vi/3gi7CO71414/0.jpg)](https://www.youtube.com/watch?v=3gi7CO71414)
-
-## Continuous Integration
-
-Our Continuous Integration is [CircleCI](https://www.circleci.com). The config for circle is [here](./.circleci/config.yml)
 
 ## Code formatting
 
