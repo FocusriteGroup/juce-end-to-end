@@ -38,3 +38,14 @@ jobs:
         run: |
           echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" >> ~/.npmrc
           npm publish ${{ vars.NPM_PUBLISH_ACCESS }}
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create \
+            ${{ github.ref_name }} \
+            --generate-notes \
+            --latest=true \
+            --title "${{ github.ref_name }}" \
+            --verify-tag
