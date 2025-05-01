@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened, reopened, synchronize]
 
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event.pull_request.title }}'
+  cancel-in-progress: true
+
 defaults:
   run:
     shell: bash
