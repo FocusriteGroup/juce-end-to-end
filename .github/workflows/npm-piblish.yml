@@ -1,0 +1,40 @@
+run-name: '🚀 Publish'
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  npm-publish:
+    # if: github.ref == 'main'
+
+    runs-on: ubuntu-latest
+    environment: npm-publish-dry-run
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: npm
+
+      - name: NPM Install
+        run: npm install
+
+      - name: Compile TypeScript
+        run: npx tsc
+
+      - name: Publish to NPM
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" >> ~/.npmrc
+          npm publish ${{ vars.NPM_PUBLISH_ACCESS }}

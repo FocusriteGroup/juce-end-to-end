@@ -1,3 +1,5 @@
+run-name: '🏗️ Build & test `${{ github.event.pull_request.title }}`'
+
 on:
   pull_request:
     types: [opened, reopened, synchronize]
