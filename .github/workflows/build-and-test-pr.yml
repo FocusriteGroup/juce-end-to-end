@@ -51,6 +51,16 @@ jobs:
           )
           set >> %GITHUB_ENV%
 
+      - name: Restore cached CMake build directory
+        id: restore-cmake-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CMAKE_BUILD_DIR }}
+          key: ${{ runner.os }}-cmake-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-${{ github.ref }}
+            ${{ runner.os }}-cmake-
+
       - name: Restore sccache
         id: restore-sccache
         uses: actions/cache/restore@v4
@@ -78,15 +88,19 @@ jobs:
             --build "${{ env.CMAKE_BUILD_DIR }}" \
             --config "${{ env.CMAKE_BUILD_CONFIG }}"
 
-      - name: Display sccache stats
-        run: ${{ steps.install-sccache.outputs.path }} --show-stats
-
       - name: Save sccache
         if: ${{ steps.restore-sccache.outputs.cache-hit != 'true' && always() }}
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.install-sccache.outputs.cache-dir }}
           key: ${{ runner.os }}-sccache-${{ github.ref }}-${{ github.sha }}
+
+      - name: Cache CMake build directory
+        if: ${{ steps.restore-cmake-cache.outputs.cache-hit != 'true' && always() }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CMAKE_BUILD_DIR }}
+          key: ${{ runner.os }}-cmake-${{ github.ref }}-${{ github.sha }}
 
       - name: CTest
         run: |
