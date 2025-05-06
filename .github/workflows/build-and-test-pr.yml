@@ -1,0 +1,116 @@
+run-name: '🏗️ Build & test `${{ github.event.pull_request.title }}`'
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: '${{ github.workflow }}-${{ github.event.pull_request.title }}'
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        runner: [windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.runner }}
+
+    env:
+      CMAKE_BUILD_CONFIG: 'Release'
+      CMAKE_BUILD_DIR: 'cmake-build'
+      CMAKE_GENERATOR: 'Ninja Multi-Config'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: latest
+          cache: npm
+
+      - name: NPM Install
+        run: npm install
+
+      - name: Linting
+        run: npx eslint .
+
+      - name: Install Ninja
+        uses: ./.github/actions/install-ninja
+
+      - name: Install sccache
+        id: install-sccache
+        uses: ./.github/actions/install-sccache
+
+      - name: Setup MSVC environment
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+            call "%%i\VC\Auxiliary\Build\vcvars64.bat"
+          )
+          set >> %GITHUB_ENV%
+
+      - name: Restore cached CMake build directory
+        id: restore-cmake-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.CMAKE_BUILD_DIR }}
+          key: ${{ runner.os }}-cmake-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-${{ github.ref }}
+            ${{ runner.os }}-cmake-
+
+      - name: Restore sccache
+        id: restore-sccache
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ steps.install-sccache.outputs.cache-dir }}
+          key: ${{ runner.os }}-sccache-${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-sccache-${{ github.ref }}
+            ${{ runner.os }}-sccache-
+
+      - name: CMake Generate
+        run: |
+          cmake \
+            -B "${{ env.CMAKE_BUILD_DIR }}" \
+            -G "${{ env.CMAKE_GENERATOR }}" \
+            -D CMAKE_C_COMPILER_LAUNCHER="${{ steps.install-sccache.outputs.path }}" \
+            -D CMAKE_CXX_COMPILER_LAUNCHER="${{ steps.install-sccache.outputs.path }}" \
+            -D CMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+            -D FOCUSRITE_E2E_FETCH_JUCE=ON \
+            -D FOCUSRITE_E2E_MAKE_TESTS=ON
+
+      - name: CMake Build
+        run: |
+          cmake \
+            --build "${{ env.CMAKE_BUILD_DIR }}" \
+            --config "${{ env.CMAKE_BUILD_CONFIG }}"
+
+      - name: Save sccache
+        if: ${{ steps.restore-sccache.outputs.cache-hit != 'true' && always() }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.install-sccache.outputs.cache-dir }}
+          key: ${{ runner.os }}-sccache-${{ github.ref }}-${{ github.sha }}
+
+      - name: Cache CMake build directory
+        if: ${{ steps.restore-cmake-cache.outputs.cache-hit != 'true' && always() }}
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.CMAKE_BUILD_DIR }}
+          key: ${{ runner.os }}-cmake-${{ github.ref }}-${{ github.sha }}
+
+      - name: CTest
+        run: |
+          ctest \
+            --test-dir "${{ env.CMAKE_BUILD_DIR }}" \
+            --build-config "${{ env.CMAKE_BUILD_CONFIG }}" \
+            --output-on-failure

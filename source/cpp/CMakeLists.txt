@@ -63,11 +63,12 @@ if (FOCUSRITE_E2E_MAKE_TESTS)
     focusrite-e2e-tests PRIVATE JUCE_GLOBAL_MODULE_SETTINGS_INCLUDED=1
                                 JUCE_STANDALONE_APPLICATION=1)
 
-  target_link_libraries (
-    focusrite-e2e-tests PRIVATE juce::juce_core juce::juce_events
-                                juce::juce_gui_basics
-    PUBLIC juce::juce_recommended_config_flags juce::juce_recommended_lto_flags
-           juce::juce_recommended_warning_flags)
+  target_link_libraries (focusrite-e2e-tests
+  PRIVATE
+    juce::juce_core
+    juce::juce_events
+    juce::juce_gui_basics
+  )
 
   set_target_properties (focusrite-e2e-tests
       PROPERTIES

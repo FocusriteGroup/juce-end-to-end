@@ -2,7 +2,7 @@
 
 namespace focusrite::e2e
 {
-int mapKeyCode (const juce::String & code)
+[[nodiscard]] static int mapKeyCode (const juce::String & code)
 {
     using KeyPress = juce::KeyPress;
 
@@ -84,7 +84,7 @@ int mapKeyCode (const juce::String & code)
     return it != values.end () ? it->second : uint8_t (code.getCharPointer () [0]);
 }
 
-juce::ModifierKeys mapModifierKeys (const juce::String & modifiers)
+[[nodiscard]] static juce::ModifierKeys mapModifierKeys (const juce::String & modifiers)
 {
     int modifierKeys = juce::ModifierKeys::noModifiers;
     if (modifiers.contains ("shift"))
