@@ -11,8 +11,6 @@ defaults:
 
 jobs:
   npm-publish:
-    if: github.ref == 'main'
-
     runs-on: ubuntu-latest
     environment: npm-publish-public
 
