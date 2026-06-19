@@ -1,9 +1,8 @@
 import {EventEmitter} from 'events';
 import {ResponseStream} from './response-stream';
-
-import {v4 as uuidv4} from 'uuid';
 import {strict as assert} from 'assert';
 import {Socket} from 'net';
+import {randomUUID} from 'crypto';
 import {Command} from '.';
 import {SentCommand} from './commands';
 import {toBuffer} from './binary-protocol';
@@ -36,7 +35,11 @@ export class Connection extends EventEmitter {
     this.socket.on('close', () => this.emit('disconnect'));
     this.socket.on('end', () => this.socket.destroy());
     this.socket.on('connect', () => this.emit('connect'));
-    this.socket.on('data', (data) => this.responseStream.push(data));
+    this.socket.on('data', (data) => {
+      this.responseStream.push(
+        typeof data === 'string' ? Buffer.from(data) : data
+      );
+    });
 
     this.responseStream.on('response', (response: Response) => {
       if (response.type === ResponseType.response) {
@@ -69,7 +72,7 @@ export class Connection extends EventEmitter {
       assert(this.socket, 'Not connected');
 
       const sentCommand = {
-        uuid: uuidv4(),
+        uuid: randomUUID(),
         ...command,
         onReceived: (data: Buffer) => resolve(data),
         onError: (error: Error) => reject(error),
