@@ -1,9 +1,8 @@
 import {EventEmitter} from 'events';
 import {ResponseStream} from './response-stream';
-
-import {v4 as uuidv4} from 'uuid';
 import {strict as assert} from 'assert';
 import {Socket} from 'net';
+import {randomUUID} from 'crypto';
 import {Command} from '.';
 import {SentCommand} from './commands';
 import {toBuffer} from './binary-protocol';
@@ -69,7 +68,7 @@ export class Connection extends EventEmitter {
       assert(this.socket, 'Not connected');
 
       const sentCommand = {
-        uuid: uuidv4(),
+        uuid: randomUUID(),
         ...command,
         onReceived: (data: Buffer) => resolve(data),
         onError: (error: Error) => reject(error),

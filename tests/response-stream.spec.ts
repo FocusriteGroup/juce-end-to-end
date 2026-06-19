@@ -1,5 +1,5 @@
 import {toBuffer} from '../source/ts/binary-protocol';
-import {v4 as uuidv4} from 'uuid';
+import {randomUUID} from 'crypto';
 import {ResponseType} from '../source/ts/responses';
 import {ResponseStream} from '../source/ts/response-stream';
 
@@ -98,7 +98,7 @@ describe('Response Stream', () => {
 });
 
 const exampleResponse = {
-  uuid: uuidv4(),
+  uuid: randomUUID(),
   type: ResponseType.response,
   foo: 'foo',
   bar: 'bar',
