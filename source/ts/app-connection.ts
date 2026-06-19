@@ -351,8 +351,11 @@ export class AppConnection extends EventEmitter {
     } catch (error) {
       const expectedVisibility = visibility ? 'visible' : 'hidden';
       const screenshotFilename = await this.saveFailureScreenshot();
-      throw new Error(
-        `Component '${componentName}' didn't become ${expectedVisibility} (see screenshot ${screenshotFilename})`
+      throw Object.assign(
+        new Error(
+          `Component '${componentName}' didn't become ${expectedVisibility} (see screenshot ${screenshotFilename})`
+        ),
+        {cause: error}
       );
     }
   }
@@ -384,8 +387,11 @@ export class AppConnection extends EventEmitter {
     } catch (error) {
       const expectedEnablement = enablement ? 'enabled' : 'disabled';
       const screenshotFilename = await this.saveFailureScreenshot();
-      throw new Error(
-        `Component '${componentName}' didn't become ${expectedEnablement} (see screenshot ${screenshotFilename})`
+      throw Object.assign(
+        new Error(
+          `Component '${componentName}' didn't become ${expectedEnablement} (see screenshot ${screenshotFilename})`
+        ),
+        {cause: error}
       );
     }
   }
